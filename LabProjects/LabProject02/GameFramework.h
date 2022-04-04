@@ -1,4 +1,6 @@
 #pragma once
+#include "stdafx.h"
+
 class CGameFramework
 {
 private:
@@ -8,7 +10,7 @@ private:
 	int m_nWndClientWidth;
 	int m_nWndClientHeight;
 
-	IDXGIFactory* m_pdxgiFactory;
+	IDXGIFactory4* m_pdxgiFactory;
 	// DXGI 팩토리 인터페이스에 대한 포인터이다.
 	IDXGISwapChain3* m_pdxgiSwapChain;
 	// 스왑 체인 인터페이스에 대한 포인터이다. 주로 디스플레이를 제어하기 위하여 필요하다.
@@ -47,7 +49,7 @@ private:
 	HANDLE m_hFenceEvent;
 	// 펜스 인터페이스 포인터, 펜스의 값, 이벤트 핸들이다.
 
-	D3D12_VIEWPORT m_d3dViewprot;
+	D3D12_VIEWPORT m_d3dViewport;
 	D3D12_RECT m_d3dScissorRect;
 	// 뷰포트와 씨저 사각형이다.
 
