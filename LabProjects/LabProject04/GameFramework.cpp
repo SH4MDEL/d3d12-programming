@@ -27,6 +27,8 @@ CGameFramework::CGameFramework()
 
 	m_nWndClientWidth = FRAME_BUFFER_WIDTH;
 	m_nWndClientHeight = FRAME_BUFFER_HEIGHT;
+
+	_tcscpy_s(m_pszFrameRate, _T("LapProject ("));
 }
 
 // 다음 함수는 응용 프로그램이 실행되어 주 윈도우가 생성되면 호출된다는 것에 유의하라.
@@ -35,7 +37,7 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	m_hInstance = hInstance;
 	m_hWnd = hMainWnd;
 
-// Direct3D 디바이스, 명령 큐와 명령 리스트, 스왑 체인 등을 생성하는 함수를 호출한다.
+	// Direct3D 디바이스, 명령 큐와 명령 리스트, 스왑 체인 등을 생성하는 함수를 호출한다.
 	CreateDirect3DDevice();
 	CreateCommandQueueAndList();
 	CreateSwapChain();
@@ -62,7 +64,7 @@ void CGameFramework::OnDestroy()
 	for (int i = 0; i < m_nSwapChainBuffers; i++) if (m_ppd3dRenderTargetBuffers[i])
 		m_ppd3dRenderTargetBuffers[i]->Release();
 	if (m_pd3dRtvDescriptorHeap) m_pd3dRtvDescriptorHeap->Release();
-	
+
 	if (m_pd3dDepthStencilBuffer) m_pd3dDepthStencilBuffer->Release();
 	if (m_pd3dDsvDescriptorHeap) m_pd3dDsvDescriptorHeap->Release();
 
@@ -172,10 +174,10 @@ void CGameFramework::CreateDirect3DDevice()
 	m_pd3dDevice->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
 		&d3dMsaaQualityLevels, sizeof(D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS));
 	m_nMsaa4xQualityLevels = d3dMsaaQualityLevels.NumQualityLevels;
-	
+
 	//다중 샘플의 품질 수준이 1보다 크면 다중 샘플링을 활성화한다.
 	m_bMsaa4xEnable = (m_nMsaa4xQualityLevels > 1) ? true : false;
-	
+
 	//펜스를 생성하고 펜스 값을 0으로 설정한다. 
 	hResult = m_pd3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), (void**)&m_pd3dFence);
 	m_nFenceValue = 0;
@@ -210,11 +212,11 @@ void CGameFramework::CreateCommandQueueAndList()
 
 	//직접(Direct) 명령 할당자를 생성한다. 
 	hResult = m_pd3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-	__uuidof(ID3D12CommandAllocator), (void**)&m_pd3dCommandAllocator);
+		__uuidof(ID3D12CommandAllocator), (void**)&m_pd3dCommandAllocator);
 
 	//직접(Direct) 명령 리스트를 생성한다. 
 	hResult = m_pd3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
-	m_pd3dCommandAllocator, NULL, __uuidof(ID3D12GraphicsCommandList), (void**)&m_pd3dCommandList);
+		m_pd3dCommandAllocator, NULL, __uuidof(ID3D12GraphicsCommandList), (void**)&m_pd3dCommandList);
 
 	//명령 리스트는 생성되면 열린(Open) 상태이므로 닫힌(Closed) 상태로 만든다.
 	hResult = m_pd3dCommandList->Close();
@@ -234,17 +236,17 @@ void CGameFramework::CreateRtvAndDsvDescriptorHeaps()
 
 	//렌더 타겟 서술자 힙의 원소의 크기를 저장한다. 
 	m_nRtvDescriptorIncrementSize =
-	m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	
+		m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
 	//깊이-스텐실 서술자 힙(서술자의 개수는 1)을 생성한다. 
 	d3dDescriptorHeapDesc.NumDescriptors = 1;
 	d3dDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	hResult = m_pd3dDevice->CreateDescriptorHeap(&d3dDescriptorHeapDesc,
 		__uuidof(ID3D12DescriptorHeap), (void**)&m_pd3dDsvDescriptorHeap);
-	
+
 	//깊이-스텐실 서술자 힙의 원소의 크기를 저장한다. 
 	m_nDsvDescriptorIncrementSize =
-	m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+		m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
 
 //스왑체인의 각 후면 버퍼에 대한 렌더 타겟 뷰를 생성한다. 
@@ -294,7 +296,7 @@ void CGameFramework::CreateDepthStencilView()
 
 	//깊이-스텐실 버퍼 뷰를 생성한다. 
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle =
-	m_pd3dDsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+		m_pd3dDsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	m_pd3dDsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	m_pd3dDevice->CreateDepthStencilView(m_pd3dDepthStencilBuffer, NULL,
 		d3dDsvCPUDescriptorHandle);
@@ -405,6 +407,9 @@ void CGameFramework::WaitForGpuComplete()
 
 void CGameFramework::FrameAdvance()
 {
+	//타이머의 시간이 갱신되도록 하고 프레임 레이트를 계산한다. 
+	m_GameTimer.Tick(0.0f);
+
 	ProcessInput();
 
 	AnimateObjects();
@@ -414,8 +419,8 @@ void CGameFramework::FrameAdvance()
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
 
 	// 현재 렌더 타겟에 대한 프리젠트가 끝나기를 기다린다. 
-// 프리젠트가 끝나면 렌더 타겟 버퍼의 상태는 프리젠트 상태(D3D12_RESOURCE_STATE_PRESENT)에서 
-// 렌더 타겟 상태(D3D12_RESOURCE_STATE_RENDER_TARGET)로 바뀔 것이다.
+	// 프리젠트가 끝나면 렌더 타겟 버퍼의 상태는 프리젠트 상태(D3D12_RESOURCE_STATE_PRESENT)에서 
+	// 렌더 타겟 상태(D3D12_RESOURCE_STATE_RENDER_TARGET)로 바뀔 것이다.
 	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
 	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));
 	d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -430,33 +435,33 @@ void CGameFramework::FrameAdvance()
 	//뷰포트와 씨저 사각형을 설정한다. 
 	m_pd3dCommandList->RSSetViewports(1, &m_d3dViewport);
 	m_pd3dCommandList->RSSetScissorRects(1, &m_d3dScissorRect);
-	
+
 	//현재의 렌더 타겟에 해당하는 서술자의 CPU 주소(핸들)를 계산한다. 
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle =
-	m_pd3dRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+		m_pd3dRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	d3dRtvCPUDescriptorHandle.ptr += (m_nSwapChainBufferIndex *
 		m_nRtvDescriptorIncrementSize);
-	
+
 	//원하는 색상으로 렌더 타겟(뷰)을 지운다. 
 	float pfClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
 	m_pd3dCommandList->ClearRenderTargetView(d3dRtvCPUDescriptorHandle,
 		pfClearColor/*Colors::Azure*/, 0, NULL);
-	
+
 	//깊이-스텐실 서술자의 CPU 주소를 계산한다. 
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle =
-	m_pd3dDsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	
+		m_pd3dDsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
 	//원하는 값으로 깊이-스텐실(뷰)을 지운다. 
 	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle,
-	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
-	
+		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
+
 	//렌더 타겟 뷰(서술자)와 깊이-스텐실 뷰(서술자)를 출력-병합 단계(OM)에 연결한다. 
 	m_pd3dCommandList->OMSetRenderTargets(1, &d3dRtvCPUDescriptorHandle, TRUE,
-	&d3dDsvCPUDescriptorHandle);
-	
+		&d3dDsvCPUDescriptorHandle);
+
 	//렌더링 코드는 여기에 추가될 것이다. 
-	
-	
+
+
 	// 현재 렌더 타겟에 대한 렌더링이 끝나기를 기다린다. 
 	// GPU가 렌더 타겟(버퍼)을 더 이상 사용하지 않으면 
 	// 렌더 타겟의 상태는 프리젠트 상태(D3D12_RESOURCE_STATE_PRESENT)로 바뀔 것이다.
@@ -469,7 +474,7 @@ void CGameFramework::FrameAdvance()
 	hResult = m_pd3dCommandList->Close();
 
 	//명령 리스트를 명령 큐에 추가하여 실행한다. 
-	ID3D12CommandList *ppd3dCommandLists[] = { m_pd3dCommandList };
+	ID3D12CommandList* ppd3dCommandLists[] = { m_pd3dCommandList };
 	m_pd3dCommandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
 
 	//GPU가 모든 명령 리스트를 실행할 때 까지 기다린다. 
@@ -482,7 +487,20 @@ void CGameFramework::FrameAdvance()
 	dxgiPresentParameters.pDirtyRects = NULL;
 	dxgiPresentParameters.pScrollRect = NULL;
 	dxgiPresentParameters.pScrollOffset = NULL;
-	m_pdxgiSwapChain->Present1(1, 0, &dxgiPresentParameters);
+	m_pdxgiSwapChain->Present(0, 0);
+
+	/*
+	현재의 프레임 레이트를 문자열로 가져와서 주 윈도우의 타이틀로 출력한다.
+	m_pszBuffer 문자열이 "LapProject ("으로 초기화되었으므로 (m_pszFrameRate+12)에서부터
+	프레임 레이트를 문자열로 출력하여 “ FPS)” 문자열과 합친다.
+
+
+	::_itow_s(m_nCurrentFrameRate, (m_pszFrameRate + 12), 37, 10);
+	::wcscat_s((m_pszFrameRate + 12), 37, _T(" FPS)"));
+	*/
+
+	m_GameTimer.GetFrameRate(m_pszFrameRate + 12, 37);
+	::SetWindowText(m_hWnd, m_pszFrameRate);
 
 	m_nSwapChainBufferIndex = m_pdxgiSwapChain->GetCurrentBackBufferIndex();
 }
