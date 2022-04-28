@@ -79,21 +79,6 @@ D3D12_BLEND_DESC CShader::CreateBlendState()
 //입력 조립기에게 정점 버퍼의 구조를 알려주기 위한 구조체를 반환한다. 
 D3D12_INPUT_LAYOUT_DESC CShader::CreateInputLayout()
 {
-	//UINT nInputElementDescs = 2;
-	//D3D12_INPUT_ELEMENT_DESC* pd3dInputElementDescs = new
-	//	D3D12_INPUT_ELEMENT_DESC[nInputElementDescs];
-
-	////정점은 위치 벡터(POSITION)와 색상(COLOR)을 가진다. 
-	//pd3dInputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
-	//	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	//pd3dInputElementDescs[1] = { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12,
-	//	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-
-	//D3D12_INPUT_LAYOUT_DESC d3dInputLayoutDesc;
-	//d3dInputLayoutDesc.pInputElementDescs = pd3dInputElementDescs;
-	//d3dInputLayoutDesc.NumElements = nInputElementDescs;
-	//return(d3dInputLayoutDesc);
-
 	D3D12_INPUT_LAYOUT_DESC d3dInputLayoutDesc;
 	d3dInputLayoutDesc.pInputElementDescs = nullptr;
 	d3dInputLayoutDesc.NumElements = 0;
@@ -141,11 +126,14 @@ pszShaderName, LPCSTR pszShaderProfile, ID3DBlob** ppd3dShaderBlob)
 	return(d3dShaderByteCode);
 }
 
-//그래픽스 파이프라인 상태 객체를 생성한다. 
-void CShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature* pd3dGraphicsRootSignature)
+//그래픽스 파이프라인 상태 객체를 생성한다.
+void CShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature
+	* pd3dGraphicsRootSignature)
 {
-	ID3DBlob* pd3dVertexShaderBlob = nullptr;
-	ID3DBlob* pd3dPixelShaderBlob = nullptr;
+	m_nPipelineStates = 2;
+	m_ppd3dPipelineStates = new ID3D12PipelineState * [m_nPipelineStates];
+
+	ID3DBlob* pd3dVertexShaderBlob = NULL, * pd3dPixelShaderBlob = NULL;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC d3dPipelineStateDesc;
 	::ZeroMemory(&d3dPipelineStateDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
@@ -165,12 +153,11 @@ void CShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature* pd3dGr
 	d3dPipelineStateDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 	pd3dDevice->CreateGraphicsPipelineState(&d3dPipelineStateDesc,
 		__uuidof(ID3D12PipelineState), (void**)&m_ppd3dPipelineStates[0]);
-
 	if (pd3dVertexShaderBlob) pd3dVertexShaderBlob->Release();
 	if (pd3dPixelShaderBlob) pd3dPixelShaderBlob->Release();
 
-	if (d3dPipelineStateDesc.InputLayout.pInputElementDescs) 
-		delete[] d3dPipelineStateDesc.InputLayout.pInputElementDescs;
+	if (d3dPipelineStateDesc.InputLayout.pInputElementDescs) delete[]
+		d3dPipelineStateDesc.InputLayout.pInputElementDescs;
 }
 
 void CShader::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
@@ -233,8 +220,9 @@ void CShader::ReleaseUploadBuffers()
 
 void CShader::OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	//파이프라인에 그래픽스 상태 객체를 설정한다. 
+	//파이프라인에 그래픽스 상태 객체를 설정한다.
 	pd3dCommandList->SetPipelineState(m_ppd3dPipelineStates[0]);
+
 }
 
 void CShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)

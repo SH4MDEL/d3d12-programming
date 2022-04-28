@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 #include "GameObject.h"
 #include "Camera.h"
 
@@ -54,7 +55,7 @@ public:
 
 protected:
 	//셰이더가 포함하는 게임 객체들의 리스트(배열)이다. 
-	CGameObject **m_ppObjects = NULL;
+	CGameObject **m_ppObjects = nullptr;
 	int m_nObjects = 0;
 
 	//파이프라인 상태 객체들의 리스트(배열)이다. 

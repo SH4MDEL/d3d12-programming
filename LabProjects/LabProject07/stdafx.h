@@ -14,6 +14,9 @@
 #include <memory.h>
 #include <tchar.h>
 
+// C++ 헤더 파일
+#include <iostream>
+
 // Direct3D와 관련있는 헤더 파일들을 추가한다.
 #include <string>
 #include <wrl.h>
@@ -50,6 +53,13 @@ using Microsoft::WRL::ComPtr;
 // 다음을 정의하면 응용 프로그램을 실행할 때 처음부터 전체화면 모드로 실행된다. 
 // 그렇지 않으면 실행할 때 윈도우 모드로 실행되고 ‘F9’를 누르면 전체화면 모드로 전환된다.
 // #define _WITH_SWAPCHAIN_FULLSCREEN_STATE
+
+// 다음을 정의하면 응용 프로그램을 실행할 때 콘솔이 출력된다.
+#ifdef UNICODE
+#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
+#else
+#pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
+#endif
 
 extern ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice,
 	ID3D12GraphicsCommandList* pd3dCommandList, void* pData, UINT nBytes, D3D12_HEAP_TYPE

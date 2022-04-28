@@ -13,8 +13,10 @@ class CCamera
 protected:
 	//카메라 변환 행렬
 	XMFLOAT4X4 m_xmf4x4View;
+
 	//투영 변환 행렬
 	XMFLOAT4X4 m_xmf4x4Projection;
+
 	//뷰포트와 씨저 사각형
 	D3D12_VIEWPORT m_d3dViewport;
 	D3D12_RECT m_d3dScissorRect;

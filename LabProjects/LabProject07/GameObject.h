@@ -40,9 +40,11 @@ class CRotatingObject : public CGameObject
 public:
 	CRotatingObject();
 	virtual ~CRotatingObject();
+
 private:
 	XMFLOAT3 m_xmf3RotationAxis;
 	float m_fRotationSpeed;
+
 public:
 	void SetRotationSpeed(float fRotationSpeed) { m_fRotationSpeed = fRotationSpeed; }
 	void SetRotationAxis(XMFLOAT3 xmf3RotationAxis) {
