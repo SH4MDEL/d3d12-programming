@@ -473,3 +473,36 @@ void CAxisMesh::Render(HDC hDCFrameBuffer)
 	::SelectObject(hDCFrameBuffer, hOldPen);
 	::DeleteObject(hPen);
 }
+
+CRailMesh::CRailMesh(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4) : CMesh(10)
+{
+
+	int iDistance = (int)sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2) + (pow(p3.z - p2.z, 2))) + 1;
+	XMFLOAT3 pStartCoord;
+
+	CPolygon** pLeftRail;
+	pLeftRail = new CPolygon*[iDistance];
+	CPolygon** pRightRail;
+	pRightRail = new CPolygon*[iDistance];
+
+	for (int i = 0; i < iDistance; ++i) {
+		float t = (float)i / (float)iDistance;
+		XMFLOAT3 pEndCoord;
+		pStartCoord.x = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.x + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.x +
+			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.x + (pow(t, 3) - pow(t, 2)) * p4.x) / 2;
+		pStartCoord.y = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.y + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.y +
+			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.y + (pow(t, 3) - pow(t, 2)) * p4.y) / 2;
+		pStartCoord.z = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.z + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.z +
+			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.z + (pow(t, 3) - pow(t, 2)) * p4.z) / 2;
+
+		pEndCoord.x = ((pow(-(t + 1), 3) + 2 * pow((t + 1), 2) - (t + 1)) * p1.x + (3 * pow((t + 1), 3) - 5 * pow((t + 1), 2) + 2) * p2.x +
+			(-3 * pow((t + 1), 3) + 4 * pow((t + 1), 2) + (t + 1)) * p3.x + (pow((t + 1), 3) - pow((t + 1), 2)) * p4.x) / 2;
+		pEndCoord.y = ((pow(-(t + 1), 3) + 2 * pow((t + 1), 2) - (t + 1)) * p1.y + (3 * pow((t + 1), 3) - 5 * pow((t + 1), 2) + 2) * p2.y +
+			(-3 * pow((t + 1), 3) + 4 * pow((t + 1), 2) + (t + 1)) * p3.y + (pow((t + 1), 3) - pow((t + 1), 2)) * p4.y) / 2;
+		pEndCoord.z = ((pow(-(t + 1), 3) + 2 * pow((t + 1), 2) - (t + 1)) * p1.z + (3 * pow((t + 1), 3) - 5 * pow((t + 1), 2) + 2) * p2.z +
+			(-3 * pow((t + 1), 3) + 4 * pow((t + 1), 2) + (t + 1)) * p3.z + (pow((t + 1), 3) - pow((t + 1), 2)) * p4.z) / 2;
+
+		pLeftRail[i] = new CPolygon(2);
+		pRightRail[i] = new CPolygon(2);
+	}
+}

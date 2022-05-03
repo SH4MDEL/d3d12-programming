@@ -142,3 +142,9 @@ public:
 
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
 };
+
+class CRailObject : public CGameObject
+{
+	CRailObject() {}
+	virtual ~CRailObject() {}
+};

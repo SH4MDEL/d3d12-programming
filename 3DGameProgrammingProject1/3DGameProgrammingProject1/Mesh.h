@@ -86,3 +86,10 @@ public:
 
 	virtual void Render(HDC hDCFrameBuffer);
 };
+
+class CRailMesh : public CMesh
+{
+public:
+	CRailMesh(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4);
+	virtual ~CRailMesh() {}
+};

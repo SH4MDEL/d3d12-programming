@@ -13,6 +13,7 @@ CScene::~CScene()
 
 void CScene::BuildObjects()
 {
+	// 플레이어를 제외한 오브젝트는 씬 내부에서 생성된다. 왜?
 	CExplosiveObject::PrepareExplosion();
 
 	float fHalfWidth = 45.0f, fHalfHeight = 45.0f, fHalfDepth = 200.0f;
