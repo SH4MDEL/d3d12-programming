@@ -26,6 +26,7 @@
 
 // C++ 헤더 파일
 #include <iostream>
+#include <vector>
 #include <deque>
 
 using namespace DirectX;

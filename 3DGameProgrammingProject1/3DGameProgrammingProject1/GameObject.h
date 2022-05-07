@@ -53,6 +53,9 @@ public:
 	void Rotate(float fPitch = 10.0f, float fYaw = 10.0f, float fRoll = 10.0f);
 	void Rotate(XMFLOAT3& xmf3Axis, float fAngle);
 
+	void Scale(float x, float y, float z);
+	void Scale(XMFLOAT3& xmfFloat);
+
 	XMFLOAT3 GetPosition();
 	XMFLOAT3 GetLook();
 	XMFLOAT3 GetUp();
@@ -143,11 +146,13 @@ public:
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
 };
 
-class CRailsObject : public CGameObject
+class CRailObject : public CGameObject
 {
 public:
-	CRailsObject() {}
-	virtual ~CRailsObject() {}
+	CRailObject() {}
+	virtual ~CRailObject() {}
 
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
+public:
+	std::vector<XMFLOAT3> xmfBezierPosition;
 };

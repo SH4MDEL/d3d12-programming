@@ -113,6 +113,21 @@ void CGameObject::Rotate(XMFLOAT3& xmf3RotationAxis, float fAngle)
 	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
 }
 
+void CGameObject::Scale(float x, float y, float z)
+{
+	XMFLOAT4X4 mtxScale;
+	mtxScale._11 = x; mtxScale._12 = 0.0f; mtxScale._13 = 0.0f, mtxScale._14 = 0.0f;
+	mtxScale._21 = 0.0f; mtxScale._22 = y; mtxScale._23 = 0.0f, mtxScale._24 = 0.0f;
+	mtxScale._31 = 0.0f; mtxScale._32 = 0.0f; mtxScale._33 = z, mtxScale._34 = 0.0f;
+	mtxScale._41 = 0.0f; mtxScale._42 = 0.0f; mtxScale._43 = 0.0f, mtxScale._44 = 1.0f;
+	m_xmf4x4World = Matrix4x4::Multiply(mtxScale, m_xmf4x4World);
+}
+
+void CGameObject::Scale(XMFLOAT3& xmfFloat)
+{
+	Scale(xmfFloat.x, xmfFloat.y, xmfFloat.z);
+}
+
 void CGameObject::Move(XMFLOAT3& vDirection, float fSpeed)
 {
 	SetPosition(m_xmf4x4World._41 + vDirection.x * fSpeed, m_xmf4x4World._42 + vDirection.y * fSpeed, m_xmf4x4World._43 + vDirection.z * fSpeed);
@@ -361,17 +376,16 @@ void CAxisObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-//
 
-CRailsObject::CRailsObject()
+CRailObject::CRailObject()
 {
 }
 
-CRailsObject::~CRailsObject()
+CRailObject::~CRailObject()
 {
 }
 
-void CRailsObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
+void CRailObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
 	CGameObject::Render(hDCFrameBuffer, &m_xmf4x4World, m_pMesh);
 }

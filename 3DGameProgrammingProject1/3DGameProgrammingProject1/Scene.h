@@ -18,8 +18,7 @@ private:
 
 	CPlayer*					m_pPlayer = NULL;
 
-	CRailsObject**				m_ppRailObject = nullptr;
-	std::deque<CRailsObject>	m_dRailsObject;
+	std::deque<XMFLOAT3>	m_dRailCoordinate;
 
 #ifdef _WITH_DRAW_AXIS
 	CGameObject*				m_pWorldAxis = NULL;
