@@ -24,6 +24,10 @@
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
 
+// C++ 헤더 파일
+#include <iostream>
+#include <deque>
+
 using namespace DirectX;
 using namespace DirectX::PackedVector;
 

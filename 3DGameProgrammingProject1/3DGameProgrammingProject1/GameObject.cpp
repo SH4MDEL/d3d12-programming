@@ -363,3 +363,15 @@ void CAxisObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 
+CRailsObject::CRailsObject()
+{
+}
+
+CRailsObject::~CRailsObject()
+{
+}
+
+void CRailsObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
+{
+	CGameObject::Render(hDCFrameBuffer, &m_xmf4x4World, m_pMesh);
+}

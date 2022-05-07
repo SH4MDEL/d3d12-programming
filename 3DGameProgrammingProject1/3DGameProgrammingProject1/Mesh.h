@@ -90,6 +90,7 @@ public:
 class CRailMesh : public CMesh
 {
 public:
-	CRailMesh(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4);
+	CRailMesh(float fWidth = 1.0f, float fDepth = 1.0f);
+	//CRailMesh(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4);
 	virtual ~CRailMesh() {}
 };

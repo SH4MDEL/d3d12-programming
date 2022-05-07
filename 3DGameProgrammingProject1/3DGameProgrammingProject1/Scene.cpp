@@ -13,7 +13,6 @@ CScene::~CScene()
 
 void CScene::BuildObjects()
 {
-	// 플레이어를 제외한 오브젝트는 씬 내부에서 생성된다. 왜?
 	CExplosiveObject::PrepareExplosion();
 
 	float fHalfWidth = 45.0f, fHalfHeight = 45.0f, fHalfDepth = 200.0f;
@@ -125,6 +124,18 @@ void CScene::BuildObjects()
 	m_ppObjects[9]->SetRotationSpeed(90.06f);
 	m_ppObjects[9]->SetMovingDirection(XMFLOAT3(-0.0f, 0.0f, -1.0f));
 	m_ppObjects[9]->SetMovingSpeed(15.0f);
+
+	CRailMesh* pRailMesh = new CRailMesh(0.2, 0.1);
+
+	for (int i = 0; i < 20; ++i) {
+		CRailsObject RailsObject;
+		RailsObject.SetMesh(pRailMesh);
+		RailsObject.SetColor(RGB(255, 64, 64));
+		RailsObject.SetPosition(0.0f, 0.0f, 0.0f);
+		m_dRailsObject.push_back(RailsObject);
+	}
+
+
 
 #ifdef _WITH_DRAW_AXIS
 	m_pWorldAxis = new CGameObject();
