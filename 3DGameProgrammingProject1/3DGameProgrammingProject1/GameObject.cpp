@@ -377,8 +377,22 @@ void CAxisObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-CRailObject::CRailObject()
+CRailObject::CRailObject(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4)
 {
+	int iDistance = ((int)sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2) + (pow(p3.z - p2.z, 2))) + 1) * 5;
+
+	for (int i = 0; i < iDistance; ++i) {
+		float t = (float)i / (float)iDistance;
+		XMFLOAT4X4 xm4x4Position = m_xmf4x4World;
+		xm4x4Position._14 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.x + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.x +
+			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.x + (pow(t, 3) - pow(t, 2)) * p4.x) / 2;
+		xm4x4Position._24 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.y + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.y +
+			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.y + (pow(t, 3) - pow(t, 2)) * p4.y) / 2;
+		xm4x4Position._34 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.z + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.z +
+			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.z + (pow(t, 3) - pow(t, 2)) * p4.z) / 2;
+
+		m_xmf4x4WBezier.push_back(xm4x4Position);
+	}
 }
 
 CRailObject::~CRailObject()
@@ -387,5 +401,8 @@ CRailObject::~CRailObject()
 
 void CRailObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
-	CGameObject::Render(hDCFrameBuffer, &m_xmf4x4World, m_pMesh);
+	for (auto elem : m_xmf4x4WBezier) {
+		if (pCamera->IsInFrustum(m_xmOOBB)) CGameObject::Render(hDCFrameBuffer, &elem, m_pMesh);
+	}
 }
+

@@ -18,7 +18,8 @@ private:
 
 	CPlayer*					m_pPlayer = NULL;
 
-	std::deque<XMFLOAT3>	m_dRailCoordinate;
+	std::deque<CRailObject*>		m_dRailManager;
+	std::deque<XMFLOAT3>		m_dRailCoordinate;
 
 #ifdef _WITH_DRAW_AXIS
 	CGameObject*				m_pWorldAxis = NULL;

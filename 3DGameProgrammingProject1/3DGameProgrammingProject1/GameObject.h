@@ -149,10 +149,10 @@ public:
 class CRailObject : public CGameObject
 {
 public:
-	CRailObject() {}
-	virtual ~CRailObject() {}
+	CRailObject(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4);
+	virtual ~CRailObject();
 
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
 public:
-	std::vector<XMFLOAT3> xmfBezierPosition;
+	std::vector<XMFLOAT4X4> m_xmf4x4WBezier;
 };

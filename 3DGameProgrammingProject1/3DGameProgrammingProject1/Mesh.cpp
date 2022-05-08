@@ -473,11 +473,12 @@ void CAxisMesh::Render(HDC hDCFrameBuffer)
 	::DeleteObject(hPen);
 }
 
-CRailMesh::CRailMesh(float fDiameter = 1.0f) : CMesh(1)
+CRailMesh::CRailMesh(float fDiameter) : CMesh(1)
 {
 	float fRadius = fDiameter * 0.5f;
 
 	CPolygon* pRail = new CPolygon(8);
+
 	pRail->SetVertex(0, CVertex(-fRadius, (-fRadius / 2.0f), 0.0f));
 	pRail->SetVertex(1, CVertex(-fRadius, (fRadius / 2.0f), 0.0f));
 	pRail->SetVertex(2, CVertex((-fRadius / 2.0f), fRadius, 0.0f));

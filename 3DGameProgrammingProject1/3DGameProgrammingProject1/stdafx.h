@@ -50,6 +50,13 @@ using namespace DirectX::PackedVector;
 
 #define EPSILON					1.0e-6f
 
+// 다음을 정의하면 응용 프로그램을 실행할 때 콘솔이 출력된다.
+#ifdef UNICODE
+#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
+#else
+#pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
+#endif
+
 inline bool IsZero(float fValue) { return((fabsf(fValue) < EPSILON)); }
 inline bool IsEqual(float fA, float fB) { return(::IsZero(fA - fB)); }
 

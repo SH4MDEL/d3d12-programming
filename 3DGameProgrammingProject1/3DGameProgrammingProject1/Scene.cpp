@@ -125,49 +125,19 @@ void CScene::BuildObjects()
 	m_ppObjects[9]->SetMovingDirection(XMFLOAT3(-0.0f, 0.0f, -1.0f));
 	m_ppObjects[9]->SetMovingSpeed(15.0f);
 
-	CRailMesh* pRailMesh = new CRailMesh(0.2, 0.1);
+	for (int i = 0; i < 30; ++i) {
+		XMFLOAT3 Coord(i, i, (float)i * 2.0f - 10.0f); 
+		/*XMFLOAT3 Coord(0.0f, 0.0f, (float)i * 2.0f - 10.0f);*/
+		m_dRailCoordinate.push_back(Coord);
+	}
 
-	//CRailMesh::CRailMesh(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4) :
-	//	CMesh((int)sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2) + (pow(p3.z - p2.z, 2))) + 1)
-	//{
-
-	//	int iDistance = (int)sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2) + (pow(p3.z - p2.z, 2))) + 1;
-	//	XMFLOAT3 pStartCoord;
-
-	//	CPolygon** pRail;
-	//	pRail = new CPolygon * [iDistance];
-
-	//	for (int i = 0; i < iDistance; ++i) {
-	//		float t = (float)i / (float)iDistance;
-	//		XMFLOAT3 pEndCoord;
-	//		pStartCoord.x = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.x + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.x +
-	//			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.x + (pow(t, 3) - pow(t, 2)) * p4.x) / 2;
-	//		pStartCoord.y = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.y + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.y +
-	//			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.y + (pow(t, 3) - pow(t, 2)) * p4.y) / 2;
-	//		pStartCoord.z = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.z + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.z +
-	//			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.z + (pow(t, 3) - pow(t, 2)) * p4.z) / 2;
-
-	//		pEndCoord.x = ((pow(-(t + 1 / iDistance), 3) + 2 * pow((t + 1 / iDistance), 2) - (t + 1 / iDistance)) * p1.x + (3 * pow((t + 1 / iDistance), 3) - 5 * pow((t + 1 / iDistance), 2) + 2) * p2.x +
-	//			(-3 * pow((t + 1 / iDistance), 3) + 4 * pow((t + 1 / iDistance), 2) + (t + 1 / iDistance)) * p3.x + (pow((t + 1 / iDistance), 3) - pow((t + 1 / iDistance), 2)) * p4.x) / 2;
-	//		pEndCoord.y = ((pow(-(t + 1 / iDistance), 3) + 2 * pow((t + 1 / iDistance), 2) - (t + 1 / iDistance)) * p1.y + (3 * pow((t + 1 / iDistance), 3) - 5 * pow((t + 1 / iDistance), 2) + 2) * p2.y +
-	//			(-3 * pow((t + 1 / iDistance), 3) + 4 * pow((t + 1 / iDistance), 2) + (t + 1 / iDistance)) * p3.y + (pow((t + 1 / iDistance), 3) - pow((t + 1 / iDistance), 2)) * p4.y) / 2;
-	//		pEndCoord.z = ((pow(-(t + 1 / iDistance), 3) + 2 * pow((t + 1 / iDistance), 2) - (t + 1 / iDistance)) * p1.z + (3 * pow((t + 1 / iDistance), 3) - 5 * pow((t + 1 / iDistance), 2) + 2) * p2.z +
-	//			(-3 * pow((t + 1 / iDistance), 3) + 4 * pow((t + 1 / iDistance), 2) + (t + 1 / iDistance)) * p3.z + (pow((t + 1 / iDistance), 3) - pow((t + 1 / iDistance), 2)) * p4.z) / 2;
-
-	//		pRail[i] = new CPolygon(4);
-	//		pRail[i]->SetVertex(0, CVertex(pStartCoord.x - 0.05, pStartCoord.y, pStartCoord.z));
-	//		pRail[i]->SetVertex(1, CVertex(pEndCoord.x - 0.05, pEndCoord.y, pEndCoord.z));
-	//		pRail[i]->SetVertex(2, CVertex(pEndCoord.x + 0.05, pEndCoord.y, pEndCoord.z));
-	//		pRail[i]->SetVertex(3, CVertex(pStartCoord.x + 0.05, pStartCoord.y, pStartCoord.z));
-	//	}
-	//}
+	CRailMesh* pRailMesh = new CRailMesh(5.0);
 
 	for (int i = 0; i < 20; ++i) {
-		CRailObject RailsObject;
-		RailsObject.SetMesh(pRailMesh);
-		RailsObject.SetColor(RGB(255, 64, 64));
-		RailsObject.SetPosition(0.0f, 0.0f, 0.0f);
-		m_dRailObject.push_back(RailsObject);
+		m_dRailManager.push_back(new CRailObject(m_dRailCoordinate[i], m_dRailCoordinate[i + 1], 
+			m_dRailCoordinate[i + 2], m_dRailCoordinate[i + 3]));
+		m_dRailManager.back()->SetMesh(pRailMesh);
+		m_dRailManager.back()->SetColor(RGB(i * 10, 0, 0));
 	}
 
 
@@ -391,6 +361,8 @@ void CScene::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 	CGraphicsPipeline::SetViewPerspectiveProjectTransform(&pCamera->m_xmf4x4ViewPerspectiveProject);
 	m_pWallsObject->Render(hDCFrameBuffer, pCamera);
 	for (int i = 0; i < m_nObjects; i++) m_ppObjects[i]->Render(hDCFrameBuffer, pCamera);
+
+	for (const auto& elem : m_dRailManager) elem->Render(hDCFrameBuffer, pCamera);
 
 	if (m_pPlayer) m_pPlayer->Render(hDCFrameBuffer, pCamera);
 
