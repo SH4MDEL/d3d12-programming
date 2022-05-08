@@ -15,6 +15,7 @@
 #include <memory.h>
 #include <tchar.h>
 #include <math.h>
+#include <random>
 
 #include <Mmsystem.h>
 #pragma comment(lib, "winmm.lib")
@@ -59,6 +60,31 @@ using namespace DirectX::PackedVector;
 
 inline bool IsZero(float fValue) { return((fabsf(fValue) < EPSILON)); }
 inline bool IsEqual(float fA, float fB) { return(::IsZero(fA - fB)); }
+
+namespace RD
+{
+	inline XMFLOAT3 GetRandomXMFLOAT3(float start, float end)
+	{
+		std::random_device rd;
+		std::default_random_engine dre(rd());
+
+		XMFLOAT3 xmf3Result;
+		std::uniform_real_distribution<float> value(start, end);
+		xmf3Result.x = value(dre);
+		xmf3Result.y = value(dre);
+		xmf3Result.z = value(dre);
+		return xmf3Result;
+	}
+
+	inline float GetRandomfloat(float start, float end)
+	{
+		std::random_device rd;
+		std::default_random_engine dre(rd());
+
+		std::uniform_real_distribution<float> value(start, end);
+		return value(dre);
+	}
+}
 
 namespace Vector3
 {
@@ -182,6 +208,7 @@ namespace Vector4
 		XMStoreFloat4(&xmf4Result, XMLoadFloat4(&xmf4Vector1) + XMLoadFloat4(&xmf4Vector2));
 		return(xmf4Result);
 	}
+
 }
 
 namespace Matrix4x4

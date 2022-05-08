@@ -153,6 +153,15 @@ public:
 	virtual ~CRailObject();
 
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
+
+	void SetPlayerEntryPoint();
+	XMFLOAT3 UpdatePlayerPosition(float fElapsedTime);
+	XMFLOAT3 GetMatchPlayerPosition(XMFLOAT3 xmf3PlayerPosition);
 public:
-	std::vector<XMFLOAT4X4> m_xmf4x4WBezier;
+	bool isinPlayer	= false;
+	XMFLOAT3 m_xmf3PlayerPosition;
+	XMFLOAT4X4 m_xmf4x4NormalizedDirection;
+
+	std::vector<XMFLOAT4X4> m_xmf4x4Bezier;
+	std::vector<XMFLOAT4X4>::iterator m_xmf4x4BezierIter;
 };

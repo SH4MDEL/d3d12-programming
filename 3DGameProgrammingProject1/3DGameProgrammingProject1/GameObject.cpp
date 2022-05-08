@@ -379,20 +379,22 @@ void CAxisObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 CRailObject::CRailObject(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4)
 {
-	int iDistance = ((int)sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2) + (pow(p3.z - p2.z, 2))) + 1) * 5;
-
+	int iDistance = ((int)sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2) + (pow(p3.z - p2.z, 2))) + 1) / 2.0f;
 	for (int i = 0; i < iDistance; ++i) {
 		float t = (float)i / (float)iDistance;
-		XMFLOAT4X4 xm4x4Position = m_xmf4x4World;
-		xm4x4Position._14 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.x + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.x +
+		m_xmf4x4World._41 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.x + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.x +
 			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.x + (pow(t, 3) - pow(t, 2)) * p4.x) / 2;
-		xm4x4Position._24 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.y + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.y +
+		m_xmf4x4World._42 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.y + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.y +
 			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.y + (pow(t, 3) - pow(t, 2)) * p4.y) / 2;
-		xm4x4Position._34 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.z + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.z +
+		m_xmf4x4World._43 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.z + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.z +
 			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.z + (pow(t, 3) - pow(t, 2)) * p4.z) / 2;
-
-		m_xmf4x4WBezier.push_back(xm4x4Position);
+		std::cout << m_xmf4x4World._41 << ", " << m_xmf4x4World._42 << ", " << m_xmf4x4World._43 << std::endl;
+		m_xmf4x4Bezier.push_back(m_xmf4x4World);
 	}
+	m_xmf4x4BezierIter = m_xmf4x4Bezier.begin();
+	m_xmf3PlayerPosition.x = m_xmf4x4Bezier[0]._41;
+	m_xmf3PlayerPosition.y = m_xmf4x4Bezier[0]._42;
+	m_xmf3PlayerPosition.z = m_xmf4x4Bezier[0]._43;
 }
 
 CRailObject::~CRailObject()
@@ -401,8 +403,40 @@ CRailObject::~CRailObject()
 
 void CRailObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
-	for (auto elem : m_xmf4x4WBezier) {
+	for (auto elem : m_xmf4x4Bezier) {
 		if (pCamera->IsInFrustum(m_xmOOBB)) CGameObject::Render(hDCFrameBuffer, &elem, m_pMesh);
 	}
 }
 
+void CRailObject::SetPlayerEntryPoint()
+{
+	isinPlayer = true;
+	m_xmf4x4NormalizedDirection._11 = (m_xmf4x4BezierIter + 1)->_11 - (*m_xmf4x4BezierIter)._11;
+	m_xmf4x4NormalizedDirection._12 = (m_xmf4x4BezierIter + 1)->_12 - (*m_xmf4x4BezierIter)._12;
+	m_xmf4x4NormalizedDirection._13 = (m_xmf4x4BezierIter + 1)->_13 - (*m_xmf4x4BezierIter)._13;
+	m_xmf4x4NormalizedDirection._14 = (m_xmf4x4BezierIter + 1)->_14 - (*m_xmf4x4BezierIter)._14;
+	m_xmf4x4NormalizedDirection._21 = (m_xmf4x4BezierIter + 1)->_21 - (*m_xmf4x4BezierIter)._21;
+	m_xmf4x4NormalizedDirection._22 = (m_xmf4x4BezierIter + 1)->_22 - (*m_xmf4x4BezierIter)._22;
+	m_xmf4x4NormalizedDirection._23 = (m_xmf4x4BezierIter + 1)->_23 - (*m_xmf4x4BezierIter)._23;
+	m_xmf4x4NormalizedDirection._24 = (m_xmf4x4BezierIter + 1)->_24 - (*m_xmf4x4BezierIter)._24;
+	m_xmf4x4NormalizedDirection._31 = (m_xmf4x4BezierIter + 1)->_31 - (*m_xmf4x4BezierIter)._31;
+	m_xmf4x4NormalizedDirection._32 = (m_xmf4x4BezierIter + 1)->_32 - (*m_xmf4x4BezierIter)._32;
+	m_xmf4x4NormalizedDirection._33 = (m_xmf4x4BezierIter + 1)->_33 - (*m_xmf4x4BezierIter)._33;
+	m_xmf4x4NormalizedDirection._34 = (m_xmf4x4BezierIter + 1)->_34 - (*m_xmf4x4BezierIter)._34;
+	m_xmf4x4NormalizedDirection._41 = (m_xmf4x4BezierIter + 1)->_41 - (*m_xmf4x4BezierIter)._41;
+	m_xmf4x4NormalizedDirection._42 = (m_xmf4x4BezierIter + 1)->_42 - (*m_xmf4x4BezierIter)._42;
+	m_xmf4x4NormalizedDirection._43 = (m_xmf4x4BezierIter + 1)->_43 - (*m_xmf4x4BezierIter)._43;
+	m_xmf4x4NormalizedDirection._44 = (m_xmf4x4BezierIter + 1)->_44 - (*m_xmf4x4BezierIter)._44;
+}
+
+XMFLOAT3 CRailObject::UpdatePlayerPosition(float fElapsedTime)
+{
+	if (m_xmf3PlayerPosition.z >= (m_xmf4x4BezierIter + 1)->_43) {
+		++m_xmf4x4BezierIter;
+		m_xmf3PlayerPosition.x = (*m_xmf4x4BezierIter)._41;
+		m_xmf3PlayerPosition.y = (*m_xmf4x4BezierIter)._42;
+		m_xmf3PlayerPosition.z = (*m_xmf4x4BezierIter)._43;
+		SetPlayerEntryPoint();
+	}
+	return m_xmf3PlayerPosition;
+}

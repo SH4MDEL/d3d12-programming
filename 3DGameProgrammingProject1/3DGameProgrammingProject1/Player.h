@@ -68,3 +68,10 @@ public:
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
 };
 
+//class CTrainPlayer : public CPlayer
+//{
+//public:
+//	CTrainPlayer();
+//	virtual ~CTrainPlayer();
+//};
+

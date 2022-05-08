@@ -72,8 +72,6 @@ void CGameFramework::BuildObjects()
 	pCamera->GenerateOrthographicProjectionMatrix(1.01f, 50.0f, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
 
 	// 에어플레인 세팅
-	// 플레이어 포인터에 에어플레인 인자로 전달
-	// 
 	CAirplaneMesh* pAirplaneMesh = new CAirplaneMesh(6.0f, 6.0f, 1.0f);
 
 	m_pPlayer = new CAirplanePlayer();
@@ -83,8 +81,6 @@ void CGameFramework::BuildObjects()
 	m_pPlayer->SetCamera(pCamera);
 	m_pPlayer->SetCameraOffset(XMFLOAT3(0.0f, 5.0f, -15.0f));
 
-	// 에어플레인을 씬에 인자로 전달하여 씬 생성
-	// 나머지 오브젝트는 씬 내부에서 생성된다?
 	m_pScene = new CScene(m_pPlayer);
 	m_pScene->BuildObjects();
 }

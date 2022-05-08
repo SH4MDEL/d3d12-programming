@@ -125,19 +125,18 @@ void CScene::BuildObjects()
 	m_ppObjects[9]->SetMovingDirection(XMFLOAT3(-0.0f, 0.0f, -1.0f));
 	m_ppObjects[9]->SetMovingSpeed(15.0f);
 
-	for (int i = 0; i < 30; ++i) {
-		XMFLOAT3 Coord(i, i, (float)i * 2.0f - 10.0f); 
-		/*XMFLOAT3 Coord(0.0f, 0.0f, (float)i * 2.0f - 10.0f);*/
+	for (int i = 0; i < 45; ++i) {
+		XMFLOAT3 Coord(RD::GetRandomfloat(-5.0f, 5.0f), RD::GetRandomfloat(-5.0f, 5.0f), (float)i * 10.0f - 200.0f);
 		m_dRailCoordinate.push_back(Coord);
 	}
 
 	CRailMesh* pRailMesh = new CRailMesh(5.0);
 
-	for (int i = 0; i < 20; ++i) {
+	for (int i = 0; i < 40; ++i) {
 		m_dRailManager.push_back(new CRailObject(m_dRailCoordinate[i], m_dRailCoordinate[i + 1], 
 			m_dRailCoordinate[i + 2], m_dRailCoordinate[i + 3]));
 		m_dRailManager.back()->SetMesh(pRailMesh);
-		m_dRailManager.back()->SetColor(RGB(i * 10, 0, 0));
+		m_dRailManager.back()->SetColor(RGB(i, i, i));
 	}
 
 
