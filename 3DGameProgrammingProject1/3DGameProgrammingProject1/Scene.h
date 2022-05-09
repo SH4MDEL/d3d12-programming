@@ -18,7 +18,12 @@ private:
 
 	CPlayer*					m_pPlayer = NULL;
 
+	CRailMesh* pRailMesh;
+	int							m_RailObjects = 0;
+
 	std::deque<CRailObject*>		m_dRailManager;
+	std::deque<CRailObject*>::iterator		m_dRailManagerIter;
+
 	std::deque<XMFLOAT3>		m_dRailCoordinate;
 
 #ifdef _WITH_DRAW_AXIS

@@ -388,7 +388,7 @@ CRailObject::CRailObject(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4)
 			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.y + (pow(t, 3) - pow(t, 2)) * p4.y) / 2;
 		m_xmf4x4World._43 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.z + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.z +
 			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.z + (pow(t, 3) - pow(t, 2)) * p4.z) / 2;
-		std::cout << m_xmf4x4World._41 << ", " << m_xmf4x4World._42 << ", " << m_xmf4x4World._43 << std::endl;
+		//std::cout << m_xmf4x4World._41 << ", " << m_xmf4x4World._42 << ", " << m_xmf4x4World._43 << std::endl;
 		m_xmf4x4Bezier.push_back(m_xmf4x4World);
 	}
 	m_xmf4x4BezierIter = m_xmf4x4Bezier.begin();
@@ -408,35 +408,44 @@ void CRailObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 	}
 }
 
-void CRailObject::SetPlayerEntryPoint()
+void CRailObject::EnableRailObject()
 {
 	isinPlayer = true;
-	m_xmf4x4NormalizedDirection._11 = (m_xmf4x4BezierIter + 1)->_11 - (*m_xmf4x4BezierIter)._11;
-	m_xmf4x4NormalizedDirection._12 = (m_xmf4x4BezierIter + 1)->_12 - (*m_xmf4x4BezierIter)._12;
-	m_xmf4x4NormalizedDirection._13 = (m_xmf4x4BezierIter + 1)->_13 - (*m_xmf4x4BezierIter)._13;
-	m_xmf4x4NormalizedDirection._14 = (m_xmf4x4BezierIter + 1)->_14 - (*m_xmf4x4BezierIter)._14;
-	m_xmf4x4NormalizedDirection._21 = (m_xmf4x4BezierIter + 1)->_21 - (*m_xmf4x4BezierIter)._21;
-	m_xmf4x4NormalizedDirection._22 = (m_xmf4x4BezierIter + 1)->_22 - (*m_xmf4x4BezierIter)._22;
-	m_xmf4x4NormalizedDirection._23 = (m_xmf4x4BezierIter + 1)->_23 - (*m_xmf4x4BezierIter)._23;
-	m_xmf4x4NormalizedDirection._24 = (m_xmf4x4BezierIter + 1)->_24 - (*m_xmf4x4BezierIter)._24;
-	m_xmf4x4NormalizedDirection._31 = (m_xmf4x4BezierIter + 1)->_31 - (*m_xmf4x4BezierIter)._31;
-	m_xmf4x4NormalizedDirection._32 = (m_xmf4x4BezierIter + 1)->_32 - (*m_xmf4x4BezierIter)._32;
-	m_xmf4x4NormalizedDirection._33 = (m_xmf4x4BezierIter + 1)->_33 - (*m_xmf4x4BezierIter)._33;
-	m_xmf4x4NormalizedDirection._34 = (m_xmf4x4BezierIter + 1)->_34 - (*m_xmf4x4BezierIter)._34;
-	m_xmf4x4NormalizedDirection._41 = (m_xmf4x4BezierIter + 1)->_41 - (*m_xmf4x4BezierIter)._41;
-	m_xmf4x4NormalizedDirection._42 = (m_xmf4x4BezierIter + 1)->_42 - (*m_xmf4x4BezierIter)._42;
-	m_xmf4x4NormalizedDirection._43 = (m_xmf4x4BezierIter + 1)->_43 - (*m_xmf4x4BezierIter)._43;
-	m_xmf4x4NormalizedDirection._44 = (m_xmf4x4BezierIter + 1)->_44 - (*m_xmf4x4BezierIter)._44;
+	SetPlayerEntryPoint();
+}
+
+void CRailObject::SetPlayerEntryPoint()
+{
+	m_xmf3NormalizedDirection.x = (m_xmf4x4BezierIter + 1)->_41 - (*m_xmf4x4BezierIter)._41;
+	m_xmf3NormalizedDirection.y = (m_xmf4x4BezierIter + 1)->_42 - (*m_xmf4x4BezierIter)._42;
+	m_xmf3NormalizedDirection.z = (m_xmf4x4BezierIter + 1)->_43 - (*m_xmf4x4BezierIter)._43;
+
+	float sum = sqrt(pow(m_xmf3NormalizedDirection.x, 2) + pow(m_xmf3NormalizedDirection.y, 2) + pow(m_xmf3NormalizedDirection.z, 2));
+
+	m_xmf3NormalizedDirection.x = m_xmf3NormalizedDirection.x / sum;
+	m_xmf3NormalizedDirection.y = m_xmf3NormalizedDirection.y / sum;
+	m_xmf3NormalizedDirection.z = m_xmf3NormalizedDirection.z / sum;
 }
 
 XMFLOAT3 CRailObject::UpdatePlayerPosition(float fElapsedTime)
 {
 	if (m_xmf3PlayerPosition.z >= (m_xmf4x4BezierIter + 1)->_43) {
 		++m_xmf4x4BezierIter;
+		if (m_xmf4x4BezierIter + 1 == m_xmf4x4Bezier.end()) {
+			isinPlayer = false;
+		}
+		SetPlayerEntryPoint();
+
 		m_xmf3PlayerPosition.x = (*m_xmf4x4BezierIter)._41;
 		m_xmf3PlayerPosition.y = (*m_xmf4x4BezierIter)._42;
 		m_xmf3PlayerPosition.z = (*m_xmf4x4BezierIter)._43;
-		SetPlayerEntryPoint();
+
+		return m_xmf3PlayerPosition;
 	}
+	m_xmf3PlayerPosition.x += m_xmf3NormalizedDirection.x * m_fPlayerSpeed * fElapsedTime;
+	m_xmf3PlayerPosition.y += m_xmf3NormalizedDirection.y * m_fPlayerSpeed * fElapsedTime;
+	m_xmf3PlayerPosition.z += m_xmf3NormalizedDirection.z * m_fPlayerSpeed * fElapsedTime;
+	std::cout << m_xmf3PlayerPosition.x << ", " << m_xmf3PlayerPosition.y << ", " << m_xmf3PlayerPosition.z << std::endl;
+
 	return m_xmf3PlayerPosition;
 }

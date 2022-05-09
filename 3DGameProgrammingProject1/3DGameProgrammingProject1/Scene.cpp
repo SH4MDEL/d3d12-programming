@@ -125,21 +125,24 @@ void CScene::BuildObjects()
 	m_ppObjects[9]->SetMovingDirection(XMFLOAT3(-0.0f, 0.0f, -1.0f));
 	m_ppObjects[9]->SetMovingSpeed(15.0f);
 
-	for (int i = 0; i < 45; ++i) {
-		XMFLOAT3 Coord(RD::GetRandomfloat(-5.0f, 5.0f), RD::GetRandomfloat(-5.0f, 5.0f), (float)i * 10.0f - 200.0f);
+	for (m_RailObjects = 0; m_RailObjects < 45; ++m_RailObjects) {
+		XMFLOAT3 Coord(RD::GetRandomfloat(-5.0f, 5.0f), RD::GetRandomfloat(-5.0f, 5.0f), (float)m_RailObjects * 10.0f - 200.0f);
 		m_dRailCoordinate.push_back(Coord);
 	}
 
-	CRailMesh* pRailMesh = new CRailMesh(5.0);
+	pRailMesh = new CRailMesh(5.0);
 
 	for (int i = 0; i < 40; ++i) {
 		m_dRailManager.push_back(new CRailObject(m_dRailCoordinate[i], m_dRailCoordinate[i + 1], 
 			m_dRailCoordinate[i + 2], m_dRailCoordinate[i + 3]));
 		m_dRailManager.back()->SetMesh(pRailMesh);
-		m_dRailManager.back()->SetColor(RGB(i, i, i));
+		m_dRailManager.back()->SetColor(RGB(128, 0, 255));
 	}
-
-
+	m_dRailManagerIter = m_dRailManager.begin();
+	for (int i = 0; i < 20; i++) {
+		++m_dRailManagerIter;
+	}
+	(*m_dRailManagerIter)->EnableRailObject();
 
 #ifdef _WITH_DRAW_AXIS
 	m_pWorldAxis = new CGameObject();
@@ -343,6 +346,26 @@ void CScene::Animate(float fElapsedTime)
 	m_pWallsObject->Animate(fElapsedTime);
 
 	for (int i = 0; i < m_nObjects; i++) m_ppObjects[i]->Animate(fElapsedTime);
+
+	if ((*m_dRailManagerIter)->isEnableRailObject()) {
+		m_pPlayer->SetPosition((*m_dRailManagerIter)->UpdatePlayerPosition(fElapsedTime));
+	}
+	else {
+		XMFLOAT3 Coord(RD::GetRandomfloat(-5.0f, 5.0f), RD::GetRandomfloat(-5.0f, 5.0f), (float)++m_RailObjects * 10.0f - 200.0f);
+		m_dRailCoordinate.push_back(Coord);
+		m_dRailCoordinate.pop_front();
+
+		auto i = m_dRailCoordinate.rbegin();
+
+		m_dRailManager.push_back(new CRailObject(*(i + 3), *(i + 2), *(i + 1), *i));
+		m_dRailManager.back()->SetMesh(pRailMesh);
+		m_dRailManager.back()->SetColor(RGB(128, 0, 255));
+		m_dRailManager.pop_front();
+
+		++m_dRailManagerIter;
+		(*m_dRailManagerIter)->EnableRailObject();
+	}
+	std::cout << (*m_dRailManagerIter)->isEnableRailObject() << std::endl;
 
 	CheckPlayerByWallCollision();
 

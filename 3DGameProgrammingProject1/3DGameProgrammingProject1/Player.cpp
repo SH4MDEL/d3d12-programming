@@ -19,6 +19,13 @@ void CPlayer::SetPosition(float x, float y, float z)
 	CGameObject::SetPosition(x, y, z);
 }
 
+void CPlayer::SetPosition(XMFLOAT3 xmf3Position)
+{
+	m_xmf3Position = xmf3Position;
+	//std::cout << xmf3Position.x << ", " << xmf3Position.y << ", " << xmf3Position.z << std::endl;
+	CGameObject::SetPosition(xmf3Position);
+}
+
 void CPlayer::SetCameraOffset(const XMFLOAT3& xmf3CameraOffset)
 {
 	m_xmf3CameraOffset = xmf3CameraOffset;

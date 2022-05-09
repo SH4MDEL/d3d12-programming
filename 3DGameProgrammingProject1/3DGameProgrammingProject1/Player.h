@@ -28,6 +28,7 @@ public:
 
 public:
 	void SetPosition(float x, float y, float z);
+	void SetPosition(XMFLOAT3 xmf3Position);
 	//void SetRotation(float x, float y, float z);
 
 	void LookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up);

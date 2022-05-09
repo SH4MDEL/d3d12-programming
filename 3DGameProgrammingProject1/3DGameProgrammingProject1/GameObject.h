@@ -155,12 +155,15 @@ public:
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
 
 	void SetPlayerEntryPoint();
+	void EnableRailObject();
+	bool isEnableRailObject() { return isinPlayer; }
 	XMFLOAT3 UpdatePlayerPosition(float fElapsedTime);
-	XMFLOAT3 GetMatchPlayerPosition(XMFLOAT3 xmf3PlayerPosition);
+	//XMFLOAT3 GetMatchPlayerPosition(XMFLOAT3 xmf3PlayerPosition);
 public:
 	bool isinPlayer	= false;
+	float m_fPlayerSpeed = 10.0f;
 	XMFLOAT3 m_xmf3PlayerPosition;
-	XMFLOAT4X4 m_xmf4x4NormalizedDirection;
+	XMFLOAT3 m_xmf3NormalizedDirection;
 
 	std::vector<XMFLOAT4X4> m_xmf4x4Bezier;
 	std::vector<XMFLOAT4X4>::iterator m_xmf4x4BezierIter;
