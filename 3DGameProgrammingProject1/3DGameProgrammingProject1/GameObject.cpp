@@ -379,7 +379,7 @@ void CAxisObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 CRailObject::CRailObject(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4)
 {
-	int iDistance = ((int)sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2) + (pow(p3.z - p2.z, 2))) + 1) / 2.0f;
+	int iDistance = ((int)sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2) + (pow(p3.z - p2.z, 2))) + 1) / 1.0f;
 	for (int i = 0; i < iDistance; ++i) {
 		float t = (float)i / (float)iDistance;
 		m_xmf4x4World._41 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.x + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.x +
@@ -416,6 +416,7 @@ void CRailObject::EnableRailObject()
 
 void CRailObject::SetPlayerEntryPoint()
 {
+	// endÀÏ¶§ ÅÍÁü
 	m_xmf3NormalizedDirection.x = (m_xmf4x4BezierIter + 1)->_41 - (*m_xmf4x4BezierIter)._41;
 	m_xmf3NormalizedDirection.y = (m_xmf4x4BezierIter + 1)->_42 - (*m_xmf4x4BezierIter)._42;
 	m_xmf3NormalizedDirection.z = (m_xmf4x4BezierIter + 1)->_43 - (*m_xmf4x4BezierIter)._43;
@@ -429,13 +430,13 @@ void CRailObject::SetPlayerEntryPoint()
 
 XMFLOAT3 CRailObject::UpdatePlayerPosition(float fElapsedTime)
 {
-	if (m_xmf3PlayerPosition.z >= (m_xmf4x4BezierIter + 1)->_43) {
+	if (m_xmf3PlayerPosition.z + m_xmf3NormalizedDirection.z * m_fPlayerSpeed * fElapsedTime >= (m_xmf4x4BezierIter + 1)->_43) {
 		++m_xmf4x4BezierIter;
 		if (m_xmf4x4BezierIter + 1 == m_xmf4x4Bezier.end()) {
 			isinPlayer = false;
+			return m_xmf3PlayerPosition;
 		}
 		SetPlayerEntryPoint();
-
 		m_xmf3PlayerPosition.x = (*m_xmf4x4BezierIter)._41;
 		m_xmf3PlayerPosition.y = (*m_xmf4x4BezierIter)._42;
 		m_xmf3PlayerPosition.z = (*m_xmf4x4BezierIter)._43;
@@ -445,7 +446,7 @@ XMFLOAT3 CRailObject::UpdatePlayerPosition(float fElapsedTime)
 	m_xmf3PlayerPosition.x += m_xmf3NormalizedDirection.x * m_fPlayerSpeed * fElapsedTime;
 	m_xmf3PlayerPosition.y += m_xmf3NormalizedDirection.y * m_fPlayerSpeed * fElapsedTime;
 	m_xmf3PlayerPosition.z += m_xmf3NormalizedDirection.z * m_fPlayerSpeed * fElapsedTime;
-	std::cout << m_xmf3PlayerPosition.x << ", " << m_xmf3PlayerPosition.y << ", " << m_xmf3PlayerPosition.z << std::endl;
+	//std::cout << m_xmf3PlayerPosition.x << ", " << m_xmf3PlayerPosition.y << ", " << m_xmf3PlayerPosition.z << std::endl;
 
 	return m_xmf3PlayerPosition;
 }

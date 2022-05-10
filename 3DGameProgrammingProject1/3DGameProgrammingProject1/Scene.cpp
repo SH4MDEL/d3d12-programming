@@ -125,7 +125,7 @@ void CScene::BuildObjects()
 	m_ppObjects[9]->SetMovingDirection(XMFLOAT3(-0.0f, 0.0f, -1.0f));
 	m_ppObjects[9]->SetMovingSpeed(15.0f);
 
-	for (m_RailObjects = 0; m_RailObjects < 45; ++m_RailObjects) {
+	for (m_RailObjects = 0; m_RailObjects < 43; ++m_RailObjects) {
 		XMFLOAT3 Coord(RD::GetRandomfloat(-5.0f, 5.0f), RD::GetRandomfloat(-5.0f, 5.0f), (float)m_RailObjects * 10.0f - 200.0f);
 		m_dRailCoordinate.push_back(Coord);
 	}
@@ -351,21 +351,22 @@ void CScene::Animate(float fElapsedTime)
 		m_pPlayer->SetPosition((*m_dRailManagerIter)->UpdatePlayerPosition(fElapsedTime));
 	}
 	else {
-		XMFLOAT3 Coord(RD::GetRandomfloat(-5.0f, 5.0f), RD::GetRandomfloat(-5.0f, 5.0f), (float)++m_RailObjects * 10.0f - 200.0f);
+		XMFLOAT3 Coord(RD::GetRandomfloat(-5.0f, 5.0f), RD::GetRandomfloat(-5.0f, 5.0f), (float)m_RailObjects++ * 10.0f - 200.0f);
 		m_dRailCoordinate.push_back(Coord);
 		m_dRailCoordinate.pop_front();
 
 		auto i = m_dRailCoordinate.rbegin();
-
 		m_dRailManager.push_back(new CRailObject(*(i + 3), *(i + 2), *(i + 1), *i));
 		m_dRailManager.back()->SetMesh(pRailMesh);
 		m_dRailManager.back()->SetColor(RGB(128, 0, 255));
 		m_dRailManager.pop_front();
+		m_dRailManagerIter = m_dRailManager.begin();
+		for (int i = 0; i < 20; i++) {
+			++m_dRailManagerIter;
+		}
 
-		++m_dRailManagerIter;
 		(*m_dRailManagerIter)->EnableRailObject();
 	}
-	std::cout << (*m_dRailManagerIter)->isEnableRailObject() << std::endl;
 
 	CheckPlayerByWallCollision();
 
