@@ -420,30 +420,21 @@ XMFLOAT3 CRailObject::UpdatePlayerPosition(float fElapsedTime)
 {
 	if (m_xmf3PlayerPosition.z + m_xmf3NormalizedDirection.z * m_fPlayerSpeed * fElapsedTime >= (m_xmf4x4BezierIter + 1)->_43) {
 		++m_xmf4x4BezierIter;
+		std::cout << "sub";
 		if (m_xmf4x4BezierIter + 1 == m_xmf4x4Bezier.end()) {
 			isinPlayer = false;
 
-			m_xmf3PlayerPosition.x += m_xmf3NormalizedDirection.x * m_fPlayerSpeed * fElapsedTime;
-			m_xmf3PlayerPosition.y += m_xmf3NormalizedDirection.y * m_fPlayerSpeed * fElapsedTime;
-			m_xmf3PlayerPosition.z += m_xmf3NormalizedDirection.z * m_fPlayerSpeed * fElapsedTime;
-
+			m_xmf3PlayerPosition.x = (*m_xmf4x4BezierIter)._41;
+			m_xmf3PlayerPosition.y = (*m_xmf4x4BezierIter)._42;
+			m_xmf3PlayerPosition.z = (*m_xmf4x4BezierIter)._43;
+			std::cout << "run";
 			return m_xmf3PlayerPosition;
 		}
 		SetPlayerEntryPoint();
-		//m_xmf3PlayerPosition.x = (*m_xmf4x4BezierIter)._41;
-		//m_xmf3PlayerPosition.y = (*m_xmf4x4BezierIter)._42;
-		//m_xmf3PlayerPosition.z = (*m_xmf4x4BezierIter)._43;
-
-		m_xmf3PlayerPosition.x += m_xmf3NormalizedDirection.x * m_fPlayerSpeed * fElapsedTime;
-		m_xmf3PlayerPosition.y += m_xmf3NormalizedDirection.y * m_fPlayerSpeed * fElapsedTime;
-		m_xmf3PlayerPosition.z += m_xmf3NormalizedDirection.z * m_fPlayerSpeed * fElapsedTime;
-
-		return m_xmf3PlayerPosition;
 	}
 	m_xmf3PlayerPosition.x += m_xmf3NormalizedDirection.x * m_fPlayerSpeed * fElapsedTime;
 	m_xmf3PlayerPosition.y += m_xmf3NormalizedDirection.y * m_fPlayerSpeed * fElapsedTime;
 	m_xmf3PlayerPosition.z += m_xmf3NormalizedDirection.z * m_fPlayerSpeed * fElapsedTime;
-	//std::cout << m_xmf3PlayerPosition.x << ", " << m_xmf3PlayerPosition.y << ", " << m_xmf3PlayerPosition.z << std::endl;
 
 	return m_xmf3PlayerPosition;
 }

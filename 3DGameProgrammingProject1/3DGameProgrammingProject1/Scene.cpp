@@ -106,6 +106,7 @@ void CScene::Animate(float fElapsedTime)
 {
 	if ((*m_dRailManagerIter)->isEnableRailObject()) {
 		m_pPlayer->SetPosition((*m_dRailManagerIter)->UpdatePlayerPosition(fElapsedTime));
+		m_pPlayer->Rotate(((*m_dRailManagerIter)->GetPlayerDirection().y, (*m_dRailManagerIter)->GetPlayerDirection().x, 0.0f));
 	}
 	else {
 		XMFLOAT3 Coord(RD::GetRandomfloat(-5.0f, 5.0f), RD::GetRandomfloat(-5.0f, 5.0f), (float)m_RailObjects++ * 10.0f - 200.0f);

@@ -145,7 +145,7 @@ public:
 	void EnableRailObject();
 	bool isEnableRailObject() { return isinPlayer; }
 	XMFLOAT3 UpdatePlayerPosition(float fElapsedTime);
-	//XMFLOAT3 GetMatchPlayerPosition(XMFLOAT3 xmf3PlayerPosition);
+	XMFLOAT3 GetPlayerDirection() { return m_xmf3NormalizedDirection; };
 public:
 	bool isinPlayer	= false;
 	float m_fPlayerSpeed = 10.0f;

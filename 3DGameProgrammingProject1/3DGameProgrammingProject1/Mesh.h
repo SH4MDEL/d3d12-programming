@@ -72,17 +72,10 @@ public:
 	virtual ~CWallMesh() { }
 };
 
-class CAirplaneMesh : public CMesh
-{
-public:
-	CAirplaneMesh(float fWidth = 20.0f, float fHeight = 20.0f, float fDepth = 4.0f);
-	virtual ~CAirplaneMesh() { }
-};
-
 class CTrainMesh : public CMesh
 {
 public:
-	CTrainMesh(float fWidth = 20.0f, float fHeight = 20.0f, float fDepth = 4.0f);
+	CTrainMesh(float fWidth = 10.0f, float fHeight = 10.0f, float fDepth = 20.0f);
 	virtual ~CTrainMesh() { }
 };
 
