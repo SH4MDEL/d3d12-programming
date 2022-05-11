@@ -53,14 +53,14 @@ public:
 
 #define BULLETS					50
 
-class CAirplanePlayer : public CPlayer
+class CTrainPlayer : public CPlayer
 {
 public:
-	CAirplanePlayer();
-	virtual ~CAirplanePlayer();
+	CTrainPlayer();
+	virtual ~CTrainPlayer();
 
 	float						m_fBulletEffectiveRange = 150.0f;
-	CBulletObject*				m_ppBullets[BULLETS];
+	CBulletObject* m_ppBullets[BULLETS];
 
 	void FireBullet(CGameObject* pLockedObject);
 
@@ -68,11 +68,4 @@ public:
 	virtual void Animate(float fElapsedTime);
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
 };
-
-//class CTrainPlayer : public CPlayer
-//{
-//public:
-//	CTrainPlayer();
-//	virtual ~CTrainPlayer();
-//};
 

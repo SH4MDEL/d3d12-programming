@@ -74,7 +74,7 @@ void CGameFramework::BuildObjects()
 	// 에어플레인 세팅
 	CAirplaneMesh* pAirplaneMesh = new CAirplaneMesh(6.0f, 6.0f, 1.0f);
 
-	m_pPlayer = new CAirplanePlayer();
+	m_pPlayer = new CTrainPlayer();
 	m_pPlayer->SetPosition(0.0f, 0.0f, 0.0f);
 	m_pPlayer->SetMesh(pAirplaneMesh);
 	m_pPlayer->SetColor(RGB(0, 0, 255));
@@ -134,7 +134,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		case VK_RETURN:
 			break;
 		case VK_CONTROL:
-			((CAirplanePlayer*)m_pPlayer)->FireBullet(m_pLockedObject);
+			((CTrainPlayer*)m_pPlayer)->FireBullet(m_pLockedObject);
 			m_pLockedObject = NULL;
 			break;
 		default:

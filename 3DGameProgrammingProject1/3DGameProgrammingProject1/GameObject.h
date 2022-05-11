@@ -101,19 +101,6 @@ public:
 	static void PrepareExplosion();
 };
 
-class CWallsObject : public CGameObject
-{
-public:
-	CWallsObject();
-	virtual ~CWallsObject();
-
-public:
-	BoundingOrientedBox			m_xmOOBBPlayerMoveCheck = BoundingOrientedBox();
-	XMFLOAT4					m_pxmf4WallPlanes[6];
-
-	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
-};
-
 class CBulletObject : public CGameObject
 {
 public:

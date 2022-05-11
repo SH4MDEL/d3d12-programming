@@ -79,6 +79,13 @@ public:
 	virtual ~CAirplaneMesh() { }
 };
 
+class CTrainMesh : public CMesh
+{
+public:
+	CTrainMesh(float fWidth = 20.0f, float fHeight = 20.0f, float fDepth = 4.0f);
+	virtual ~CTrainMesh() { }
+};
+
 class CAxisMesh : public CMesh
 {
 public:

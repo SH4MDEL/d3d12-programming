@@ -209,21 +209,6 @@ int CGameObject::PickObjectByRayIntersection(XMVECTOR& xmvPickPosition, XMMATRIX
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-CWallsObject::CWallsObject()
-{
-}
-
-CWallsObject::~CWallsObject()
-{
-}
-
-void CWallsObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
-{
-	CGameObject::Render(hDCFrameBuffer, &m_xmf4x4World, m_pMesh);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//
 XMFLOAT3 CExplosiveObject::m_pxmf3SphereVectors[EXPLOSION_DEBRISES];
 CMesh* CExplosiveObject::m_pExplosionMesh = NULL;
 
@@ -379,7 +364,7 @@ void CAxisObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 CRailObject::CRailObject(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4)
 {
-	int iDistance = ((int)sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2) + (pow(p3.z - p2.z, 2))) + 1) / 1.0f;
+	int iDistance = ((int)sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2) + (pow(p3.z - p2.z, 2))) + 1) / 2.0f;
 	for (int i = 0; i < iDistance; ++i) {
 		float t = (float)i / (float)iDistance;
 		m_xmf4x4World._41 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.x + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.x +
@@ -399,12 +384,16 @@ CRailObject::CRailObject(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4)
 
 CRailObject::~CRailObject()
 {
+	while (!m_xmf4x4Bezier.empty()) {
+		m_xmf4x4Bezier.pop_back();
+	}
 }
 
 void CRailObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
 	for (auto elem : m_xmf4x4Bezier) {
-		if (pCamera->IsInFrustum(m_xmOOBB)) CGameObject::Render(hDCFrameBuffer, &elem, m_pMesh);
+		//if (pCamera->IsInFrustum(m_xmOOBB)) 
+		CGameObject::Render(hDCFrameBuffer, &elem, m_pMesh);
 	}
 }
 
@@ -416,7 +405,6 @@ void CRailObject::EnableRailObject()
 
 void CRailObject::SetPlayerEntryPoint()
 {
-	// endÀÏ¶§ ÅÍÁü
 	m_xmf3NormalizedDirection.x = (m_xmf4x4BezierIter + 1)->_41 - (*m_xmf4x4BezierIter)._41;
 	m_xmf3NormalizedDirection.y = (m_xmf4x4BezierIter + 1)->_42 - (*m_xmf4x4BezierIter)._42;
 	m_xmf3NormalizedDirection.z = (m_xmf4x4BezierIter + 1)->_43 - (*m_xmf4x4BezierIter)._43;
@@ -434,12 +422,21 @@ XMFLOAT3 CRailObject::UpdatePlayerPosition(float fElapsedTime)
 		++m_xmf4x4BezierIter;
 		if (m_xmf4x4BezierIter + 1 == m_xmf4x4Bezier.end()) {
 			isinPlayer = false;
+
+			m_xmf3PlayerPosition.x += m_xmf3NormalizedDirection.x * m_fPlayerSpeed * fElapsedTime;
+			m_xmf3PlayerPosition.y += m_xmf3NormalizedDirection.y * m_fPlayerSpeed * fElapsedTime;
+			m_xmf3PlayerPosition.z += m_xmf3NormalizedDirection.z * m_fPlayerSpeed * fElapsedTime;
+
 			return m_xmf3PlayerPosition;
 		}
 		SetPlayerEntryPoint();
-		m_xmf3PlayerPosition.x = (*m_xmf4x4BezierIter)._41;
-		m_xmf3PlayerPosition.y = (*m_xmf4x4BezierIter)._42;
-		m_xmf3PlayerPosition.z = (*m_xmf4x4BezierIter)._43;
+		//m_xmf3PlayerPosition.x = (*m_xmf4x4BezierIter)._41;
+		//m_xmf3PlayerPosition.y = (*m_xmf4x4BezierIter)._42;
+		//m_xmf3PlayerPosition.z = (*m_xmf4x4BezierIter)._43;
+
+		m_xmf3PlayerPosition.x += m_xmf3NormalizedDirection.x * m_fPlayerSpeed * fElapsedTime;
+		m_xmf3PlayerPosition.y += m_xmf3NormalizedDirection.y * m_fPlayerSpeed * fElapsedTime;
+		m_xmf3PlayerPosition.z += m_xmf3NormalizedDirection.z * m_fPlayerSpeed * fElapsedTime;
 
 		return m_xmf3PlayerPosition;
 	}

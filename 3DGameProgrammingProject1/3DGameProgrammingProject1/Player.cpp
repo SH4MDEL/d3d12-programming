@@ -138,7 +138,7 @@ void CPlayer::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
-CAirplanePlayer::CAirplanePlayer()
+CTrainPlayer::CTrainPlayer()
 {
 	CCubeMesh* pBulletMesh = new CCubeMesh(1.0f, 4.0f, 1.0f);
 	for (int i = 0; i < BULLETS; i++)
@@ -152,12 +152,12 @@ CAirplanePlayer::CAirplanePlayer()
 	}
 }
 
-CAirplanePlayer::~CAirplanePlayer()
+CTrainPlayer::~CTrainPlayer()
 {
 	for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]) delete m_ppBullets[i];
 }
 
-void CAirplanePlayer::Animate(float fElapsedTime)
+void CTrainPlayer::Animate(float fElapsedTime)
 {
 	CPlayer::Animate(fElapsedTime);
 
@@ -167,29 +167,29 @@ void CAirplanePlayer::Animate(float fElapsedTime)
 	}
 }
 
-void CAirplanePlayer::OnUpdateTransform()
+void CTrainPlayer::OnUpdateTransform()
 {
 	CPlayer::OnUpdateTransform();
 
 	m_xmf4x4World = Matrix4x4::Multiply(XMMatrixRotationRollPitchYaw(XMConvertToRadians(90.0f), 0.0f, 0.0f), m_xmf4x4World);
 }
 
-void CAirplanePlayer::Render(HDC hDCFrameBuffer, CCamera* pCamera)
+void CTrainPlayer::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
 	CPlayer::Render(hDCFrameBuffer, pCamera);
 
 	for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]->m_bActive) m_ppBullets[i]->Render(hDCFrameBuffer, pCamera);
 }
 
-void CAirplanePlayer::FireBullet(CGameObject* pLockedObject)
+void CTrainPlayer::FireBullet(CGameObject* pLockedObject)
 {
-/*
-	if (pLockedObject) 
-	{
-		LookAt(pLockedObject->GetPosition(), XMFLOAT3(0.0f, 1.0f, 0.0f));
-		OnUpdateTransform();
-	}
-*/
+	/*
+		if (pLockedObject)
+		{
+			LookAt(pLockedObject->GetPosition(), XMFLOAT3(0.0f, 1.0f, 0.0f));
+			OnUpdateTransform();
+		}
+	*/
 
 	CBulletObject* pBulletObject = NULL;
 	for (int i = 0; i < BULLETS; i++)
@@ -221,20 +221,3 @@ void CAirplanePlayer::FireBullet(CGameObject* pLockedObject)
 		}
 	}
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-//
-
-//CTrainPlayer::CTrainPlayer()
-//{
-//	CCubeMesh* pBulletMesh = new CCubeMesh(1.0f, 4.0f, 1.0f);
-//	for (int i = 0; i < BULLETS; i++)
-//	{
-//		m_ppBullets[i] = new CBulletObject(m_fBulletEffectiveRange);
-//		m_ppBullets[i]->SetMesh(pBulletMesh);
-//		m_ppBullets[i]->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));
-//		m_ppBullets[i]->SetRotationSpeed(360.0f);
-//		m_ppBullets[i]->SetMovingSpeed(120.0f);
-//		m_ppBullets[i]->SetActive(false);
-//	}
-//}

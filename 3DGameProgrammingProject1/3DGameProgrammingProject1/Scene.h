@@ -11,14 +11,9 @@ public:
 	virtual ~CScene();
 
 private:
-	int							m_nObjects = 0;
-	CGameObject					**m_ppObjects = NULL;
-
-	CWallsObject*				m_pWallsObject = NULL;
-
 	CPlayer*					m_pPlayer = NULL;
 
-	CRailMesh* pRailMesh;
+	CRailMesh*					pRailMesh;
 	int							m_RailObjects = 0;
 
 	std::deque<CRailObject*>		m_dRailManager;
@@ -33,11 +28,6 @@ private:
 public:
 	virtual void BuildObjects();
 	virtual void ReleaseObjects();
-
-	void CheckObjectByObjectCollisions();
-	void CheckObjectByWallCollisions();
-	void CheckPlayerByWallCollision();
-	void CheckObjectByBulletCollisions();
 
 	virtual void Animate(float fElapsedTime);
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
