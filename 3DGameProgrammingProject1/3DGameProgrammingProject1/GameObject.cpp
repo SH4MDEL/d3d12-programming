@@ -209,25 +209,25 @@ int CGameObject::PickObjectByRayIntersection(XMVECTOR& xmvPickPosition, XMMATRIX
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-XMFLOAT3 CExplosiveObject::m_pxmf3SphereVectors[EXPLOSION_DEBRISES];
-CMesh* CExplosiveObject::m_pExplosionMesh = NULL;
+XMFLOAT3 CEnemyObject::m_pxmf3SphereVectors[EXPLOSION_DEBRISES];
+CMesh* CEnemyObject::m_pEnemyMesh = NULL;
 
-CExplosiveObject::CExplosiveObject()
+CEnemyObject::CEnemyObject()
 {
 }
 
-CExplosiveObject::~CExplosiveObject()
+CEnemyObject::~CEnemyObject()
 {
 }
 
-void CExplosiveObject::PrepareExplosion()
+void CEnemyObject::PrepareExplosion()
 {
 	for (int i = 0; i < EXPLOSION_DEBRISES; i++) XMStoreFloat3(&m_pxmf3SphereVectors[i], ::RandomUnitVectorOnSphere());
 
-	m_pExplosionMesh = new CCubeMesh(0.5f, 0.5f, 0.5f);
+	m_pEnemyMesh = new CCubeMesh(0.5f, 0.5f, 0.5f);
 }
 
-void CExplosiveObject::Animate(float fElapsedTime)
+void CEnemyObject::Animate(float fElapsedTime)
 {
 	if (m_bBlowingUp)
 	{
@@ -256,13 +256,13 @@ void CExplosiveObject::Animate(float fElapsedTime)
 	}
 }
 
-void CExplosiveObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
+void CEnemyObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
 	if (m_bBlowingUp)
 	{
 		for (int i = 0; i < EXPLOSION_DEBRISES; i++)
 		{
-			CGameObject::Render(hDCFrameBuffer , &m_pxmf4x4Transforms[i], m_pExplosionMesh);
+			CGameObject::Render(hDCFrameBuffer , &m_pxmf4x4Transforms[i], m_pEnemyMesh);
 		}
 	}
 	else
@@ -373,7 +373,7 @@ CRailObject::CRailObject(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4)
 			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.y + (pow(t, 3) - pow(t, 2)) * p4.y) / 2;
 		m_xmf4x4World._43 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.z + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.z +
 			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.z + (pow(t, 3) - pow(t, 2)) * p4.z) / 2;
-		//std::cout << m_xmf4x4World._41 << ", " << m_xmf4x4World._42 << ", " << m_xmf4x4World._43 << std::endl;
+
 		m_xmf4x4Bezier.push_back(m_xmf4x4World);
 	}
 	m_xmf4x4BezierIter = m_xmf4x4Bezier.begin();
@@ -420,14 +420,12 @@ XMFLOAT3 CRailObject::UpdatePlayerPosition(float fElapsedTime)
 {
 	if (m_xmf3PlayerPosition.z + m_xmf3NormalizedDirection.z * m_fPlayerSpeed * fElapsedTime >= (m_xmf4x4BezierIter + 1)->_43) {
 		++m_xmf4x4BezierIter;
-		std::cout << "sub";
 		if (m_xmf4x4BezierIter + 1 == m_xmf4x4Bezier.end()) {
 			isinPlayer = false;
 
 			m_xmf3PlayerPosition.x = (*m_xmf4x4BezierIter)._41;
 			m_xmf3PlayerPosition.y = (*m_xmf4x4BezierIter)._42;
 			m_xmf3PlayerPosition.z = (*m_xmf4x4BezierIter)._43;
-			std::cout << "run";
 			return m_xmf3PlayerPosition;
 		}
 		SetPlayerEntryPoint();
@@ -437,4 +435,9 @@ XMFLOAT3 CRailObject::UpdatePlayerPosition(float fElapsedTime)
 	m_xmf3PlayerPosition.z += m_xmf3NormalizedDirection.z * m_fPlayerSpeed * fElapsedTime;
 
 	return m_xmf3PlayerPosition;
+}
+
+void CTrainObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
+{
+	CGameObject::Render(hDCFrameBuffer, &m_xmf4x4World, m_pMesh);
 }

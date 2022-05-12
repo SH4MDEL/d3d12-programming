@@ -76,11 +76,11 @@ public:
 	int PickObjectByRayIntersection(XMVECTOR& xmPickPosition, XMMATRIX& xmmtxView, float* pfHitDistance);
 };
 
-class CExplosiveObject : public CGameObject
+class CEnemyObject : public CGameObject
 {
 public:
-	CExplosiveObject();
-	virtual ~CExplosiveObject();
+	CEnemyObject();
+	virtual ~CEnemyObject();
 
 	bool						m_bBlowingUp = false;
 
@@ -95,7 +95,7 @@ public:
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
 
 public:
-	static CMesh*				m_pExplosionMesh;
+	static CMesh*				m_pEnemyMesh;
 	static XMFLOAT3				m_pxmf3SphereVectors[EXPLOSION_DEBRISES];
 
 	static void PrepareExplosion();
@@ -154,4 +154,13 @@ public:
 
 	std::vector<XMFLOAT4X4> m_xmf4x4Bezier;
 	std::vector<XMFLOAT4X4>::iterator m_xmf4x4BezierIter;
+};
+
+class CTrainObject : public CGameObject
+{
+public:
+	CTrainObject() {};
+	virtual ~CTrainObject() {};
+
+	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
 };

@@ -72,7 +72,7 @@ void CGameFramework::BuildObjects()
 	pCamera->GenerateOrthographicProjectionMatrix(1.01f, 50.0f, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
 
 	// 열차 세팅
-	CTrainMesh* pTrainMesh = new CTrainMesh(3.0f, 6.0f, 3.0f);
+	CTrainMesh* pTrainMesh = new CTrainMesh(0.0f, 0.0f, 0.0f);
 
 	m_pPlayer = new CTrainPlayer();
 	m_pPlayer->SetPosition(0.0f, 0.0f, 0.0f);

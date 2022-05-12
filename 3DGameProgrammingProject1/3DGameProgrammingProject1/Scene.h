@@ -13,6 +13,8 @@ public:
 private:
 	CPlayer*					m_pPlayer = NULL;
 
+	CTrainObject*					m_pTrainObject = NULL;
+
 	CRailMesh*					pRailMesh;
 	int							m_RailObjects = 0;
 
@@ -21,6 +23,8 @@ private:
 
 	std::deque<XMFLOAT3>		m_dRailCoordinate;
 
+	std::list<CGameObject*>		m_lEnemyObjects;
+
 #ifdef _WITH_DRAW_AXIS
 	CGameObject*				m_pWorldAxis = NULL;
 #endif
@@ -28,6 +32,8 @@ private:
 public:
 	virtual void BuildObjects();
 	virtual void ReleaseObjects();
+
+	void CheckObjectByBulletCollisions();
 
 	virtual void Animate(float fElapsedTime);
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);

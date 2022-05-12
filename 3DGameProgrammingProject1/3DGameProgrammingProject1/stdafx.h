@@ -29,6 +29,7 @@
 #include <iostream>
 #include <vector>
 #include <deque>
+#include <list>
 
 using namespace DirectX;
 using namespace DirectX::PackedVector;
@@ -82,6 +83,28 @@ namespace RD
 		std::default_random_engine dre(rd());
 
 		std::uniform_real_distribution<float> value(start, end);
+		return value(dre);
+	}
+
+	inline XMINT3 GetRandomXMINT3(int start, int end)
+	{
+		std::random_device rd;
+		std::default_random_engine dre(rd());
+
+		XMINT3 xmi3Result;
+		std::uniform_int_distribution<int> value(start, end);
+		xmi3Result.x = value(dre);
+		xmi3Result.y = value(dre);
+		xmi3Result.z = value(dre);
+		return xmi3Result;
+	}
+
+	inline int GetRandomint(int start, int end)
+	{
+		std::random_device rd;
+		std::default_random_engine dre(rd());
+
+		std::uniform_int_distribution<int> value(start, end);
 		return value(dre);
 	}
 }
