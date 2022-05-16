@@ -230,7 +230,7 @@ void CShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamer
 	OnPrepareRender(pd3dCommandList);
 }
 
-
+///////////////////////////////////////////////////////////////////////////////
 
 CDiffusedShader::CDiffusedShader()
 {
