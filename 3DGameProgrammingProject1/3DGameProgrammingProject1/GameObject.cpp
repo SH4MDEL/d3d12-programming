@@ -247,12 +247,18 @@ void CEnemyObject::Animate(float fElapsedTime)
 		else
 		{
 			m_bBlowingUp = false;
+			m_bIsDeleted = true;
 			m_fElapsedTimes = 0.0f;
 		}
 	}
 	else
 	{
 		CGameObject::Animate(fElapsedTime);
+	}
+	m_fEnemySpeedElapse += fElapsedTime;
+	if (m_fEnemySpeedElapse >= 2.0 && m_fMovingSpeed < 200.0f) {
+		m_fMovingSpeed += 5.0f;
+		m_fEnemySpeedElapse = 0.0f;
 	}
 }
 
@@ -364,15 +370,15 @@ void CAxisObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 CRailObject::CRailObject(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT3 p4)
 {
-	int iDistance = ((int)sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2) + (pow(p3.z - p2.z, 2))) + 1) / 2.0f;
+	int iDistance = (int)((sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2) + (pow(p3.z - p2.z, 2))) + 1) / 2.0f);
 	for (int i = 0; i < iDistance; ++i) {
 		float t = (float)i / (float)iDistance;
-		m_xmf4x4World._41 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.x + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.x +
-			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.x + (pow(t, 3) - pow(t, 2)) * p4.x) / 2;
-		m_xmf4x4World._42 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.y + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.y +
-			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.y + (pow(t, 3) - pow(t, 2)) * p4.y) / 2;
-		m_xmf4x4World._43 = ((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.z + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.z +
-			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.z + (pow(t, 3) - pow(t, 2)) * p4.z) / 2;
+		m_xmf4x4World._41 = (float)(((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.x + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.x +
+			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.x + (pow(t, 3) - pow(t, 2)) * p4.x) / 2.0f);
+		m_xmf4x4World._42 = (float)(((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.y + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.y +
+			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.y + (pow(t, 3) - pow(t, 2)) * p4.y) / 2.0f);
+		m_xmf4x4World._43 = (float)(((pow(-t, 3) + 2 * pow(t, 2) - t) * p1.z + (3 * pow(t, 3) - 5 * pow(t, 2) + 2) * p2.z +
+			(-3 * pow(t, 3) + 4 * pow(t, 2) + t) * p3.z + (pow(t, 3) - pow(t, 2)) * p4.z) / 2.0f);
 
 		m_xmf4x4Bezier.push_back(m_xmf4x4World);
 	}
@@ -392,7 +398,6 @@ CRailObject::~CRailObject()
 void CRailObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
 	for (auto elem : m_xmf4x4Bezier) {
-		//if (pCamera->IsInFrustum(m_xmOOBB)) 
 		CGameObject::Render(hDCFrameBuffer, &elem, m_pMesh);
 	}
 }
@@ -405,11 +410,13 @@ void CRailObject::EnableRailObject()
 
 void CRailObject::SetPlayerEntryPoint()
 {
-	m_xmf3NormalizedDirection.x = (m_xmf4x4BezierIter + 1)->_41 - (*m_xmf4x4BezierIter)._41;
-	m_xmf3NormalizedDirection.y = (m_xmf4x4BezierIter + 1)->_42 - (*m_xmf4x4BezierIter)._42;
-	m_xmf3NormalizedDirection.z = (m_xmf4x4BezierIter + 1)->_43 - (*m_xmf4x4BezierIter)._43;
+	if ((m_xmf4x4BezierIter + 1) != m_xmf4x4Bezier.end()) {
+		m_xmf3NormalizedDirection.x = (m_xmf4x4BezierIter + 1)->_41 - (*m_xmf4x4BezierIter)._41;
+		m_xmf3NormalizedDirection.y = (m_xmf4x4BezierIter + 1)->_42 - (*m_xmf4x4BezierIter)._42;
+		m_xmf3NormalizedDirection.z = (m_xmf4x4BezierIter + 1)->_43 - (*m_xmf4x4BezierIter)._43;
+	}
 
-	float sum = sqrt(pow(m_xmf3NormalizedDirection.x, 2) + pow(m_xmf3NormalizedDirection.y, 2) + pow(m_xmf3NormalizedDirection.z, 2));
+	float sum = (float)sqrt(pow(m_xmf3NormalizedDirection.x, 2) + pow(m_xmf3NormalizedDirection.y, 2) + pow(m_xmf3NormalizedDirection.z, 2));
 
 	m_xmf3NormalizedDirection.x = m_xmf3NormalizedDirection.x / sum;
 	m_xmf3NormalizedDirection.y = m_xmf3NormalizedDirection.y / sum;

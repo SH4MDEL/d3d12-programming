@@ -15,6 +15,7 @@
 #include <memory.h>
 #include <tchar.h>
 #include <math.h>
+#include <cmath>
 #include <random>
 
 #include <Mmsystem.h>
@@ -34,8 +35,8 @@
 using namespace DirectX;
 using namespace DirectX::PackedVector;
 
-#define FRAMEBUFFER_WIDTH		640
-#define FRAMEBUFFER_HEIGHT		480
+#define FRAMEBUFFER_WIDTH		1280
+#define FRAMEBUFFER_HEIGHT		960
 
 #define DIR_FORWARD				0x01
 #define DIR_BACKWARD			0x02
@@ -52,12 +53,13 @@ using namespace DirectX::PackedVector;
 
 #define EPSILON					1.0e-6f
 
+
 // 다음을 정의하면 응용 프로그램을 실행할 때 콘솔이 출력된다.
-#ifdef UNICODE
-#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
-#else
-#pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
-#endif
+//#ifdef UNICODE
+//#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
+//#else
+//#pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
+//#endif
 
 inline bool IsZero(float fValue) { return((fabsf(fValue) < EPSILON)); }
 inline bool IsEqual(float fA, float fB) { return(::IsZero(fA - fB)); }

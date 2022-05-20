@@ -8,20 +8,24 @@ CPlayer::CPlayer()
 	m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
 	m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 	m_xmf3Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
+
 	m_xmf3Velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	m_xmf3Gravity = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	m_fMaxVelocityXZ = 0.0f;
 	m_fMaxVelocityY = 0.0f;
 	m_fFriction = 0.0f;
+
 	m_fPitch = 0.0f;
 	m_fRoll = 0.0f;
 	m_fYaw = 0.0f;
+
 	m_pPlayerUpdatedContext = nullptr;
 	m_pCameraUpdatedContext = nullptr;
 }
 CPlayer::~CPlayer()
 {
 	ReleaseShaderVariables();
+
 	if (m_pCamera) delete m_pCamera;
 }
 
@@ -29,12 +33,14 @@ void CPlayer::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsComm
 	* pd3dCommandList)
 {
 	CGameObject::CreateShaderVariables(pd3dDevice, pd3dCommandList);
+
 	if (m_pCamera) m_pCamera->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
 void CPlayer::ReleaseShaderVariables()
 {
 	CGameObject::ReleaseShaderVariables();
+
 	if (m_pCamera) m_pCamera->ReleaseShaderVariables();
 }
 
@@ -76,9 +82,9 @@ void CPlayer::Move(const XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
 	else
 	{
 	//플레이어를 현재 위치 벡터에서 xmf3Shift 벡터만큼 이동한다. 
-	m_xmf3Position = Vector3::Add(m_xmf3Position, xmf3Shift);
+		m_xmf3Position = Vector3::Add(m_xmf3Position, xmf3Shift);
 	//플레이어의 위치가 변경되었으므로 카메라의 위치도 xmf3Shift 벡터만큼 이동한다. 
-	if (m_pCamera) m_pCamera->Move(xmf3Shift);
+		if (m_pCamera) m_pCamera->Move(xmf3Shift);
 	}
 }
 
@@ -167,7 +173,6 @@ void CPlayer::Update(float fTimeElapsed)
 	/*플레이어의 속도 벡터를 중력 벡터와 더한다. 중력 벡터에 fTimeElapsed를 곱하는 것은 중력을 시간에 비례하도록
 	적용한다는 의미이다.*/
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(m_xmf3Gravity, fTimeElapsed, false));
-
 	/*플레이어의 속도 벡터의 XZ-성분의 크기를 구한다. 이것이 XZ-평면의 최대 속력보다 크면 속도 벡터의 x와 z-방향
 	성분을 조정한다.*/
 	float fLength = sqrtf(m_xmf3Velocity.x * m_xmf3Velocity.x + m_xmf3Velocity.z * m_xmf3Velocity.z);
@@ -296,6 +301,7 @@ void CPlayer::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamer
 	{
 		if (m_pShader) m_pShader->Render(pd3dCommandList, pCamera);
 		CGameObject::Render(pd3dCommandList, pCamera);
+
 	}
 }
 

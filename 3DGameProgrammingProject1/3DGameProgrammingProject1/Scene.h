@@ -15,6 +15,7 @@ private:
 
 	CTrainObject*					m_pTrainObject = NULL;
 
+	CCubeMesh*					pCubeMesh;
 	CRailMesh*					pRailMesh;
 	int							m_RailObjects = 0;
 
@@ -24,6 +25,8 @@ private:
 	std::deque<XMFLOAT3>		m_dRailCoordinate;
 
 	std::list<CGameObject*>		m_lEnemyObjects;
+	float						m_fEnemyCreateElapse = 0.0f;
+	int							m_iMaxEnemy = 20;
 
 #ifdef _WITH_DRAW_AXIS
 	CGameObject*				m_pWorldAxis = NULL;

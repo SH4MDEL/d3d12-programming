@@ -1,7 +1,6 @@
 #pragma once
 #include "stdafx.h"
 
-
 #define ASPECT_RATIO (float(FRAME_BUFFER_WIDTH) / float(FRAME_BUFFER_HEIGHT))
 
 //카메라의 종류(모드: Mode)를 나타내는 상수를 다음과 같이 선언한다. 
@@ -12,8 +11,8 @@
 //프레임 버퍼의 크기와 종횡비(Aspect Ratio)를 나타내는 상수를 다음과 같이 선언한다. 
 #define ASPECT_RATIO (float(FRAME_BUFFER_WIDTH) / float(FRAME_BUFFER_HEIGHT))
 
-
 class CPlayer;
+
 
 struct VS_CB_CAMERA_INFO
 {
@@ -133,6 +132,7 @@ class CSpaceShipCamera : public CCamera
 public:
 	CSpaceShipCamera(CCamera* pCamera);
 	virtual ~CSpaceShipCamera() { }
+
 	virtual void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
 };
 
@@ -141,6 +141,7 @@ class CFirstPersonCamera : public CCamera
 public:
 	CFirstPersonCamera(CCamera* pCamera);
 	virtual ~CFirstPersonCamera() { }
+
 	virtual void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
 };
 
@@ -149,6 +150,7 @@ class CThirdPersonCamera : public CCamera
 public:
 	CThirdPersonCamera(CCamera* pCamera);
 	virtual ~CThirdPersonCamera() { }
+
 	virtual void Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed);
 	virtual void SetLookAt(XMFLOAT3& vLookAt);
 };

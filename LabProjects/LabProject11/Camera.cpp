@@ -88,6 +88,7 @@ void CCamera::GenerateViewMatrix(XMFLOAT3 xmf3Position, XMFLOAT3 xmf3LookAt, XMF
 	m_xmf3Position = xmf3Position;
 	m_xmf3LookAtWorld = xmf3LookAt;
 	m_xmf3Up = xmf3Up;
+
 	GenerateViewMatrix();
 }
 

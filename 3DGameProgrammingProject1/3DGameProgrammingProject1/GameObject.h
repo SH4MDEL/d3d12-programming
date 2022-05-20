@@ -83,6 +83,7 @@ public:
 	virtual ~CEnemyObject();
 
 	bool						m_bBlowingUp = false;
+	bool						m_bIsDeleted = false;
 
 	XMFLOAT4X4					m_pxmf4x4Transforms[EXPLOSION_DEBRISES];
 
@@ -90,6 +91,8 @@ public:
 	float						m_fDuration = 2.0f;
 	float						m_fExplosionSpeed = 10.0f;
 	float						m_fExplosionRotation = 720.0f;
+
+	float						m_fEnemySpeedElapse = 0.0f;
 
 	virtual void Animate(float fElapsedTime);
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
@@ -148,7 +151,7 @@ public:
 	XMFLOAT3 GetPlayerDirection() { return m_xmf3NormalizedDirection; };
 public:
 	bool isinPlayer	= false;
-	float m_fPlayerSpeed = 10.0f;
+	float m_fPlayerSpeed = 20.0f;
 	XMFLOAT3 m_xmf3PlayerPosition;
 	XMFLOAT3 m_xmf3NormalizedDirection;
 
