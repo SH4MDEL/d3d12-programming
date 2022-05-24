@@ -183,7 +183,6 @@ void CGameObject::Rotate(float fPitch, float fYaw, float fRoll)
 	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
 CRotatingObject::CRotatingObject(int nMeshes) : CGameObject(nMeshes)
@@ -200,6 +199,8 @@ void CRotatingObject::Animate(float fTimeElapsed)
 {
 	CGameObject::Rotate(&m_xmf3RotationAxis, m_fRotationSpeed * fTimeElapsed);
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 CHeightMapTerrain::CHeightMapTerrain(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList
 	* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, LPCTSTR pFileName, int
@@ -249,11 +250,6 @@ CHeightMapTerrain::CHeightMapTerrain(ID3D12Device* pd3dDevice, ID3D12GraphicsCom
 	CTerrainShader *pShader = new CTerrainShader();
 	pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
 	SetShader(pShader);
-
-	//지형을 렌더링하기 위한 셰이더를 생성한다. 
-	//CObjectsShader* pShader = new CObjectsShader();
-	//pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
-	//SetShader(pShader);
 }
 
 CHeightMapTerrain::~CHeightMapTerrain(void)

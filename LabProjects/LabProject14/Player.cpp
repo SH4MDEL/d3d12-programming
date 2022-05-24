@@ -122,6 +122,7 @@ void CPlayer::Rotate(float x, float y, float z)
 		}
 		//카메라를 x, y, z 만큼 회전한다. 플레이어를 회전하면 카메라가 회전하게 된다.
 		m_pCamera->Rotate(x, y, z);
+		std::cout << x << ", " << y << ", " << z << std::endl;
 
 		/*플레이어를 회전한다. 1인칭 카메라 또는 3인칭 카메라에서 플레이어의 회전은 로컬 y-축에서만 일어난다. 플레이어
 		의 로컬 y-축(Up 벡터)을 기준으로 로컬 z-축(Look 벡터)와 로컬 x-축(Right 벡터)을 회전시킨다. 기본적으로 Up 벡
@@ -321,11 +322,7 @@ CAirplanePlayer::CAirplanePlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommand
 
 	SetPosition(XMFLOAT3(0.0f, 0.0f, -50.0f));
 
-	//CPlayerShader* pShader = new CPlayerShader();
-	//pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
-	//SetShader(pShader);
-
-	CObjectsShader* pShader = new CObjectsShader();
+	CPlayerShader* pShader = new CPlayerShader();
 	pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
 	SetShader(pShader);
 }
@@ -431,12 +428,7 @@ CTerrainPlayer::CTerrainPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 	SetMesh(0, pCubeMesh);
 
 	//플레이어를 렌더링할 셰이더를 생성한다. 
-	//CPlayerShader *pShader = new CPlayerShader();
-	//pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
-	//SetShader(pShader);
-
-	//플레이어를 렌더링할 셰이더를 생성한다.
-	CObjectsShader* pShader = new CObjectsShader();
+	CPlayerShader *pShader = new CPlayerShader();
 	pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
 	SetShader(pShader);
 
