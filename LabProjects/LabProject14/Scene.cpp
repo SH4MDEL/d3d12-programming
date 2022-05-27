@@ -111,8 +111,8 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList
 #else
 	//지형을 하나의 격자 메쉬(257x257)로 생성한다. 
 	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList, 
-		m_pd3dGraphicsRootSignature, _T("../Assets/Image/Terrain/HeightMap.raw"), 257, 257, 257,
-		257, xmf3Scale, xmf4Color);
+		m_pd3dGraphicsRootSignature, _T("HeightMap.raw"), 256, 256, 256,
+		256, xmf3Scale, xmf4Color);
 #endif
 
 	m_nShaders = 1;
