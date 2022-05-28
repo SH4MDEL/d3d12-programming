@@ -103,10 +103,18 @@ void CGameObject::SetMaterial(int nMaterial, CMaterial* pMaterial)
 	if (m_ppMaterials[nMaterial]) m_ppMaterials[nMaterial]->AddRef();
 }
 
+void CGameObject::UpdateBoundingBox()
+{
+	m_xmOOBB.Transform(m_xmMovedOOBB, XMLoadFloat4x4(&m_xmf4x4World));
+	XMStoreFloat4(&m_xmMovedOOBB.Orientation, XMQuaternionNormalize(XMLoadFloat4(&m_xmMovedOOBB.Orientation)));
+}
+
 void CGameObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 {
 	if (m_pSibling) m_pSibling->Animate(fTimeElapsed, pxmf4x4Parent);
 	if (m_pChild) m_pChild->Animate(fTimeElapsed, &m_xmf4x4World);
+
+	UpdateBoundingBox();
 }
 
 CGameObject* CGameObject::FindFrame(const _TCHAR* pstrFrameName)
@@ -623,6 +631,7 @@ void CRevolvingObject::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
 //
 CCactusObject::CCactusObject()
 {
+	m_xmOOBB = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(2.0f, 2.0f, 2.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
 CCactusObject::~CCactusObject()
@@ -643,6 +652,7 @@ void CCactusObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 //
 CTreeObject::CTreeObject()
 {
+	m_xmOOBB = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(2.0f, 2.0f, 2.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
 CTreeObject::~CTreeObject()
@@ -662,6 +672,7 @@ void CTreeObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 //
 CRock1Object::CRock1Object()
 {
+	m_xmOOBB = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(2.0f, 2.0f, 2.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
 CRock1Object::~CRock1Object()
@@ -681,6 +692,7 @@ void CRock1Object::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 //
 CRock2Object::CRock2Object()
 {
+	m_xmOOBB = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(2.0f, 2.0f, 2.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
 CRock2Object::~CRock2Object()

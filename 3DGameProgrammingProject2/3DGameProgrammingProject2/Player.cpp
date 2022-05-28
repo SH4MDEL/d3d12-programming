@@ -30,6 +30,7 @@ CPlayer::CPlayer()
 
 	m_pPlayerUpdatedContext = NULL;
 	m_pCameraUpdatedContext = NULL;
+
 }
 
 CPlayer::~CPlayer()
@@ -57,11 +58,13 @@ void CPlayer::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
 {
 	if (dwDirection)
 	{
+		m_dwDirection = dwDirection;
+
 		XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
 		if (dwDirection & DIR_FORWARD) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Look, fDistance);
 		if (dwDirection & DIR_BACKWARD) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Look, -fDistance);
-		if (dwDirection & DIR_RIGHT) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Right, fDistance);
-		if (dwDirection & DIR_LEFT) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Right, -fDistance);
+		if (dwDirection & DIR_RIGHT) Rotate(0.0f, 0.5f, 0.0f);
+		if (dwDirection & DIR_LEFT) Rotate(0.0f, -0.5f, 0.0f);
 		if (dwDirection & DIR_UP) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Up, fDistance);
 		if (dwDirection & DIR_DOWN) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Up, -fDistance);
 
@@ -85,7 +88,7 @@ void CPlayer::Move(const XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
 void CPlayer::Rotate(float x, float y, float z)
 {
 	DWORD nCurrentCameraMode = m_pCamera->GetMode();
-	if ((nCurrentCameraMode == FIRST_PERSON_CAMERA) || (nCurrentCameraMode == THIRD_PERSON_CAMERA))
+	if ((nCurrentCameraMode == FIRST_PERSON_CAMERA) )
 	{
 		if (x != 0.0f)
 		{
@@ -113,7 +116,7 @@ void CPlayer::Rotate(float x, float y, float z)
 			m_xmf3Right = Vector3::TransformNormal(m_xmf3Right, xmmtxRotate);
 		}
 	}
-	else if (nCurrentCameraMode == SPACESHIP_CAMERA)
+	else if ((nCurrentCameraMode == SPACESHIP_CAMERA) || (nCurrentCameraMode == THIRD_PERSON_CAMERA))
 	{
 		m_pCamera->Rotate(x, y, z);
 		if (x != 0.0f)
@@ -170,6 +173,10 @@ void CPlayer::Update(float fTimeElapsed)
 	float fDeceleration = (m_fFriction * fTimeElapsed);
 	if (fDeceleration > fLength) fDeceleration = fLength;
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(m_xmf3Velocity, -fDeceleration, true));
+	//std::cout << m_xmf3Position.x << ", " << m_xmf3Position.y << ", " << m_xmf3Position.z << std::endl;
+
+	UpdateBoundingBox();
+	//std::cout << m_xmOOBB.Center.x << ", " << m_xmOOBB.Center.y << ", " << m_xmOOBB.Center.z << std::endl;
 }
 
 CCamera *CPlayer::OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode)
@@ -230,6 +237,7 @@ void CPlayer::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamer
 {
 	DWORD nCameraMode = (pCamera) ? pCamera->GetMode() : 0x00;
 	if (nCameraMode == THIRD_PERSON_CAMERA) CGameObject::Render(pd3dCommandList, pCamera);
+	//std::cout << m_xmf4x4World._41 << ", " << m_xmf4x4World._42 << ", " << m_xmf4x4World._43 << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -239,9 +247,12 @@ CCarPlayer::CCarPlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3d
 {
 	m_pCamera = ChangeCamera(THIRD_PERSON_CAMERA, 0.0f);
 
-	CGameObject *pGameObject = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, L"Models/Hummer.txt");
-	pGameObject->SetScale(5.0f, 5.0f, 5.0f);
-	pGameObject->Rotate(15.0f, 0.0f, 0.0f);
+	CGameObject *pGameObject = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, L"Models/PoliceCar.txt");
+	//pGameObject->SetScale(10.0f, 10.0f, 10.0f);
+	//pGameObject->Rotate(0.0f, 0.0f, 0.0f);
+
+	m_xmOOBB = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(2.0f, 2.0f, 2.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+
 	SetChild(pGameObject);
 	OnInitialize();
 
@@ -254,23 +265,23 @@ CCarPlayer::~CCarPlayer()
 
 void CCarPlayer::OnInitialize()
 {
-	//m_pMainRotorFrame0 = FindFrame(L"rotor");
-//	m_pMainRotorFrame1 = FindFrame(L"black_m_6");
-	//m_pTailRotorFrame0 = FindFrame(L"black_m_7");
-//	m_pTailRotorFrame1 = FindFrame(L"black_m_8");
+	m_vMainWheelFrame.push_back(FindFrame(L"BL"));
+	m_vMainWheelFrame.push_back(FindFrame(L"BR"));
+	m_vMainWheelFrame.push_back(FindFrame(L"FL"));
+	m_vMainWheelFrame.push_back(FindFrame(L"FR"));
 }
 
 void CCarPlayer::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
 {
-	if (m_pMainRotorFrame0)
-	{
-		XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(360.0f * 2.0f) * fTimeElapsed);
-		m_pMainRotorFrame0->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pMainRotorFrame0->m_xmf4x4Transform);
-	}
-	if (m_pTailRotorFrame0)
-	{
-		XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
-		m_pTailRotorFrame0->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame0->m_xmf4x4Transform);
+	for (const auto& elem : m_vMainWheelFrame) {
+		if (m_dwDirection & DIR_FORWARD) {
+			XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 2.0f) * fTimeElapsed);
+			elem->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, elem->m_xmf4x4Transform);
+		}
+		if (m_dwDirection & DIR_BACKWARD) {
+			XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(-360.0f * 2.0f) * fTimeElapsed);
+			elem->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, elem->m_xmf4x4Transform);
+		}
 	}
 
 	CPlayer::Animate(fTimeElapsed, pxmf4x4Parent);
@@ -312,13 +323,13 @@ CCamera * CCarPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 			m_pCamera->SetScissorRect(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
 			break;
 		case THIRD_PERSON_CAMERA:
-			SetFriction(20.5f);
+			SetFriction(500.0f);
 			SetGravity(XMFLOAT3(0.0f, 0.0f, 0.0f));
-			SetMaxVelocityXZ(25.5f);
-			SetMaxVelocityY(40.0f);
+			SetMaxVelocityXZ(20.0f);
+			SetMaxVelocityY(10.0f);
 			m_pCamera = OnChangeCamera(THIRD_PERSON_CAMERA, nCurrentCameraMode);
 			m_pCamera->SetTimeLag(0.25f);
-			m_pCamera->SetOffset(XMFLOAT3(0.0f, 65.0f, -140.0f));
+			m_pCamera->SetOffset(XMFLOAT3(0.0f, 4.5f, -14.0f));
 			m_pCamera->GenerateProjectionMatrix(1.01f, 5000.0f, ASPECT_RATIO, 60.0f);
 			m_pCamera->SetViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f);
 			m_pCamera->SetScissorRect(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
@@ -332,4 +343,3 @@ CCamera * CCarPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 
 	return(m_pCamera);
 }
-

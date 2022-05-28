@@ -31,6 +31,8 @@ protected:
 	LPVOID						m_pPlayerUpdatedContext;
 	LPVOID						m_pCameraUpdatedContext;
 
+	DWORD						m_dwDirection;
+
 	CCamera						*m_pCamera = NULL;
 
 public:
@@ -57,7 +59,7 @@ public:
 	CCamera *GetCamera() { return(m_pCamera); }
 	void SetCamera(CCamera *pCamera) { m_pCamera = pCamera; }
 
-	void Move(DWORD nDirection, float fDistance, bool bVelocity = false);
+	virtual void Move(DWORD nDirection, float fDistance, bool bVelocity = false);
 	void Move(const XMFLOAT3& xmf3Shift, bool bVelocity = false);
 	void Move(float fxOffset = 0.0f, float fyOffset = 0.0f, float fzOffset = 0.0f);
 	void Rotate(float x, float y, float z);
@@ -87,11 +89,7 @@ public:
 	CCarPlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature);
 	virtual ~CCarPlayer();
 
-	CGameObject*				m_pMainRotorFrame0 = NULL;
-	CGameObject*				m_pMainRotorFrame1 = NULL;
-	CGameObject*				m_pTailRotorFrame0 = NULL;
-	CGameObject*				m_pTailRotorFrame1 = NULL;
-
+	std::vector<CGameObject*>	m_vMainWheelFrame;
 private:
 	virtual void OnInitialize();
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent = NULL);

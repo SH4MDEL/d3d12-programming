@@ -100,6 +100,9 @@ public:
 	XMFLOAT4X4						m_xmf4x4Transform;
 	XMFLOAT4X4						m_xmf4x4World;
 
+	BoundingOrientedBox				m_xmMovedOOBB = BoundingOrientedBox();
+	BoundingOrientedBox				m_xmOOBB = BoundingOrientedBox();
+
 	CGameObject 					*m_pParent = NULL;
 	CGameObject 					*m_pChild = NULL;
 	CGameObject 					*m_pSibling = NULL;
@@ -149,6 +152,8 @@ public:
 	CGameObject *FindFrame(const _TCHAR *pstrFrameName);
 
 	UINT GetMeshType() { return((m_pMesh) ? m_pMesh->GetType() : 0); }
+
+	void UpdateBoundingBox();
 
 public:
 	static MATERIALSLOADINFO* LoadMaterialsInfoFromFile(wifstream& InFile);

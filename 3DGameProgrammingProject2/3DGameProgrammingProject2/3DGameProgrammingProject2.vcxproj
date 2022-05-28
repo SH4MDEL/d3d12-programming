@@ -141,7 +141,6 @@
   <ItemGroup>
     <ClInclude Include="3DGameProgrammingProject2.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="framework.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Object.h" />
