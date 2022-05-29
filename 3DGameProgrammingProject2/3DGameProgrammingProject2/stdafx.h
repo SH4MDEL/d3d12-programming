@@ -50,6 +50,8 @@ using Microsoft::WRL::ComPtr;
 #define FRAME_BUFFER_WIDTH		1024
 #define FRAME_BUFFER_HEIGHT		768
 
+#define EXPLOSION_DEBRISES		24
+
 //#define _WITH_CB_GAMEOBJECT_32BIT_CONSTANTS
 //#define _WITH_CB_GAMEOBJECT_ROOT_DESCRIPTOR
 #define _WITH_CB_WORLD_MATRIX_DESCRIPTOR_TABLE
@@ -223,7 +225,12 @@ namespace Matrix4x4
 		XMStoreFloat4x4(&xmmtx4x4Result, xmmtxMatrix1 * XMLoadFloat4x4(&xmmtx4x4Matrix2));
 		return(xmmtx4x4Result);
 	}
-
+	inline XMFLOAT4X4 RotationAxis(XMFLOAT3& xmf3Axis, float fAngle)
+	{
+		XMFLOAT4X4 xmmtx4x4Result;
+		XMStoreFloat4x4(&xmmtx4x4Result, XMMatrixRotationAxis(XMLoadFloat3(&xmf3Axis), XMConvertToRadians(fAngle)));
+		return(xmmtx4x4Result);
+	}
 	inline XMFLOAT4X4 Inverse(const XMFLOAT4X4& xmmtx4x4Matrix)
 	{
 		XMFLOAT4X4 xmmtx4x4Result;

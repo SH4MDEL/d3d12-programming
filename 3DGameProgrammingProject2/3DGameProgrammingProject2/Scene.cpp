@@ -15,6 +15,8 @@ CScene::~CScene()
 
 void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
+	CCactusObject::PrepareExplosion(pd3dDevice, pd3dCommandList);
+
 	m_pd3dGraphicsRootSignature = CreateGraphicsRootSignature(pd3dDevice);
 
 	CMaterial::PrepareShaders(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
@@ -24,7 +26,6 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	float x = 0, z = 0;
 
 	while (in >> data) {
-		// µµ·Î
 		if (data == '0') {
 
 		}
@@ -32,32 +33,33 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 			m_vGameObjects.push_back(new CTreeObject());
 			m_vGameObjects.back()->SetChild(CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, L"Models/Tree.txt"));
 			m_vGameObjects.back()->OnInitialize();
-			m_vGameObjects.back()->SetPosition(x * 10.0f, 0.0f, z * 10.0f);
-			//m_vGameObjects.back()->SetScale(3.0f, 3.0f, 3.0f);
+			m_vGameObjects.back()->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
+			m_vGameObjects.back()->UpdateBoundingBox();
 		}
 		else if (data == '2') {
 			m_vGameObjects.push_back(new CCactusObject());
 			m_vGameObjects.back()->SetChild(CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, L"Models/Cactus.txt"));
 			m_vGameObjects.back()->OnInitialize();
-			m_vGameObjects.back()->SetPosition(x * 10.0f, 0.0f, z * 10.0f);
-			//m_vGameObjects.back()->SetScale(40.0f, 40.0f, 40.0f);
+			m_vGameObjects.back()->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
+			m_vGameObjects.back()->UpdateBoundingBox();
 		}
 		else if (data == '3') {
 			m_vGameObjects.push_back(new CRock1Object());
 			m_vGameObjects.back()->SetChild(CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, L"Models/Rock.txt"));
 			m_vGameObjects.back()->OnInitialize();
-			m_vGameObjects.back()->SetPosition(x * 10.0f, 0.0f, z * 10.0f);
+			m_vGameObjects.back()->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
 			m_vGameObjects.back()->SetScale(1.5f, 1.5f, 1.5f);
+			m_vGameObjects.back()->UpdateBoundingBox();
 		}
 		else if (data == '4') {
 			m_vGameObjects.push_back(new CRock2Object());
 			m_vGameObjects.back()->SetChild(CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, L"Models/Rock2.txt"));
 			m_vGameObjects.back()->OnInitialize();
-			m_vGameObjects.back()->SetPosition(x * 10.0f, 0.0f, z * 10.0f);
+			m_vGameObjects.back()->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
 			m_vGameObjects.back()->SetScale(1.5f, 1.5f, 1.5f);
+			m_vGameObjects.back()->UpdateBoundingBox();
 		}
-
-		if (x == 9.0f) {
+		if (x == 49.0f) {
 			x = 0.0f;
 			z += 1.0f;
 		}
@@ -81,13 +83,19 @@ void CScene::ReleaseObjects()
 	ReleaseShaderVariables();
 }
 
-void CScene::CheckPlayerByObjectCollisions()
+bool CScene::CheckPlayerByObjectCollisions()
 {
 	for (const auto& elem : m_vGameObjects) {
 		if (m_pPlayer->m_xmMovedOOBB.Intersects(elem->m_xmMovedOOBB)) {
+			if (elem->m_bBreakable && m_pPlayer->GetisBoost()) {
+				elem->m_bBlowingUp = true;
+				return false;
+			}
 			std::cout << "collide!" << std::endl;
+			return true;
 		}
 	}
+	return false;
 }
 
 ID3D12RootSignature* CScene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevice)
@@ -182,7 +190,7 @@ void CScene::AnimateObjects(float fTimeElapsed)
 
 	for (const auto& elem : m_vGameObjects) elem->UpdateTransform(NULL);
 
-	CheckPlayerByObjectCollisions();
+	//CheckPlayerByObjectCollisions();
 }
 
 void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)

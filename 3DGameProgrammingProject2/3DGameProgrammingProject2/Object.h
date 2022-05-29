@@ -107,6 +107,9 @@ public:
 	CGameObject 					*m_pChild = NULL;
 	CGameObject 					*m_pSibling = NULL;
 
+	bool							m_bBreakable = false;
+	bool							m_bBlowingUp = false;
+
 	void SetMesh(CMesh *pMesh);
 	void SetShader(CShader *pShader);
 	void SetShader(int nMaterial, CShader *pShader);
@@ -120,6 +123,7 @@ public:
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent=NULL);
 	virtual void OnPrepareRender() { }
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera=NULL);
+	void Render(ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4X4* pxmf4x4World, CDiffusedMesh* pMesh);
 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList);
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList);
@@ -206,10 +210,22 @@ public:
 	CCactusObject();
 	virtual ~CCactusObject();
 
+	XMFLOAT4X4					m_pxmf4x4Transforms[EXPLOSION_DEBRISES];
+
+	float							m_fElapsedTimes = 0.0f;
+	float							m_fDuration = 2.0f;
+	float						m_fExplosionSpeed = 10.0f;
+	float						m_fExplosionRotation = 360.0f;
 
 public:
 	virtual void OnInitialize();
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera = NULL);
+
+	static CDiffusedMesh*		m_pExplosionMesh;
+	static XMFLOAT3				m_pxmf3SphereVectors[EXPLOSION_DEBRISES];
+
+	static void PrepareExplosion(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 };
 
 class CTreeObject : public CGameObject

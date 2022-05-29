@@ -317,17 +317,41 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		case VK_F1:
 		case VK_F2:
 		case VK_F3:
-			m_pCamera = m_pPlayer->ChangeCamera((DWORD)(wParam - VK_F1 + 1), m_GameTimer.GetTimeElapsed());
 			break;
 		case VK_F9:
 			ChangeSwapChainState();
 			break;
 		case VK_F5:
+			m_pPlayer->SetPosition(XMFLOAT3(-10.0f, 0.0f, 0.0f));
+			break;
+		case VK_SPACE:
+			//m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_BASIC_CAMERA, m_GameTimer.GetTimeElapsed());
+			m_pCamera->SetTimeLag(0.25f);
+			m_pCamera->SetOffset(XMFLOAT3(0.0f, 4.5f, -14.0f));
+			m_pPlayer->SetisBoost(false);
+			break;
+		case VK_SHIFT:
+			m_pPlayer->SetisDrift(false);
 			break;
 		default:
 			break;
 		}
 		break;
+	case WM_KEYDOWN:
+		switch (wParam)
+		{
+		case VK_SPACE:
+			//m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_BOOST_CAMERA, m_GameTimer.GetTimeElapsed());
+			m_pCamera->SetTimeLag(0.20f);
+			m_pCamera->SetOffset(XMFLOAT3(0.0f, 3.5f, -11.0f));
+			m_pPlayer->SetisBoost(true);
+			break;
+		case VK_SHIFT:
+			m_pPlayer->SetisDrift(true);
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -400,7 +424,7 @@ void CGameFramework::BuildObjects()
 
 	CCarPlayer* pCarPlayer = new CCarPlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
 	
-	pCarPlayer->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	pCarPlayer->SetPosition(XMFLOAT3(50.0f, 0.0f, 50.0f));
 	m_pScene->m_pPlayer = m_pPlayer = pCarPlayer;
 	m_pCamera = m_pPlayer->GetCamera();
 
@@ -426,6 +450,8 @@ void CGameFramework::ReleaseObjects()
 
 void CGameFramework::ProcessInput()
 {
+	m_pPlayer->SetPrePosition(m_pPlayer->GetPosition());
+
 	static UCHAR pKeysBuffer[256];
 	bool bProcessedByScene = false;
 	if (GetKeyboardState(pKeysBuffer) && m_pScene) bProcessedByScene = m_pScene->ProcessInput(pKeysBuffer);
@@ -439,30 +465,14 @@ void CGameFramework::ProcessInput()
 		if (pKeysBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
 		if (pKeysBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
 
-		float cxDelta = 0.0f, cyDelta = 0.0f;
-		POINT ptCursorPos;
-		if (GetCapture() == m_hWnd)
-		{
-			SetCursor(NULL);
-			GetCursorPos(&ptCursorPos);
-			cxDelta = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
-			cyDelta = (float)(ptCursorPos.y - m_ptOldCursorPos.y) / 3.0f;
-			SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
-		}
-
-		if ((dwDirection != 0) || (cxDelta != 0.0f) || (cyDelta != 0.0f))
-		{
-			if (cxDelta || cyDelta)
-			{
-				if (pKeysBuffer[VK_RBUTTON] & 0xF0)
-					m_pPlayer->Rotate(cyDelta, 0.0f, -cxDelta);
-				else
-					m_pPlayer->Rotate(cyDelta, cxDelta, 0.0f);
-			}
-			if (dwDirection) m_pPlayer->Move(dwDirection, 150.0f, true);
-		}
+		if (dwDirection) m_pPlayer->Move(dwDirection, 150.0f, true);
 	}
 	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
+	m_pPlayer->UpdateBoundingBox();
+
+	if (m_pScene->CheckPlayerByObjectCollisions()) {
+		m_pPlayer->SetPosition(m_pPlayer->GetPrePosition());
+	}
 }
 
 void CGameFramework::AnimateObjects()
@@ -501,7 +511,7 @@ void CGameFramework::MoveToNextFrame()
 	}
 }
 
-#define _WITH_PLAYER_TOP
+//#define _WITH_PLAYER_TOP
 
 void CGameFramework::FrameAdvance()
 {

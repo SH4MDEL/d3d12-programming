@@ -35,6 +35,13 @@ protected:
 
 	CCamera						*m_pCamera = NULL;
 
+	XMFLOAT3					m_xmf3PrePosition = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	XMFLOAT3					m_xmf3PPrePosition = XMFLOAT3(0.0f, 0.0f, 0.0f);
+
+	bool						m_isBoost = false;
+	bool						m_isDrift = false;
+	float						m_fDriftValue = 0.5f;
+
 public:
 	CPlayer();
 	virtual ~CPlayer();
@@ -44,12 +51,29 @@ public:
 	XMFLOAT3 GetUpVector() { return(m_xmf3Up); }
 	XMFLOAT3 GetRightVector() { return(m_xmf3Right); }
 
+	XMFLOAT3 GetPrePosition() { return(m_xmf3PPrePosition); }
+	void SetPrePosition(const XMFLOAT3& xmf3Position) { m_xmf3PPrePosition = m_xmf3PrePosition; m_xmf3PrePosition = xmf3Position; }
+
 	void SetFriction(float fFriction) { m_fFriction = fFriction; }
 	void SetGravity(const XMFLOAT3& xmf3Gravity) { m_xmf3Gravity = xmf3Gravity; }
 	void SetMaxVelocityXZ(float fMaxVelocity) { m_fMaxVelocityXZ = fMaxVelocity; }
 	void SetMaxVelocityY(float fMaxVelocity) { m_fMaxVelocityY = fMaxVelocity; }
 	void SetVelocity(const XMFLOAT3& xmf3Velocity) { m_xmf3Velocity = xmf3Velocity; }
 	void SetPosition(const XMFLOAT3& xmf3Position) { Move(XMFLOAT3(xmf3Position.x - m_xmf3Position.x, xmf3Position.y - m_xmf3Position.y, xmf3Position.z - m_xmf3Position.z), false); }
+
+	bool GetisBoost() { return m_isBoost; }
+	void SetisBoost(bool isBoost) {
+		if (isBoost) m_fMaxVelocityXZ = 60.0f;
+		else m_fMaxVelocityXZ = 30.0f;
+		m_isBoost = isBoost; 
+	}
+	bool GetisDrift() { return m_isDrift; }
+	void SetisDrift(bool isDrift) {
+		if (isDrift) m_fDriftValue = 1.0f;
+		else m_fDriftValue = 0.5f;
+		m_isDrift = isDrift;
+	}
+
 
 	const XMFLOAT3& GetVelocity() const { return(m_xmf3Velocity); }
 	float GetYaw() const { return(m_fYaw); }

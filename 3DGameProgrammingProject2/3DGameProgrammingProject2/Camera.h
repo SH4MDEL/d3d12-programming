@@ -2,9 +2,7 @@
 
 #define ASPECT_RATIO				(float(FRAME_BUFFER_WIDTH) / float(FRAME_BUFFER_HEIGHT))
 
-#define FIRST_PERSON_CAMERA			0x01
-#define SPACESHIP_CAMERA			0x02
-#define THIRD_PERSON_CAMERA			0x03
+#define THIRD_PERSON_CAMERA			0x01
 
 struct VS_CB_CAMERA_INFO
 {
@@ -85,7 +83,6 @@ public:
 	float& GetYaw() { return(m_fYaw); }
 
 	void SetOffset(XMFLOAT3 xmf3Offset) { m_xmf3Offset = xmf3Offset; }
-	//	void SetOffset(XMFLOAT3 xmf3Offset) { m_xmf3Offset = xmf3Offset; m_xmf3Position.x += xmf3Offset.x; m_xmf3Position.y += xmf3Offset.y; m_xmf3Position.z += xmf3Offset.z; }
 	XMFLOAT3& GetOffset() { return(m_xmf3Offset); }
 
 	void SetTimeLag(float fTimeLag) { m_fTimeLag = fTimeLag; }
@@ -100,24 +97,6 @@ public:
 	virtual void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f) { }
 	virtual void Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed) { }
 	virtual void SetLookAt(XMFLOAT3& xmf3LookAt) { }
-};
-
-class CSpaceShipCamera : public CCamera
-{
-public:
-	CSpaceShipCamera(CCamera* pCamera);
-	virtual ~CSpaceShipCamera() { }
-
-	virtual void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
-};
-
-class CFirstPersonCamera : public CCamera
-{
-public:
-	CFirstPersonCamera(CCamera* pCamera);
-	virtual ~CFirstPersonCamera() { }
-
-	virtual void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
 };
 
 class CThirdPersonCamera : public CCamera
