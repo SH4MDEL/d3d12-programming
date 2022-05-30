@@ -26,10 +26,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	float x = 0, z = 0;
 
 	while (in >> data) {
-		if (data == '0') {
-
-		}
-		else if (data == '1') {
+		if (data == '1') {
 			m_vGameObjects.push_back(new CTreeObject());
 			m_vGameObjects.back()->SetChild(CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, L"Models/Tree.txt"));
 			m_vGameObjects.back()->OnInitialize();
@@ -41,6 +38,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 			m_vGameObjects.back()->SetChild(CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, L"Models/Cactus.txt"));
 			m_vGameObjects.back()->OnInitialize();
 			m_vGameObjects.back()->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
+			m_vGameObjects.back()->SetScale(2.0f, 2.0f, 2.0f);
 			m_vGameObjects.back()->UpdateBoundingBox();
 		}
 		else if (data == '3') {
@@ -59,7 +57,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 			m_vGameObjects.back()->SetScale(1.5f, 1.5f, 1.5f);
 			m_vGameObjects.back()->UpdateBoundingBox();
 		}
-		if (x == 49.0f) {
+		if (x == 99.0f) {
 			x = 0.0f;
 			z += 1.0f;
 		}
@@ -87,11 +85,13 @@ bool CScene::CheckPlayerByObjectCollisions()
 {
 	for (const auto& elem : m_vGameObjects) {
 		if (m_pPlayer->m_xmMovedOOBB.Intersects(elem->m_xmMovedOOBB)) {
+			if (elem->m_bBlowingUp) {
+				return false;
+			}
 			if (elem->m_bBreakable && m_pPlayer->GetisBoost()) {
 				elem->m_bBlowingUp = true;
 				return false;
 			}
-			std::cout << "collide!" << std::endl;
 			return true;
 		}
 	}
@@ -163,12 +163,6 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
-		case 'W': m_vGameObjects[0]->MoveForward(+1.0f); break;
-		case 'S': m_vGameObjects[0]->MoveForward(-1.0f); break;
-		case 'A': m_vGameObjects[0]->MoveStrafe(-1.0f); break;
-		case 'D': m_vGameObjects[0]->MoveStrafe(+1.0f); break;
-		case 'Q': m_vGameObjects[0]->MoveUp(+1.0f); break;
-		case 'R': m_vGameObjects[0]->MoveUp(-1.0f); break;
 		default:
 			break;
 		}

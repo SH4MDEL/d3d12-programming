@@ -318,11 +318,11 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		case VK_F2:
 		case VK_F3:
 			break;
+		case VK_F5:
+			m_pPlayer->SetPosition(XMFLOAT3(80.0f, 0.0f, 200.0f));
+			break;
 		case VK_F9:
 			ChangeSwapChainState();
-			break;
-		case VK_F5:
-			m_pPlayer->SetPosition(XMFLOAT3(-10.0f, 0.0f, 0.0f));
 			break;
 		case VK_SPACE:
 			//m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_BASIC_CAMERA, m_GameTimer.GetTimeElapsed());
@@ -424,7 +424,7 @@ void CGameFramework::BuildObjects()
 
 	CCarPlayer* pCarPlayer = new CCarPlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
 	
-	pCarPlayer->SetPosition(XMFLOAT3(50.0f, 0.0f, 50.0f));
+	pCarPlayer->SetPosition(XMFLOAT3(80.0f, 0.0f, 200.0f));
 	m_pScene->m_pPlayer = m_pPlayer = pCarPlayer;
 	m_pCamera = m_pPlayer->GetCamera();
 

@@ -699,8 +699,7 @@ void CCactusObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 		}
 		else
 		{
-			m_bBlowingUp = false;
-			m_fElapsedTimes = 0.0f;
+
 		}
 	}
 	else
@@ -711,8 +710,10 @@ void CCactusObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 
 void CCactusObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
-	if (m_bBlowingUp)
+	if (m_bBlowingUp && m_fElapsedTimes > m_fDuration)
 	{
+	}
+	else if (m_bBlowingUp) {
 		for (int i = 0; i < EXPLOSION_DEBRISES; i++)
 		{
 			CGameObject::Render(pd3dCommandList, &m_pxmf4x4Transforms[i], m_pExplosionMesh);

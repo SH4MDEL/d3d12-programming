@@ -69,7 +69,7 @@ public:
 	}
 	bool GetisDrift() { return m_isDrift; }
 	void SetisDrift(bool isDrift) {
-		if (isDrift) m_fDriftValue = 1.0f;
+		if (isDrift) m_fDriftValue = 1.2f;
 		else m_fDriftValue = 0.5f;
 		m_isDrift = isDrift;
 	}
