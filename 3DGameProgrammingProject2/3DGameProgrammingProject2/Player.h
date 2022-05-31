@@ -40,7 +40,7 @@ protected:
 
 	bool						m_isBoost = false;
 	bool						m_isDrift = false;
-	float						m_fDriftValue = 0.5f;
+	float						m_fDriftValue = 0.3f;
 
 public:
 	CPlayer();
@@ -69,8 +69,8 @@ public:
 	}
 	bool GetisDrift() { return m_isDrift; }
 	void SetisDrift(bool isDrift) {
-		if (isDrift) m_fDriftValue = 1.2f;
-		else m_fDriftValue = 0.5f;
+		if (isDrift) m_fDriftValue = 0.6f;
+		else m_fDriftValue = 0.3f;
 		m_isDrift = isDrift;
 	}
 
