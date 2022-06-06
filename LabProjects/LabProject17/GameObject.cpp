@@ -22,7 +22,6 @@ void CMaterial::SetShader(CShader* pShader)
 	if (m_pShader) m_pShader->AddRef();
 }
 
-///////////////////////////////////////////////////////////////////////////////
 
 CGameObject::CGameObject()
 {
@@ -32,12 +31,12 @@ CGameObject::CGameObject()
 CGameObject::~CGameObject()
 {
 	if (m_pMesh) m_pMesh->Release();
-	if (m_pMaterial) m_pMaterial->Release();
 	//if (m_pShader)
 	//{
 	//	m_pShader->ReleaseShaderVariables();
 	//	m_pShader->Release();
 	//}
+	if (m_pMaterial) m_pMaterial->Release();
 }
 
 void CGameObject::SetShader(CShader* pShader)
@@ -48,13 +47,6 @@ void CGameObject::SetShader(CShader* pShader)
 		m_pMaterial->AddRef();
 	}
 	if (m_pMaterial) m_pMaterial->SetShader(pShader);
-}
-
-void CGameObject::SetMesh(CMesh* pMesh)
-{
-	if (m_pMesh) m_pMesh->Release();
-	m_pMesh = pMesh;
-	if (m_pMesh) m_pMesh->AddRef();
 }
 
 void CGameObject::SetMaterial(CMaterial* pMaterial)
@@ -68,6 +60,13 @@ void CGameObject::SetMaterial(UINT nReflection)
 {
 	if (!m_pMaterial) m_pMaterial = new CMaterial();
 	m_pMaterial->m_nReflection = nReflection;
+}
+
+void CGameObject::SetMesh(CMesh* pMesh)
+{
+	if (m_pMesh) m_pMesh->Release();
+	m_pMesh = pMesh;
+	if (m_pMesh) m_pMesh->AddRef();
 }
 
 void CGameObject::ReleaseUploadBuffers()
@@ -87,6 +86,7 @@ void CGameObject::OnPrepareRender()
 void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
 	OnPrepareRender();
+
 	if (m_pMaterial)
 	{
 		if (m_pMaterial->m_pShader)
@@ -95,6 +95,7 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 			m_pMaterial->m_pShader->UpdateShaderVariable(pd3dCommandList, &m_xmf4x4World);
 		}
 	}
+
 	if (m_pMesh) m_pMesh->Render(pd3dCommandList);
 }
 

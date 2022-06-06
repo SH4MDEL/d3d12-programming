@@ -1,5 +1,3 @@
-#include "Light.hlsl"
-
 //플레이어 객체의 데이터를 위한 상수 버퍼
 cbuffer cbPlayerInfo : register(b0)
 {
@@ -20,6 +18,8 @@ cbuffer cbGameObjectInfo : register(b2)
 	matrix gmtxGameObject : packoffset(c0);
 	uint gnMaterial : packoffset(c4);
 };
+
+#include "Light.hlsl"
 
 //정점 셰이더의 입력을 위한 구조체를 선언한다. 
 struct VS_INPUT
@@ -46,6 +46,12 @@ VS_OUTPUT VSDiffused(VS_INPUT input)
 	return(output);
 }
 
+//픽셀 셰이더를 정의한다. 
+float4 PSDiffused(VS_OUTPUT input) : SV_TARGET
+{
+	return(input.color);
+}
+
 VS_DIFFUSED_OUTPUT VSPlayer(VS_DIFFUSED_INPUT input)
 {
 	VS_DIFFUSED_OUTPUT output;
@@ -57,13 +63,7 @@ VS_DIFFUSED_OUTPUT VSPlayer(VS_DIFFUSED_INPUT input)
 
 float4 PSPlayer(VS_DIFFUSED_OUTPUT input) : SV_TARGET
 {
-	return(input.color);
-}
-
-//픽셀 셰이더를 정의한다. 
-float4 PSDiffused(VS_OUTPUT input) : SV_TARGET
-{
-	return(input.color);
+return(input.color);
 }
 
 //정점 조명을 사용
@@ -92,7 +92,6 @@ struct VS_LIGHTING_OUTPUT
 VS_LIGHTING_OUTPUT VSLighting(VS_LIGHTING_INPUT input)
 {
 	VS_LIGHTING_OUTPUT output;
-
 	output.positionW = (float3)mul(float4(input.position, 1.0f), gmtxGameObject);
 	output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
 	float3 normalW = mul(input.normal, (float3x3)gmtxGameObject);

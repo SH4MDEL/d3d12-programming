@@ -108,8 +108,8 @@ D3D12_SHADER_BYTECODE CShader::CreatePixelShader(ID3DBlob **ppd3dShaderBlob)
 }
 
 //셰이더 소스 코드를 컴파일하여 바이트 코드 구조체를 반환한다.
-D3D12_SHADER_BYTECODE CShader::CompileShaderFromFile(const WCHAR* pszFileName, LPCSTR
-	pszShaderName, LPCSTR pszShaderProfile, ID3DBlob** ppd3dShaderBlob)
+D3D12_SHADER_BYTECODE CShader::CompileShaderFromFile(const WCHAR *pszFileName, LPCSTR
+pszShaderName, LPCSTR pszShaderProfile, ID3DBlob** ppd3dShaderBlob)
 {
 	UINT nCompileFlags = 0;
 #if defined(_DEBUG)
@@ -132,7 +132,7 @@ D3D12_SHADER_BYTECODE CShader::CompileShaderFromFile(const WCHAR* pszFileName, L
 void CShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature
 	* pd3dGraphicsRootSignature)
 {
-	ID3DBlob* pd3dVertexShaderBlob = NULL, * pd3dPixelShaderBlob = NULL;
+	ID3DBlob* pd3dVertexShaderBlob = nullptr, * pd3dPixelShaderBlob = nullptr;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC d3dPipelineStateDesc;
 	::ZeroMemory(&d3dPipelineStateDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
@@ -167,12 +167,12 @@ void CShader::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 }
 
-//void CShader::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4X4* pxmf4x4World)
-//{
-//	XMFLOAT4X4 xmf4x4World;
-//	XMStoreFloat4x4(&xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(pxmf4x4World)));
-//	pd3dCommandList->SetGraphicsRoot32BitConstants(0, 16, &xmf4x4World, 0);
-//}
+void CShader::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4X4* pxmf4x4World)
+{
+	XMFLOAT4X4 xmf4x4World;
+	XMStoreFloat4x4(&xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(pxmf4x4World)));
+	pd3dCommandList->SetGraphicsRoot32BitConstants(0, 16, &xmf4x4World, 0);
+}
 
 void CShader::ReleaseShaderVariables()
 {
@@ -264,14 +264,6 @@ D3D12_SHADER_BYTECODE CPlayerShader::CreatePixelShader(ID3DBlob** ppd3dShaderBlo
 		ppd3dShaderBlob));
 }
 
-void CPlayerShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature
-	* pd3dGraphicsRootSignature)
-{
-	m_nPipelineStates = 1;
-	m_ppd3dPipelineStates = new ID3D12PipelineState*[m_nPipelineStates];
-	CShader::CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
-}
-
 void CPlayerShader::CreateShaderVariables(ID3D12Device* pd3dDevice,
 	ID3D12GraphicsCommandList* pd3dCommandList)
 {
@@ -299,6 +291,14 @@ void CPlayerShader::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandL
 	::memcpy(&m_pcbMappedPlayer->m_xmf4x4World, &xmf4x4World, sizeof(XMFLOAT4X4));
 }
 
+void CPlayerShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature
+	* pd3dGraphicsRootSignature)
+{
+	m_nPipelineStates = 1;
+	m_ppd3dPipelineStates = new ID3D12PipelineState*[m_nPipelineStates];
+	CShader::CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
+}
+
 void CPlayerShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
 	CShader::Render(pd3dCommandList, pCamera);
@@ -324,7 +324,7 @@ D3D12_INPUT_LAYOUT_DESC CObjectsShader::CreateInputLayout()
 
 	pd3dInputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
 	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	pd3dInputElementDescs[1] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12,
+	pd3dInputElementDescs[1] = { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12,
 	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
 	D3D12_INPUT_LAYOUT_DESC d3dInputLayoutDesc;
@@ -346,6 +346,43 @@ D3D12_SHADER_BYTECODE CObjectsShader::CreatePixelShader(ID3DBlob** ppd3dShaderBl
 		ppd3dShaderBlob));
 }
 
+//객체의 정보를 저장하기 위한 리소스를 생성하고 리소스에 대한 포인터를 가져온다. 
+void CObjectsShader::CreateShaderVariables(ID3D12Device *pd3dDevice, 
+ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	UINT ncbGameObjectBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256의 배수
+	m_pd3dcbGameObjects = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL,
+		ncbGameObjectBytes * m_nObjects, D3D12_HEAP_TYPE_UPLOAD,
+	D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
+
+	m_pd3dcbGameObjects->Map(0, NULL, (void**)&m_pcbMappedGameObjects);
+}
+
+// 객체의 월드변환 행렬과 재질 번호를 상수 버퍼에 쓴다. 
+void CObjectsShader::UpdateShaderVariables(ID3D12GraphicsCommandList * pd3dCommandList)
+{
+	UINT ncbGameObjectBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256의 배수
+	XMFLOAT4X4 xmf4x4World;
+	for (int j = 0; j < m_nObjects; j++)
+	{
+		XMStoreFloat4x4(&xmf4x4World,
+			XMMatrixTranspose(XMLoadFloat4x4(&m_ppObjects[j]->m_xmf4x4World)));
+		CB_GAMEOBJECT_INFO* pbMappedcbGameObject = (CB_GAMEOBJECT_INFO
+			*)(m_pcbMappedGameObjects + (j * ncbGameObjectBytes));
+		::memcpy(&pbMappedcbGameObject->m_xmf4x4World, &xmf4x4World, sizeof(XMFLOAT4X4));
+		pbMappedcbGameObject->m_nMaterial = m_ppObjects[j]->m_pMaterial->m_nReflection;
+	}
+}
+
+void CObjectsShader::ReleaseShaderVariables()
+{
+	if (m_pd3dcbGameObjects)
+	{
+		m_pd3dcbGameObjects->Unmap(0, NULL);
+		m_pd3dcbGameObjects->Release();
+	}
+}
+
 void CObjectsShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature
 	* pd3dGraphicsRootSignature)
 {
@@ -358,11 +395,15 @@ void CObjectsShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature
 void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList
 	* pd3dCommandList)
 {
-	CCubeMeshIlluminated* pCubeMesh = new CCubeMeshIlluminated(pd3dDevice,
-		pd3dCommandList, 12.0f, 12.0f, 12.0f);
+	//가로x세로x높이가 12x12x12인 정육면체 메쉬를 생성한다. 
+	CCubeMeshIlluminated *pCubeMesh = new CCubeMeshIlluminated(pd3dDevice, pd3dCommandList,
+	12.0f, 12.0f, 12.0f);
 
+	/*x-축, y-축, z-축 양의 방향의 객체 개수이다. 각 값을 1씩 늘리거나 줄이면서 실행할 때 프레임 레이트가 어떻게
+	변하는 가를 살펴보기 바란다.*/
 	int xObjects = 10, yObjects = 10, zObjects = 10, i = 0;
 
+	//x-축, y-축, z-축으로 21개씩 총 21 x 21 x 21 = 9261개의 정육면체를 생성하고 배치한다. 
 	m_nObjects = (xObjects * 2 + 1) * (yObjects * 2 + 1) * (zObjects * 2 + 1);
 
 	m_ppObjects = new CGameObject * [m_nObjects];
@@ -381,9 +422,10 @@ void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
 				pRotatingObject = new CRotatingObject();
 				pRotatingObject->SetMaterial(i % MAX_MATERIALS);
 				pRotatingObject->SetMesh(pCubeMesh);
-				pRotatingObject->SetPosition(fxPitch * x, fyPitch * y, fzPitch * z);
+				//각 정육면체 객체의 위치를 설정한다. 
+				pRotatingObject->SetPosition(fxPitch*x, fyPitch*y, fzPitch*z);
 				pRotatingObject->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));
-				pRotatingObject->SetRotationSpeed(10.0f * (i % 10));
+				pRotatingObject->SetRotationSpeed(10.0f * (i % 10) + 3.0f);
 				m_ppObjects[i++] = pRotatingObject;
 			}
 		}
@@ -438,54 +480,5 @@ void CObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera*
 				d3dcbGameObjectGpuVirtualAddress + (ncbGameObjectBytes * j));
 			m_ppObjects[j]->Render(pd3dCommandList, pCamera);
 		}
-	}
-}
-
-D3D12_SHADER_BYTECODE CObjectsShader::CreateVertexShader(ID3DBlob** ppd3dShaderBlob)
-{
-	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "VSLighting", "vs_5_1",
-		ppd3dShaderBlob));
-}
-
-D3D12_SHADER_BYTECODE CObjectsShader::CreatePixelShader(ID3DBlob** ppd3dShaderBlob)
-{
-	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "PSLighting", "ps_5_1",
-		ppd3dShaderBlob));
-}
-
-//객체의 정보를 저장하기 위한 리소스를 생성하고 리소스에 대한 포인터를 가져온다. 
-void CObjectsShader::CreateShaderVariables(ID3D12Device * pd3dDevice,
-	ID3D12GraphicsCommandList * pd3dCommandList)
-{
-	UINT ncbGameObjectBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256의 배수
-	m_pd3dcbGameObjects = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL,
-		ncbGameObjectBytes * m_nObjects, D3D12_HEAP_TYPE_UPLOAD,
-		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
-
-	m_pd3dcbGameObjects->Map(0, NULL, (void**)&m_pcbMappedGameObjects);
-}
-
-//객체의 월드변환 행렬과 재질 번호를 상수 버퍼에 쓴다. 
-void CObjectsShader::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList)
-{
-	UINT ncbGameObjectBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256의 배수
-	XMFLOAT4X4 xmf4x4World;
-	for (int j = 0; j < m_nObjects; j++)
-	{
-		XMStoreFloat4x4(&xmf4x4World,
-			XMMatrixTranspose(XMLoadFloat4x4(&m_ppObjects[j]->Getxmf4x4World())));
-		CB_GAMEOBJECT_INFO* pbMappedcbGameObject = (CB_GAMEOBJECT_INFO
-			*)(m_pcbMappedGameObjects + (j * ncbGameObjectBytes));
-		::memcpy(&pbMappedcbGameObject->m_xmf4x4World, &xmf4x4World, sizeof(XMFLOAT4X4));
-		pbMappedcbGameObject->m_nMaterial = m_ppObjects[j]->GetpMaterial()->m_nReflection;
-	}
-}
-
-void CObjectsShader::ReleaseShaderVariables()
-{
-	if (m_pd3dcbGameObjects)
-	{
-		m_pd3dcbGameObjects->Unmap(0, NULL);
-		m_pd3dcbGameObjects->Release();
 	}
 }

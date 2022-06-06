@@ -1,8 +1,14 @@
 // header.h: 표준 시스템 포함 파일
 // 또는 프로젝트 특정 포함 파일이 들어 있는 포함 파일입니다.
 //
-
 #pragma once
+
+#define MAX_LIGHTS 8 
+#define MAX_MATERIALS 8
+
+#define POINT_LIGHT 1
+#define SPOT_LIGHT 2
+#define DIRECTIONAL_LIGHT 3
 
 #include "targetver.h"
 #define WIN32_LEAN_AND_MEAN             // 거의 사용되지 않는 내용을 Windows 헤더에서 제외합니다.
@@ -49,13 +55,6 @@ using Microsoft::WRL::ComPtr;
 
 #define FRAME_BUFFER_WIDTH 800
 #define FRAME_BUFFER_HEIGHT 600
-
-#define MAX_LIGHTS 8 
-#define MAX_MATERIALS 8 
-#define POINT_LIGHT 1
-
-#define SPOT_LIGHT 2
-#define DIRECTIONAL_LIGHT 3
 
 // 다음을 정의하면 응용 프로그램을 실행할 때 처음부터 전체화면 모드로 실행된다. 
 // 그렇지 않으면 실행할 때 윈도우 모드로 실행되고 ‘F9’를 누르면 전체화면 모드로 전환된다.

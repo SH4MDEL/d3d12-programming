@@ -1,7 +1,5 @@
-﻿// LabProject17.cpp : 애플리케이션에 대한 진입점을 정의합니다.
+﻿// LabProject06.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
-// 예제 프로그램 LabProject11를 기반으로 여러 개의 직육면체들을 조명 처리를 하여 렌더링할 수 있도록 
-// 구현한다.
 
 #include "LabProject17.h"
 #include "GameFramework.h"

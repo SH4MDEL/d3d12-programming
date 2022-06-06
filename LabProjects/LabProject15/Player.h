@@ -97,7 +97,7 @@ public:
 
 	//카메라를 변경하기 위하여 호출하는 함수이다. 
 	CCamera *OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode);
-	virtual CCamera* ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed) {
+	virtual CCamera* ChangeCamera(WPARAM nNewCameraMode, float fTimeElapsed) {
 		return(NULL);
 	}
 

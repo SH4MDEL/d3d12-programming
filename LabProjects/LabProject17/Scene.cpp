@@ -132,7 +132,6 @@ void CScene::ReleaseObjects()
 		m_pShaders[i].ReleaseObjects();
 	}
 	if (m_pShaders) delete[] m_pShaders;
-
 	if (m_pLights) delete m_pLights;
 	if (m_pMaterials) delete m_pMaterials;
 }
@@ -156,10 +155,12 @@ bool CScene::ProcessInput(UCHAR* pKeysBuffer)
 
 void CScene::AnimateObjects(float fTimeElapsed)
 {
+
 	for (int i = 0; i < m_nShaders; i++)
 	{
 		m_pShaders[i].AnimateObjects(fTimeElapsed);
 	}
+
 	//조명의 위치와 방향을 플레이어의 위치와 방향으로 변경한다. 
 	if (m_pLights)
 	{
@@ -167,6 +168,7 @@ void CScene::AnimateObjects(float fTimeElapsed)
 		m_pLights->m_pLights[1].m_xmf3Direction = m_pPlayer->GetLookVector();
 	}
 }
+
 //void CScene::PrepareRender(ID3D12GraphicsCommandList* pd3dCommandList)
 //{
 //	//그래픽 루트 시그너쳐를 설정한다. 
@@ -179,11 +181,13 @@ void CScene::AnimateObjects(float fTimeElapsed)
 
 void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
-	pCamera->SetViewportsAndScissorRects(pd3dCommandList);
 	pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature);
+
+	pCamera->SetViewportsAndScissorRects(pd3dCommandList);
 	pCamera->UpdateShaderVariables(pd3dCommandList);
 
 	UpdateShaderVariables(pd3dCommandList);
+
 	//조명 리소스에 대한 상수 버퍼 뷰를 쉐이더 변수에 연결(바인딩)한다. 
 	D3D12_GPU_VIRTUAL_ADDRESS d3dcbLightsGpuVirtualAddress = 
 	m_pd3dcbLights->GetGPUVirtualAddress();

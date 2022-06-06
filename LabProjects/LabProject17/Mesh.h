@@ -34,6 +34,27 @@ public:
 	~CDiffusedVertex() { }
 };
 
+class CIlluminatedVertex : public CVertex
+{
+protected:
+	XMFLOAT3 m_xmf3Normal;
+
+public:
+	CIlluminatedVertex() {
+		m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f); m_xmf3Normal =
+			XMFLOAT3(0.0f, 0.0f, 0.0f);
+	}
+	CIlluminatedVertex(float x, float y, float z, XMFLOAT3 xmf3Normal = XMFLOAT3(0.0f,
+		0.0f, 0.0f)) {
+		m_xmf3Position = XMFLOAT3(x, y, z); m_xmf3Normal = xmf3Normal;
+	}
+	CIlluminatedVertex(XMFLOAT3 xmf3Position, XMFLOAT3 xmf3Normal = XMFLOAT3(0.0f, 0.0f,
+		0.0f)) {
+		m_xmf3Position = xmf3Position; m_xmf3Normal = xmf3Normal;
+	}
+	~CIlluminatedVertex() { }
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class CMesh
@@ -110,27 +131,6 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class CIlluminatedVertex : public CVertex
-{
-protected:
-	XMFLOAT3					m_xmf3Normal;
-
-public:
-	CIlluminatedVertex() {
-		m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		m_xmf3Normal = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	}
-	CIlluminatedVertex(float x, float y, float z,
-		XMFLOAT3 xmf3Normal = XMFLOAT3(0.0f, 0.0f, 0.0f)) {
-		m_xmf3Position = XMFLOAT3(x, y, z); m_xmf3Normal = xmf3Normal;
-	}
-	CIlluminatedVertex(XMFLOAT3 xmf3Position,
-		XMFLOAT3 xmf3Normal = XMFLOAT3(0.0f, 0.0f, 0.0f)) {
-		m_xmf3Position = xmf3Position; m_xmf3Normal = xmf3Normal;
-	}
-	~CIlluminatedVertex() { }
-};
-
 class CMeshIlluminated : public CMesh
 {
 public:
@@ -148,6 +148,8 @@ public:
 	void CalculateVertexNormals(XMFLOAT3* pxmf3Normals, XMFLOAT3* pxmf3Positions, int
 		nVertices, UINT* pnIndices, int nIndices);
 };
+
+///////////////////////////////////////////////////////////////////////////////
 
 class CCubeMeshIlluminated : public CMeshIlluminated
 {

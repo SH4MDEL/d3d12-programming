@@ -462,6 +462,8 @@ void CMeshIlluminated::CalculateVertexNormals(XMFLOAT3* pxmf3Normals, XMFLOAT3
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 CCubeMeshIlluminated::CCubeMeshIlluminated(ID3D12Device* pd3dDevice,
 	ID3D12GraphicsCommandList* pd3dCommandList, float fWidth, float fHeight, float fDepth) :
 	CMeshIlluminated(pd3dDevice, pd3dCommandList)
@@ -471,7 +473,7 @@ CCubeMeshIlluminated::CCubeMeshIlluminated(ID3D12Device* pd3dDevice,
 	m_nOffset = 0;
 	m_nSlot = 0;
 	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
+	
 	m_nIndices = 36;
 	UINT pnIndices[36];
 
@@ -499,6 +501,7 @@ CCubeMeshIlluminated::CCubeMeshIlluminated(ID3D12Device* pd3dDevice,
 	XMFLOAT3 pxmf3Positions[8];
 
 	float fx = fWidth * 0.5f, fy = fHeight * 0.5f, fz = fDepth * 0.5f;
+
 	pxmf3Positions[0] = XMFLOAT3(-fx, +fy, -fz);
 	pxmf3Positions[1] = XMFLOAT3(+fx, +fy, -fz);
 	pxmf3Positions[2] = XMFLOAT3(+fx, +fy, +fz);
@@ -507,12 +510,13 @@ CCubeMeshIlluminated::CCubeMeshIlluminated(ID3D12Device* pd3dDevice,
 	pxmf3Positions[5] = XMFLOAT3(+fx, -fy, -fz);
 	pxmf3Positions[6] = XMFLOAT3(+fx, -fy, +fz);
 	pxmf3Positions[7] = XMFLOAT3(-fx, -fy, +fz);
-
+	
 	XMFLOAT3 pxmf3Normals[8];
 	for (int i = 0; i < 8; i++) pxmf3Normals[i] = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
 	CalculateVertexNormals(pxmf3Normals, pxmf3Positions, m_nVertices, pnIndices,
 		m_nIndices);
+
 	CIlluminatedVertex pVertices[8];
 	for (int i = 0; i < 8; i++) pVertices[i] = CIlluminatedVertex(pxmf3Positions[i],
 		pxmf3Normals[i]);

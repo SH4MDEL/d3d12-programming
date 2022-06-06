@@ -60,6 +60,7 @@ public:
 	ID3D12RootSignature* CreateGraphicsRootSignature(ID3D12Device* pd3dDevice);
 	ID3D12RootSignature* GetGraphicsRootSignature(ID3D12Device* pd3dDevice);
 
+
 	//씬의 모든 조명과 재질을 생성
 	void BuildLightsAndMaterials();
 
@@ -69,31 +70,27 @@ public:
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList);
 	virtual void ReleaseShaderVariables();
 
+	CPlayer* m_pPlayer = nullptr;
+
 protected:
 	//배치(Batch) 처리를 하기 위하여 씬을 셰이더들의 리스트로 표현한다. 
-	CObjectsShader *m_pShaders = NULL;
+	CObjectsShader *m_pShaders = nullptr;
 	int m_nShaders = 0;
 
-	ID3D12RootSignature* m_pd3dGraphicsRootSignature = NULL;
+	ID3D12RootSignature* m_pd3dGraphicsRootSignature = nullptr;
 	//루트 시그너쳐를 나타내는 인터페이스 포인터이다. 
 
-	//ID3D12PipelineState* m_pd3dPipelineState = NULL;
-	//파이프라인 상태를 나타내는 인터페이스 포인터이다.
-
 	//씬의 조명
-	LIGHTS* m_pLights = NULL;
+	LIGHTS* m_pLights = nullptr;
 
 	//조명을 나타내는 리소스와 리소스에 대한 포인터이다. 
-	ID3D12Resource *m_pd3dcbLights = NULL;
-	LIGHTS* m_pcbMappedLights = NULL;
+	ID3D12Resource *m_pd3dcbLights = nullptr;
+	LIGHTS* m_pcbMappedLights = nullptr;
 
 	//씬의 객체들에 적용되는 재질
-	MATERIALS* m_pMaterials = NULL;
+	MATERIALS* m_pMaterials = nullptr;
 
 	//재질을 나타내는 리소스와 리소스에 대한 포인터이다. 
-	ID3D12Resource *m_pd3dcbMaterials = NULL;
-	MATERIAL* m_pcbMappedMaterials = NULL;
-
-public:
-	CPlayer* m_pPlayer = NULL;
+	ID3D12Resource *m_pd3dcbMaterials = nullptr;
+	MATERIAL* m_pcbMappedMaterials = nullptr;
 };
