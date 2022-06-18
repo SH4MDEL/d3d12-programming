@@ -239,8 +239,8 @@ CAirplanePlayer::CAirplanePlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommand
 {
 	m_pCamera = ChangeCamera(/*SPACESHIP_CAMERA*/THIRD_PERSON_CAMERA, 0.0f);
 
-//	CGameObject *pGameObject = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Apache.bin");
-	CGameObject *pGameObject = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Gunship.bin");
+	CGameObject *pGameObject = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Apache.bin");
+	//CGameObject *pGameObject = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Gunship.bin");
 
 	pGameObject->Rotate(15.0f, 0.0f, 0.0f);
 	pGameObject->SetScale(8.5f, 8.5f, 8.5f);
@@ -257,11 +257,11 @@ CAirplanePlayer::~CAirplanePlayer()
 
 void CAirplanePlayer::OnInitialize()
 {
-//	m_pMainRotorFrame = FindFrame("rotor");
-//	m_pTailRotorFrame = FindFrame("black_m_7");
+	m_pMainRotorFrame = FindFrame("rotor");
+	m_pTailRotorFrame = FindFrame("black_m_7");
 
-	m_pMainRotorFrame = FindFrame("Rotor");
-	m_pTailRotorFrame = FindFrame("Back_Rotor");
+	//m_pMainRotorFrame = FindFrame("Rotor");
+	//m_pTailRotorFrame = FindFrame("Back_Rotor");
 }
 
 void CAirplanePlayer::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
