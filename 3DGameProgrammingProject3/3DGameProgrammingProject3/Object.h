@@ -301,8 +301,9 @@ public:
 	XMFLOAT4X4					m_pxmf4x4MissileTransforms[MAX_LAUNCH_MISSILE][EXPLOSION_DEBRISES];
 
 	float							m_fElapsedTimes = 0.0f;
-	float							m_fDuration = 3.0f;
-	float						m_fExplosionSpeed = 10.0f;
+	float							m_fBlowingDuration = 3.0f;
+	float							m_fDuration = 5.0f;
+	float						m_fExplosionSpeed = 100.0f;
 	float						m_fExplosionRotation = 360.0f;
 	float						m_fMoveSpeed = 300.0f;
 
@@ -321,6 +322,7 @@ public:
 	static void PrepareExplosion(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 
 	void ShootMissile(XMFLOAT4X4 xmf4x4World, int iMissileNumber);
+	void ExploseMissile();
 };
 
 class CHellicopterObject : public CGameObject

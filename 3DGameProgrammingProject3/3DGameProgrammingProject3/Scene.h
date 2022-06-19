@@ -72,11 +72,12 @@ public:
 	// 추가 처리 함수
 	void CheckObjectByObjectCollisions();
 	void CheckPlayerByObjectCollisions();
+	void CheckMissileByObjectCollisions();
 
 public:
 	ID3D12RootSignature			*m_pd3dGraphicsRootSignature = NULL;
 
-	std::vector<CGameObject*>	m_vpGameObjects;
+	std::list<CGameObject*>		m_lpGameObjects;
 
 	LIGHT						*m_pLights = NULL;
 	int							m_nLights = 0;

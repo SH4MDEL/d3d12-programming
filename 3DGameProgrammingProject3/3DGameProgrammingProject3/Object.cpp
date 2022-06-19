@@ -850,7 +850,8 @@ CDiffusedMesh* CMissileObject::m_pMissileMesh = NULL;
 
 CMissileObject::CMissileObject()
 {
-	m_xmOOBB = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	m_xmOOBB = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(2.0f, 2.0f, 6.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+
 	m_fMoveSpeed = 300.0f;
 }
 
@@ -866,7 +867,7 @@ void CMissileObject::PrepareExplosion(ID3D12Device* pd3dDevice, ID3D12GraphicsCo
 {
 	for (int i = 0; i < EXPLOSION_DEBRISES; i++) XMStoreFloat3(&m_pxmf3SphereVectors[i], ::RandomUnitVectorOnSphere());
 
-	m_pExplosionMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList, 0.2f, 0.2f, 0.2f);
+	m_pExplosionMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList, 2.0f, 2.0f, 2.0f);
 	m_pMissileMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList, 4.0f, 4.0f, 12.0f);
 }
 
@@ -875,31 +876,54 @@ void CMissileObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent, int 
 	if (m_bBlowingUp)
 	{
 		m_fElapsedTimes += fTimeElapsed;
-		if (m_fElapsedTimes <= m_fDuration)
+		if (m_fElapsedTimes <= m_fBlowingDuration)
 		{
 			XMFLOAT3 xmf3Position = GetPosition();
 			xmf3Position.x = m_pxmf4x4Transforms[iMissileNumber]._41;
 			xmf3Position.y = m_pxmf4x4Transforms[iMissileNumber]._42;
 			xmf3Position.z = m_pxmf4x4Transforms[iMissileNumber]._43;
+
 			for (int i = 0; i < EXPLOSION_DEBRISES; i++)
 			{
 				m_pxmf4x4MissileTransforms[iMissileNumber][i] = Matrix4x4::Identity();
 				m_pxmf4x4MissileTransforms[iMissileNumber][i]._41 = xmf3Position.x + m_pxmf3SphereVectors[i].x * m_fExplosionSpeed * m_fElapsedTimes;
 				m_pxmf4x4MissileTransforms[iMissileNumber][i]._42 = xmf3Position.y + m_pxmf3SphereVectors[i].y * m_fExplosionSpeed * m_fElapsedTimes;
 				m_pxmf4x4MissileTransforms[iMissileNumber][i]._43 = xmf3Position.z + m_pxmf3SphereVectors[i].z * m_fExplosionSpeed * m_fElapsedTimes;
-				m_pxmf4x4MissileTransforms[iMissileNumber][i] = Matrix4x4::Multiply(Matrix4x4::RotationAxis(m_pxmf3SphereVectors[i], m_fExplosionRotation * m_fElapsedTimes), m_pxmf4x4Transforms[i]);
+				m_pxmf4x4MissileTransforms[iMissileNumber][i] = Matrix4x4::Multiply(Matrix4x4::RotationAxis(m_pxmf3SphereVectors[i], 
+					m_fExplosionRotation * m_fElapsedTimes), m_pxmf4x4MissileTransforms[iMissileNumber][i]);
 			}
+			cout << m_pxmf4x4MissileTransforms[iMissileNumber][0]._41 << ", " << m_pxmf4x4MissileTransforms[iMissileNumber][0]._42 << ", " << m_pxmf4x4MissileTransforms[iMissileNumber][0]._43 << endl;
 		}
 		else
 		{
+			m_bIsShooted = false;
+			m_bBlowingUp = false;
+			m_fElapsedTimes = 0.0f;
+			return;
 
 		}
 	}
 	else
 	{
-		m_pxmf4x4Transforms[iMissileNumber]._41 += m_pxmf4x4Transforms[iMissileNumber]._31 * m_fMoveSpeed * fTimeElapsed;
-		m_pxmf4x4Transforms[iMissileNumber]._42 += m_pxmf4x4Transforms[iMissileNumber]._32 * m_fMoveSpeed * fTimeElapsed;
-		m_pxmf4x4Transforms[iMissileNumber]._43 += m_pxmf4x4Transforms[iMissileNumber]._33 * m_fMoveSpeed * fTimeElapsed;
+		m_fElapsedTimes += fTimeElapsed;
+		if (m_fElapsedTimes <= m_fDuration) {
+			m_pxmf4x4Transforms[iMissileNumber]._41 += m_pxmf4x4Transforms[iMissileNumber]._31 * m_fMoveSpeed * fTimeElapsed;
+			m_pxmf4x4Transforms[iMissileNumber]._42 += m_pxmf4x4Transforms[iMissileNumber]._32 * m_fMoveSpeed * fTimeElapsed;
+			m_pxmf4x4Transforms[iMissileNumber]._43 += m_pxmf4x4Transforms[iMissileNumber]._33 * m_fMoveSpeed * fTimeElapsed;
+
+			XMFLOAT3 Pos = GetPosition();
+			Pos.x = m_pxmf4x4Transforms[iMissileNumber]._41;
+			Pos.y = m_pxmf4x4Transforms[iMissileNumber]._42;
+			Pos.z = m_pxmf4x4Transforms[iMissileNumber]._43;
+			SetPosition(Pos);
+			m_xmOOBB.Center = Pos;
+		}
+		else {
+			m_bIsShooted = false;
+			m_bBlowingUp = false;
+			m_fElapsedTimes = 0.0f;
+			return;
+		}
 
 		CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
 	}
@@ -907,11 +931,11 @@ void CMissileObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent, int 
 
 void CMissileObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int iMissileNumber)
 {
-	if (m_bBlowingUp && m_fElapsedTimes > m_fDuration)
+	if (m_bBlowingUp && m_fElapsedTimes > m_fBlowingDuration)
 	{
 	}
 	else if (m_bBlowingUp) {
-		for (int i = 0; i < EXPLOSION_DEBRISES; i++)
+		for (int i = 0; i < EXPLOSION_DEBRISES; ++i)
 		{
 			CGameObject::Render(pd3dCommandList, &m_pxmf4x4MissileTransforms[iMissileNumber][i], m_pExplosionMesh);
 		}
@@ -927,10 +951,27 @@ void CMissileObject::ShootMissile(XMFLOAT4X4 xmf4x4Transforms, int iMissileNumbe
 	m_bIsShooted = true;
 	m_bBlowingUp = false;
 	m_pxmf4x4Transforms[iMissileNumber] = xmf4x4Transforms;
+
+	XMFLOAT3 Pos = GetPosition();
+	Pos.x = m_pxmf4x4Transforms[iMissileNumber]._41;
+	Pos.y = m_pxmf4x4Transforms[iMissileNumber]._42;
+	Pos.z = m_pxmf4x4Transforms[iMissileNumber]._43;
+	SetPosition(Pos);
+
+	m_xmOOBB.Center = Pos;
+
+
+
 	for (int i = 0; i < EXPLOSION_DEBRISES; i++)
 	{
 		m_pxmf4x4MissileTransforms[iMissileNumber][i] = xmf4x4Transforms;
 	}
+}
+
+void CMissileObject::ExploseMissile()
+{
+	m_bBlowingUp = true;
+	m_fElapsedTimes = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -959,7 +1000,6 @@ void CHellicopterObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 		XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
 		m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
 	}
-
 	CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
 }
 

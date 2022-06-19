@@ -122,7 +122,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	int nSelectedCar = 0;
 	int nLine = 0;
 
-	for (int i = 0; i < 20; ++i) {
+	for (int i = 0; i < 2; ++i) {
 		nSelectedCar = random_car(dre);
 		nLine = random_line(dre);
 
@@ -133,7 +133,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 				pGunShipObject->OnInitialize();
 				pGunShipObject->SetBoundingBox(pGunShipObject->m_xmOOBB, pGunshipModel);
 				pGunShipObject->SetPosition(XMFLOAT3((float)nLine * 20.0f, 0.0f, i * 200.0f));
-				m_vpGameObjects.push_back(pGunShipObject);
+				m_lpGameObjects.push_back(pGunShipObject);
 				break;
 			case SuperCobra:
 				pSuperCobraObject = new CSuperCobraObject();
@@ -141,7 +141,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 				pSuperCobraObject->OnInitialize();
 				pSuperCobraObject->SetBoundingBox(pSuperCobraObject->m_xmOOBB, pSuperCobraModel);
 				pSuperCobraObject->SetPosition(XMFLOAT3((float)nLine * 20.0f, 0.0f, i * 200.0f));
-				m_vpGameObjects.push_back(pSuperCobraObject);
+				m_lpGameObjects.push_back(pSuperCobraObject);
 				break;
 			case Mi24:
 				pMi24Object = new CMi24Object();
@@ -149,7 +149,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 				pMi24Object->OnInitialize();
 				pMi24Object->SetBoundingBox(pMi24Object->m_xmOOBB, pMi24Model);
 				pMi24Object->SetPosition(XMFLOAT3((float)nLine * 20.0f, 0.0f, i * 200.0f));
-				m_vpGameObjects.push_back(pMi24Object);
+				m_lpGameObjects.push_back(pMi24Object);
 				break;
 		}
 		
@@ -161,9 +161,9 @@ void CScene::ReleaseObjects()
 {
 	if (m_pd3dGraphicsRootSignature) m_pd3dGraphicsRootSignature->Release();
 
-	while (m_vpGameObjects.size()) {
-		m_vpGameObjects.back()->Release();
-		m_vpGameObjects.pop_back();
+	while (m_lpGameObjects.size()) {
+		m_lpGameObjects.back()->Release();
+		m_lpGameObjects.pop_back();
 	}
 
 	if (m_pTerrain) delete m_pTerrain;
@@ -240,7 +240,7 @@ void CScene::ReleaseShaderVariables()
 
 void CScene::ReleaseUploadBuffers()
 {
-	for (const auto& elm : m_vpGameObjects) elm->ReleaseUploadBuffers();
+	for (const auto& elm : m_lpGameObjects) elm->ReleaseUploadBuffers();
 	if (m_pTerrain) m_pTerrain->ReleaseUploadBuffers();
 }
 
@@ -263,7 +263,7 @@ void CScene::AnimateObjects(float fTimeElapsed)
 {
 	m_fElapsedTime = fTimeElapsed;
 
-	for (const auto& elm : m_vpGameObjects) {
+	for (const auto& elm : m_lpGameObjects) {
 		elm->Animate(fTimeElapsed, NULL);
 	}
 
@@ -278,6 +278,7 @@ void CScene::AnimateObjects(float fTimeElapsed)
 	// 추가적인 처리 함수
 	//CheckObjectByObjectCollisions();
 	//CheckPlayerByObjectCollisions();
+	CheckMissileByObjectCollisions();
 }
 
 void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
@@ -292,7 +293,7 @@ void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera
 	D3D12_GPU_VIRTUAL_ADDRESS d3dcbLightsGpuVirtualAddress = m_pd3dcbLights->GetGPUVirtualAddress();
 	pd3dCommandList->SetGraphicsRootConstantBufferView(2, d3dcbLightsGpuVirtualAddress); //Lights
 
-	for (const auto& elm : m_vpGameObjects) {
+	for (const auto& elm : m_lpGameObjects) {
 		elm->UpdateTransform(NULL);
 		elm->Render(pd3dCommandList, pCamera);
 	}
@@ -304,10 +305,10 @@ void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera
 
 void CScene::CheckObjectByObjectCollisions()
 {
-	for (const auto& elm1 : m_vpGameObjects) {
+	for (const auto& elm1 : m_lpGameObjects) {
 		CHellicopterObject* Car1 = (CHellicopterObject*)elm1;
 
-		for (const auto& elm2 : m_vpGameObjects) {
+		for (const auto& elm2 : m_lpGameObjects) {
 			CHellicopterObject* Car2 = (CHellicopterObject*)elm2;
 			if (Car1 != Car2) {
 				float fDistZ = Car1->GetPosition().z - Car2->GetPosition().z;
@@ -352,10 +353,29 @@ void CScene::CheckObjectByObjectCollisions()
 	}
 }
 
+void CScene::CheckMissileByObjectCollisions()
+{
+	CAirplanePlayer* Player = (CAirplanePlayer*)m_pPlayer;
+
+	for (int i = 0; i < MAX_LAUNCH_MISSILE; ++i) {
+		if (Player->m_pMissileObject[i].m_bIsShooted && !Player->m_pMissileObject[i].m_bBlowingUp) {
+			for (auto iter = m_lpGameObjects.begin(); iter != m_lpGameObjects.end(); ++iter) {
+				CHellicopterObject* Hellicopter = (CHellicopterObject*)*iter;
+				if (Hellicopter->m_xmOOBB.Intersects(Player->m_pMissileObject[i].m_xmOOBB)) {
+					Player->m_pMissileObject[i].ExploseMissile();
+					m_lpGameObjects.erase(iter);
+					break;
+				}
+			}
+		}
+	}
+	
+}
+
 void CScene::CheckPlayerByObjectCollisions()
 {
 	
-	for (const auto& elm : m_vpGameObjects) {
+	for (const auto& elm : m_lpGameObjects) {
 		CHellicopterObject* Car = (CHellicopterObject*)elm;
 		
 		if (Car->m_xmOOBB.Intersects(m_pPlayer->m_xmOOBB)) {
