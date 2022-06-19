@@ -131,6 +131,7 @@ public:
 	XMFLOAT4X4						m_xmf4x4World;
 
 	BoundingOrientedBox				m_xmOOBB = BoundingOrientedBox();
+
 	CGameObject*					m_pObjetCollided = nullptr;
 	XMFLOAT3						m_xmCollidedShift{ XMFLOAT3(0.0f, 0.0f, 0.0f) };
 
@@ -336,6 +337,13 @@ protected:
 	CGameObject* m_pTailRotorFrame = NULL;
 
 public:
+	static std::vector<XMFLOAT3>			m_vxmf3MovePosition;
+	static void PrepareMovePosition();
+	int									m_iPosition;
+	XMFLOAT3							m_xmfPositionCache;
+	void								ResetPosition();
+
+
 	virtual void OnInitialize();
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
 };

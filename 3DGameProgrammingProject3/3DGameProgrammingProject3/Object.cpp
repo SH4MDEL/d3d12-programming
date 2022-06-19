@@ -892,7 +892,7 @@ void CMissileObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent, int 
 				m_pxmf4x4MissileTransforms[iMissileNumber][i] = Matrix4x4::Multiply(Matrix4x4::RotationAxis(m_pxmf3SphereVectors[i], 
 					m_fExplosionRotation * m_fElapsedTimes), m_pxmf4x4MissileTransforms[iMissileNumber][i]);
 			}
-			cout << m_pxmf4x4MissileTransforms[iMissileNumber][0]._41 << ", " << m_pxmf4x4MissileTransforms[iMissileNumber][0]._42 << ", " << m_pxmf4x4MissileTransforms[iMissileNumber][0]._43 << endl;
+			//cout << m_pxmf4x4MissileTransforms[iMissileNumber][0]._41 << ", " << m_pxmf4x4MissileTransforms[iMissileNumber][0]._42 << ", " << m_pxmf4x4MissileTransforms[iMissileNumber][0]._43 << endl;
 		}
 		else
 		{
@@ -900,7 +900,6 @@ void CMissileObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent, int 
 			m_bBlowingUp = false;
 			m_fElapsedTimes = 0.0f;
 			return;
-
 		}
 	}
 	else
@@ -960,8 +959,6 @@ void CMissileObject::ShootMissile(XMFLOAT4X4 xmf4x4Transforms, int iMissileNumbe
 
 	m_xmOOBB.Center = Pos;
 
-
-
 	for (int i = 0; i < EXPLOSION_DEBRISES; i++)
 	{
 		m_pxmf4x4MissileTransforms[iMissileNumber][i] = xmf4x4Transforms;
@@ -976,8 +973,12 @@ void CMissileObject::ExploseMissile()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
+
+std::vector<XMFLOAT3> CHellicopterObject::m_vxmf3MovePosition;
+
 CHellicopterObject::CHellicopterObject()
 {
+	m_iPosition = 0;
 }
 
 CHellicopterObject::~CHellicopterObject()
@@ -1000,7 +1001,55 @@ void CHellicopterObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 		XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
 		m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
 	}
+
+	m_xmfPositionCache = GetPosition();
+
+	if (m_iPosition + 1 != m_vxmf3MovePosition.size()) {
+		XMFLOAT3 xmfDirection;
+		xmfDirection.x = m_vxmf3MovePosition[m_iPosition + 1].x - m_vxmf3MovePosition[m_iPosition].x;
+		xmfDirection.y = m_vxmf3MovePosition[m_iPosition + 1].y - m_vxmf3MovePosition[m_iPosition].y;
+		xmfDirection.z = m_vxmf3MovePosition[m_iPosition + 1].z - m_vxmf3MovePosition[m_iPosition].z;
+		bool xjudge = false;
+		bool yjudge = false;
+		bool zjudge = false;
+		if ((xmfDirection.x < 0 && GetPosition().x <= m_vxmf3MovePosition[m_iPosition + 1].x) ||
+			(xmfDirection.x >= 0 && GetPosition().x >= m_vxmf3MovePosition[m_iPosition + 1].x)) {
+			xjudge = true;
+		}
+		if ((xmfDirection.y < 0 && GetPosition().y <= m_vxmf3MovePosition[m_iPosition + 1].y) ||
+			(xmfDirection.y >= 0 && GetPosition().y >= m_vxmf3MovePosition[m_iPosition + 1].y)) {
+			yjudge = true;
+		}
+		if ((xmfDirection.z < 0 && GetPosition().z <= m_vxmf3MovePosition[m_iPosition + 1].z) ||
+			(xmfDirection.z >= 0 && GetPosition().z >= m_vxmf3MovePosition[m_iPosition + 1].z)) {
+			zjudge = true;
+		}
+		if (xjudge && yjudge && zjudge) {
+			SetPosition(m_vxmf3MovePosition[m_iPosition + 1]);
+			++m_iPosition;
+		}
+		else {
+			float sum = sqrt((xmfDirection.x * xmfDirection.x) + (xmfDirection.y * xmfDirection.y) + (xmfDirection.z * xmfDirection.z));
+			m_xmf4x4Transform._31 = xmfDirection.x / sum;
+			m_xmf4x4Transform._32 = xmfDirection.y / sum;
+			m_xmf4x4Transform._33 = xmfDirection.z / sum;
+			MoveForward(100.0f * fTimeElapsed);
+		}
+	}
 	CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
+}
+
+void CHellicopterObject::PrepareMovePosition()
+{
+	m_vxmf3MovePosition.push_back(XMFLOAT3(-500.0f, 0.0f, -500.0f));
+	m_vxmf3MovePosition.push_back(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	m_vxmf3MovePosition.push_back(XMFLOAT3(-500.0f, 0.0f, -500.0f));
+}
+
+void CHellicopterObject::ResetPosition()
+{
+	SetPosition(m_xmfPositionCache);
+	UpdateBoundingBox();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

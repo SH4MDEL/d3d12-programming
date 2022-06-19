@@ -5,15 +5,6 @@
 #include "stdafx.h"
 #include "Scene.h"
 
-#include <random>
-std::default_random_engine dre;
-std::uniform_real_distribution<float> random_rotation{ 0.0f, 360.0f };
-std::uniform_int_distribution<int> random_car{ 0, 2 };
-std::uniform_int_distribution<int> random_line{ -4, 4 };
-std::uniform_real_distribution<float> random_forward_distance{ 2500.0f, 4000.0f };
-
-enum Cars { Gunship = 0, SuperCobra, Mi24 };
-
 CScene::CScene()
 {
 }
@@ -78,6 +69,7 @@ void CScene::BuildDefaultLightsAndMaterials()
 void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList)
 {
 	CMissileObject::PrepareExplosion(pd3dDevice, pd3dCommandList);
+	CHellicopterObject::PrepareMovePosition();
 
 	m_pd3dGraphicsRootSignature = CreateGraphicsRootSignature(pd3dDevice);
 
@@ -94,8 +86,8 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 #else
 	//지형을 하나의 격자 메쉬(257x257)로 생성한다. 
 	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList,
-		m_pd3dGraphicsRootSignature, _T("HeightMap.raw"), 256, 256, 256,
-		256, xmf3Scale, xmf4Color);
+		m_pd3dGraphicsRootSignature, _T("HeightMap.raw"), 257, 257, 257,
+		257, xmf3Scale, xmf4Color);
 #endif
 
 	m_pTerrain->SetPosition(0.0f, 0.0f, 0.0f);
@@ -106,49 +98,47 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	
 	CGameObject* pGunshipModel = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Gunship.bin");
 	pGunshipModel->SetBoundingBox(pGunshipModel->m_xmOOBB, pGunshipModel);
-	pGunshipModel->SetScale(10.0f, 10.0f, 10.0f);
+	pGunshipModel->SetScale(5.0f, 5.0f, 5.0f);
 	CGunshipObject* pGunShipObject = nullptr;
 	
 	CGameObject* pSuperCobraModel = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/SuperCobra.bin");
 	pSuperCobraModel->SetBoundingBox(pSuperCobraModel->m_xmOOBB, pSuperCobraModel);
-	pSuperCobraModel->SetScale(10.0f, 10.0f, 10.0f);
+	pSuperCobraModel->SetScale(5.0f, 5.0f, 5.0f);
 	CSuperCobraObject* pSuperCobraObject = nullptr;
 
 	CGameObject* pMi24Model = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Mi24.bin");
 	pMi24Model->SetBoundingBox(pMi24Model->m_xmOOBB, pMi24Model);
-	pMi24Model->SetScale(10.0f, 10.0f, 10.0f);
+	pMi24Model->SetScale(5.0f, 5.0f, 5.0f);
 	CMi24Object* pMi24Object = nullptr;
 
-	int nSelectedCar = 0;
-	int nLine = 0;
+	int nSelectedObject = 0;
 
-	for (int i = 0; i < 2; ++i) {
-		nSelectedCar = random_car(dre);
-		nLine = random_line(dre);
+	for (int i = 0; i < 1; ++i) {
+		nSelectedObject = RD::GetRandomint(0,2);
 
-		switch (nSelectedCar) {
-			case Gunship:
+		switch (nSelectedObject) {
+			case 0:
 				pGunShipObject = new CGunshipObject();
 				pGunShipObject->SetChild(pGunshipModel, true);
 				pGunShipObject->OnInitialize();
 				pGunShipObject->SetBoundingBox(pGunShipObject->m_xmOOBB, pGunshipModel);
-				pGunShipObject->SetPosition(XMFLOAT3((float)nLine * 20.0f, 0.0f, i * 200.0f));
+				pGunShipObject->SetPosition(CHellicopterObject::m_vxmf3MovePosition.front());
 				m_lpGameObjects.push_back(pGunShipObject);
 				break;
-			case SuperCobra:
+			case 1:
 				pSuperCobraObject = new CSuperCobraObject();
 				pSuperCobraObject->SetChild(pSuperCobraModel, true);
 				pSuperCobraObject->OnInitialize();
 				pSuperCobraObject->SetBoundingBox(pSuperCobraObject->m_xmOOBB, pSuperCobraModel);
-				pSuperCobraObject->SetPosition(XMFLOAT3((float)nLine * 20.0f, 0.0f, i * 200.0f));
+				pSuperCobraObject->SetPosition(CHellicopterObject::m_vxmf3MovePosition.front());
 				m_lpGameObjects.push_back(pSuperCobraObject);
 				break;
-			case Mi24:
+			case 2:
 				pMi24Object = new CMi24Object();
 				pMi24Object->SetChild(pMi24Model, true);
 				pMi24Object->OnInitialize();
 				pMi24Object->SetBoundingBox(pMi24Object->m_xmOOBB, pMi24Model);
-				pMi24Object->SetPosition(XMFLOAT3((float)nLine * 20.0f, 0.0f, i * 200.0f));
+				pMi24Object->SetPosition(CHellicopterObject::m_vxmf3MovePosition.front());
 				m_lpGameObjects.push_back(pMi24Object);
 				break;
 		}
@@ -277,8 +267,9 @@ void CScene::AnimateObjects(float fTimeElapsed)
 
 	// 추가적인 처리 함수
 	//CheckObjectByObjectCollisions();
-	//CheckPlayerByObjectCollisions();
 	CheckMissileByObjectCollisions();
+	CheckObjectArriveEndline();
+	CheckPlayerByObjectCollisions();
 }
 
 void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
@@ -292,7 +283,6 @@ void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera
 
 	D3D12_GPU_VIRTUAL_ADDRESS d3dcbLightsGpuVirtualAddress = m_pd3dcbLights->GetGPUVirtualAddress();
 	pd3dCommandList->SetGraphicsRootConstantBufferView(2, d3dcbLightsGpuVirtualAddress); //Lights
-
 	for (const auto& elm : m_lpGameObjects) {
 		elm->UpdateTransform(NULL);
 		elm->Render(pd3dCommandList, pCamera);
@@ -372,47 +362,72 @@ void CScene::CheckMissileByObjectCollisions()
 	
 }
 
-void CScene::CheckPlayerByObjectCollisions()
+void CScene::CheckObjectArriveEndline()
 {
-	
-	for (const auto& elm : m_lpGameObjects) {
-		CHellicopterObject* Car = (CHellicopterObject*)elm;
-		
-		if (Car->m_xmOOBB.Intersects(m_pPlayer->m_xmOOBB)) {
-			m_pPlayer->m_bIsCollide = true;
-			Car->m_bIsCollide = true;
-			
-			XMFLOAT3 xmPlayerVelocity{ m_pPlayer->GetVelocity() };
-			m_pPlayer->SetVelocity(XMFLOAT3(0.0f, xmPlayerVelocity.y, 200.0f));
-				
-			float fDistance = m_pPlayer->m_xmOOBB.Center.x - Car->m_xmOOBB.Center.x;
-			float fLength = sqrt(fDistance * fDistance);
-
-			// 차량이 좌우 비중을 두고 박았는지, 정면으로 박았는지 확인
-			// fLength 가 일정값보다 크면 좌우로 튕겨나감
-			if (fLength >= 15) {
-				// 우측에서 충돌 -> 플레이어는 오른쪽으로 튕겨나감
-				if (fDistance > 0) {
-					m_pPlayer->m_xmCollidedShift = XMFLOAT3(0.05f, 0.0f, -0.1f);
-					Car->m_xmCollidedShift = XMFLOAT3(-0.02f, 0.0f, 0.01f);
-				}
-				// 좌측에서 충돌 -> 플레이어는 왼쪽으로 튕겨나감
-				else {
-					m_pPlayer->m_xmCollidedShift = XMFLOAT3(-0.05f, 0.0f, -0.1f);
-					Car->m_xmCollidedShift = XMFLOAT3(0.02f, 0.0f, 0.01f);
-				}
-			}
-			// 정면으로 충돌 -> 플레이어는 뒤로만 튕겨나감
-			else if(m_pPlayer->m_xmOOBB.Center.z < Car->m_xmOOBB.Center.z) {
-				m_pPlayer->m_xmCollidedShift = XMFLOAT3(0.0f, 0.0f, -0.1f);
-				Car->m_xmCollidedShift = XMFLOAT3(0.0f, 0.0f, 0.01f);
-			}		
-			// 후면에서 충돌 -> 플레이어는 앞으로 튕겨나감
-			else {
-				m_pPlayer->m_xmCollidedShift = XMFLOAT3(0.0f, 0.0f, 0.3f);
-				Car->m_xmCollidedShift = XMFLOAT3(0.0f, 0.0f, -0.01f);
-			}
+	for (auto iter = m_lpGameObjects.begin(); iter != m_lpGameObjects.end(); ++iter) {
+		CHellicopterObject* Hellicopter = (CHellicopterObject*)*iter;
+		if (Hellicopter->m_iPosition + 1 == Hellicopter->m_vxmf3MovePosition.size()) {
+			m_lpGameObjects.erase(iter);
+			break;
 		}
-
 	}
 }
+
+void CScene::CheckPlayerByObjectCollisions()
+{
+	CAirplanePlayer* Player = (CAirplanePlayer*)m_pPlayer;
+	for (const auto& elm : m_lpGameObjects) {
+		CHellicopterObject* Hellicopter = (CHellicopterObject*)elm;
+		if (Hellicopter->m_xmOOBB.Intersects(m_pPlayer->m_xmOOBB)) {
+			//Hellicopter->ResetPosition();
+			//Player->ResetPosition();
+			cout << "collide" << endl;
+		}
+		cout << " " << endl;
+	}
+}
+
+//void CScene::CheckPlayerByObjectCollisions()
+//{
+//	
+//	for (const auto& elm : m_lpGameObjects) {
+//		CHellicopterObject* Car = (CHellicopterObject*)elm;
+//		
+//		if (Car->m_xmOOBB.Intersects(m_pPlayer->m_xmOOBB)) {
+//			m_pPlayer->m_bIsCollide = true;
+//			Car->m_bIsCollide = true;
+//			
+//			XMFLOAT3 xmPlayerVelocity{ m_pPlayer->GetVelocity() };
+//			m_pPlayer->SetVelocity(XMFLOAT3(0.0f, xmPlayerVelocity.y, 200.0f));
+//				
+//			float fDistance = m_pPlayer->m_xmOOBB.Center.x - Car->m_xmOOBB.Center.x;
+//			float fLength = sqrt(fDistance * fDistance);
+//
+//			// 차량이 좌우 비중을 두고 박았는지, 정면으로 박았는지 확인
+//			// fLength 가 일정값보다 크면 좌우로 튕겨나감
+//			if (fLength >= 15) {
+//				// 우측에서 충돌 -> 플레이어는 오른쪽으로 튕겨나감
+//				if (fDistance > 0) {
+//					m_pPlayer->m_xmCollidedShift = XMFLOAT3(0.05f, 0.0f, -0.1f);
+//					Car->m_xmCollidedShift = XMFLOAT3(-0.02f, 0.0f, 0.01f);
+//				}
+//				// 좌측에서 충돌 -> 플레이어는 왼쪽으로 튕겨나감
+//				else {
+//					m_pPlayer->m_xmCollidedShift = XMFLOAT3(-0.05f, 0.0f, -0.1f);
+//					Car->m_xmCollidedShift = XMFLOAT3(0.02f, 0.0f, 0.01f);
+//				}
+//			}
+//			// 정면으로 충돌 -> 플레이어는 뒤로만 튕겨나감
+//			else if(m_pPlayer->m_xmOOBB.Center.z < Car->m_xmOOBB.Center.z) {
+//				m_pPlayer->m_xmCollidedShift = XMFLOAT3(0.0f, 0.0f, -0.1f);
+//				Car->m_xmCollidedShift = XMFLOAT3(0.0f, 0.0f, 0.01f);
+//			}		
+//			// 후면에서 충돌 -> 플레이어는 앞으로 튕겨나감
+//			else {
+//				m_pPlayer->m_xmCollidedShift = XMFLOAT3(0.0f, 0.0f, 0.3f);
+//				Car->m_xmCollidedShift = XMFLOAT3(0.0f, 0.0f, -0.01f);
+//			}
+//		}
+//
+//	}
+//}

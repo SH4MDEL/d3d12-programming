@@ -250,8 +250,8 @@ CAirplanePlayer::CAirplanePlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommand
 	CGameObject *pGameObject = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Apache.bin");
 
 	pGameObject->Rotate(15.0f, 0.0f, 0.0f);
-	CGameObject::SetBoundingBox(pGameObject->m_xmOOBB, pGameObject);
 	pGameObject->SetScale(1.0f, 1.0f, 1.0f);
+	CGameObject::SetBoundingBox(pGameObject->m_xmOOBB, pGameObject);
 
 	SetChild(pGameObject, true);
 
@@ -284,29 +284,22 @@ void CAirplanePlayer::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
 		XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
 		m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
 	}
-	//cout << GetLookVector().x << ", " << GetLookVector().y << ", " << GetLookVector().z << endl;
 
-	//if (m_bIsCollide) {
-	//	m_fElapsedTime += fTimeElapsed;
-	//	if (m_fElapsedTime <= m_fCollisionDuration) {
-	//		m_xmf3Position = Vector3::Add(m_xmf3Position, m_xmCollidedShift);
-	//		m_pCamera->Move(m_xmCollidedShift);
-	//	}
-	//	else {
-	//		m_bIsCollide = false;
-	//		m_fElapsedTime = 0.0f;
-	//		m_xmCollidedShift = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	//	}
-	//}
-	//else {
+	m_xmfPositionCache = GetPosition();
+
 	for (int i = 0; i < MAX_LAUNCH_MISSILE; ++i) {
 		if (m_pMissileObject[i].m_bIsShooted) {
 			m_pMissileObject[i].Animate(fTimeElapsed, pxmf4x4Parent, i);
 		}
 	}
 	CPlayer::Animate(fTimeElapsed, pxmf4x4Parent);
-	//}
 	CPlayer::UpdateBoundingBox();
+}
+
+void CAirplanePlayer::ResetPosition()
+{
+	SetPosition(m_xmfPositionCache);
+	UpdateBoundingBox();
 }
 
 void CAirplanePlayer::OnPrepareRender()

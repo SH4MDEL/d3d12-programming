@@ -24,6 +24,7 @@
 #include <fstream>
 #include <vector>
 #include <list>
+#include <random>
 
 using namespace std;
 
@@ -86,6 +87,54 @@ inline bool IsZero(float fValue) { return((fabsf(fValue) < EPSILON)); }
 inline bool IsEqual(float fA, float fB) { return(::IsZero(fA - fB)); }
 inline float InverseSqrt(float fValue) { return 1.0f / sqrtf(fValue); }
 inline void Swap(float *pfS, float *pfT) { float fTemp = *pfS; *pfS = *pfT; *pfT = fTemp; }
+
+namespace RD
+{
+	inline XMFLOAT3 GetRandomXMFLOAT3(float start, float end)
+	{
+		std::random_device rd;
+		std::default_random_engine dre(rd());
+
+		XMFLOAT3 xmf3Result;
+		std::uniform_real_distribution<float> value(start, end);
+		xmf3Result.x = value(dre);
+		xmf3Result.y = value(dre);
+		xmf3Result.z = value(dre);
+		return xmf3Result;
+	}
+
+	inline float GetRandomfloat(float start, float end)
+	{
+		std::random_device rd;
+		std::default_random_engine dre(rd());
+
+		std::uniform_real_distribution<float> value(start, end);
+		return value(dre);
+	}
+
+	inline XMINT3 GetRandomXMINT3(int start, int end)
+	{
+		std::random_device rd;
+		std::default_random_engine dre(rd());
+
+		XMINT3 xmi3Result;
+		std::uniform_int_distribution<int> value(start, end);
+		xmi3Result.x = value(dre);
+		xmi3Result.y = value(dre);
+		xmi3Result.z = value(dre);
+		return xmi3Result;
+	}
+
+	inline int GetRandomint(int start, int end)
+	{
+		std::random_device rd;
+		std::default_random_engine dre(rd());
+
+		std::uniform_int_distribution<int> value(start, end);
+		return value(dre);
+	}
+}
+
 
 namespace Vector3
 {

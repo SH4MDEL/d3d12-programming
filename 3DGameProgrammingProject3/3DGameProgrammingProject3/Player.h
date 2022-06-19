@@ -94,6 +94,9 @@ public:
 	CGameObject* m_pMainRotorFrame = nullptr;
 	CGameObject* m_pTailRotorFrame = nullptr;
 
+	XMFLOAT3							m_xmfPositionCache;
+	void								ResetPosition();
+
 	CMissileObject* m_pMissileObject = nullptr;
 private:
 	virtual void OnInitialize();
