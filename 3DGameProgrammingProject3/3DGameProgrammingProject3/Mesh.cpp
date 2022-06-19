@@ -287,6 +287,8 @@ CHeightMapImage::CHeightMapImage(LPCTSTR pFileName, int nWidth, int nLength, XMF
 	DWORD dwBytesRead;
 	::ReadFile(hFile, pHeightMapPixels, (m_nWidth * m_nLength), &dwBytesRead, NULL);
 	::CloseHandle(hFile);
+
+	//이미지의 y축과 지형의 z축의 방향이 반대이므로 이미지를 상하대칭시켜 저장한다.
 	m_pHeightMapPixels = new BYTE[m_nWidth * m_nLength];
 	for (int y = 0; y < m_nLength; y++)
 	{
@@ -302,7 +304,7 @@ CHeightMapImage::CHeightMapImage(LPCTSTR pFileName, int nWidth, int nLength, XMF
 CHeightMapImage::~CHeightMapImage()
 {
 	if (m_pHeightMapPixels) delete[] m_pHeightMapPixels;
-	m_pHeightMapPixels = NULL;
+	m_pHeightMapPixels = nullptr;
 }
 
 XMFLOAT3 CHeightMapImage::GetHeightMapNormal(int x, int z)
@@ -342,10 +344,12 @@ float CHeightMapImage::GetHeight(float fx, float fz)
 	int z = (int)fz;
 	float fxPercent = fx - x;
 	float fzPercent = fz - z;
+
 	float fBottomLeft = (float)m_pHeightMapPixels[x + (z * m_nWidth)];
 	float fBottomRight = (float)m_pHeightMapPixels[(x + 1) + (z * m_nWidth)];
 	float fTopLeft = (float)m_pHeightMapPixels[x + ((z + 1) * m_nWidth)];
 	float fTopRight = (float)m_pHeightMapPixels[(x + 1) + ((z + 1) * m_nWidth)];
+
 #ifdef _WITH_APPROXIMATE_OPPOSITE_CORNER
 	//z-좌표가 1, 3, 5, ...인 경우 인덱스가 오른쪽에서 왼쪽으로 나열된다. 
 	bool bRightToLeft = ((z % 2) != 0);
@@ -378,7 +382,7 @@ CHeightMapGridMesh::CHeightMapGridMesh(ID3D12Device* pd3dDevice,
 {
 	//격자의 교점(정점)의 개수는 (nWidth * nLength)이다. 
 	m_nVertices = nWidth * nLength;
-	m_nStride = sizeof(CDiffusedVertex);
+	m_nStride = sizeof(XMFLOAT3);
 
 	//격자는 삼각형 스트립으로 구성한다. 
 	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
@@ -386,20 +390,25 @@ CHeightMapGridMesh::CHeightMapGridMesh(ID3D12Device* pd3dDevice,
 	m_nLength = nLength;
 	m_xmf3Scale = xmf3Scale;
 
-	CDiffusedVertex* pVertices = new CDiffusedVertex[m_nVertices];
+	XMFLOAT3* pVertices = new XMFLOAT3[m_nVertices];
+	XMFLOAT3* pxmf3Normals = new XMFLOAT3[m_nVertices];
+
+	CHeightMapImage* pHeightMapImage = reinterpret_cast<CHeightMapImage*>(pContext);
 
 	/*xStart와 zStart는 격자의 시작 위치(x-좌표와 z-좌표)를 나타낸다. 커다란 지형은 격자들의 이차원 배열로 만들 필
 	요가 있기 때문에 전체 지형에서 각 격자의 시작 위치를 나타내는 정보가 필요하다.*/
 	float fHeight = 0.0f, fMinHeight = +FLT_MAX, fMaxHeight = -FLT_MAX;
-	for (int i = 0, z = zStart; z < (zStart + nLength); z++)
-	{
-		for (int x = xStart; x < (xStart + nWidth); x++, i++)
+	for (int i = 0, z = zStart; z < (zStart + nLength); ++z) {
+		for (int x = xStart; x < (xStart + nWidth); ++x, ++i)
 		{
-			//정점의 높이와 색상을 높이 맵으로부터 구한다. 
-			XMFLOAT3 xmf3Position = XMFLOAT3((x * m_xmf3Scale.x), OnGetHeight(x, z, pContext),
-				(z * m_xmf3Scale.z));
-			XMFLOAT4 xmf3Color = Vector4::Add(OnGetColor(x, z, pContext), xmf4Color);
-			pVertices[i] = CDiffusedVertex(xmf3Position, xmf3Color);
+			//정점의 높이와 색상을 높이 맵으로부터 구한다.
+			XMFLOAT3 xmf3Position = XMFLOAT3((x * m_xmf3Scale.x), OnGetHeight(x, z, pContext), (z * m_xmf3Scale.z));
+			//
+			XMFLOAT3 Normal = OnGetAverageNormal(x, z, pContext);
+
+			pVertices[i] = xmf3Position;
+
+			pxmf3Normals[i] = Normal;
 			if (fHeight < fMinHeight) fMinHeight = fHeight;
 			if (fHeight > fMaxHeight) fMaxHeight = fHeight;
 		}
@@ -454,11 +463,20 @@ CHeightMapGridMesh::CHeightMapGridMesh(ID3D12Device* pd3dDevice,
 	m_d3dIndexBufferView.BufferLocation = m_pd3dIndexBuffer->GetGPUVirtualAddress();
 	m_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
 	m_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
+
+	m_pd3dNormalBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, pxmf3Normals, sizeof(XMFLOAT3) * m_nVertices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd3dNormalUploadBuffer);
+
+	m_d3dNormalBufferView.BufferLocation = m_pd3dNormalBuffer->GetGPUVirtualAddress();
+	m_d3dNormalBufferView.StrideInBytes = sizeof(XMFLOAT3);
+	m_d3dNormalBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_nVertices;
 	delete[] pnIndices;
 }
 
 CHeightMapGridMesh::~CHeightMapGridMesh()
 {
+	m_pd3dVertexBuffer->Release();
+	m_pd3dIndexBuffer->Release();
+	m_pd3dNormalBuffer->Release();
 }
 
 //높이 맵 이미지의 픽셀 값을 지형의 높이로 반환한다. 
@@ -499,4 +517,27 @@ XMFLOAT4 CHeightMapGridMesh::OnGetColor(int x, int z, void* pContext)
 	//fScale은 조명 색상(밝기)이 반사되는 비율이다. 
 	XMFLOAT4 xmf4Color = Vector4::Multiply(fScale, xmf4IncidentLightColor);
 	return(xmf4Color);
+}
+XMFLOAT3 CHeightMapGridMesh::OnGetAverageNormal(int x, int z, void* pContext)
+{
+	CHeightMapImage* pHeightMapImage = reinterpret_cast<CHeightMapImage*>(pContext);
+
+	XMFLOAT3 xmfANormal = Vector3::Add(pHeightMapImage->GetHeightMapNormal(x, z), pHeightMapImage->GetHeightMapNormal(x + 1, z));
+	xmfANormal = Vector3::Add(pHeightMapImage->GetHeightMapNormal(x + 1, z + 1), pHeightMapImage->GetHeightMapNormal(x, z + 1));
+	return Vector3::Normalize(xmfANormal);
+}
+void CHeightMapGridMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList, int nSubSet)
+{
+	pd3dCommandList->IASetPrimitiveTopology(m_d3dPrimitiveTopology);
+	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[2] = { m_d3dVertexBufferView, m_d3dNormalBufferView };
+	pd3dCommandList->IASetVertexBuffers(m_nSlot, 2, pVertexBufferViews);
+	if (m_pd3dIndexBuffer)
+	{
+		pd3dCommandList->IASetIndexBuffer(&m_d3dIndexBufferView);
+		pd3dCommandList->DrawIndexedInstanced(m_nIndices, 1, 0, 0, 0);
+	}
+	else
+	{
+		pd3dCommandList->DrawInstanced(m_nVertices, 1, m_nOffset, 0);
+	}
 }

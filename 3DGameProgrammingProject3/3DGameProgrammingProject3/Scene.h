@@ -69,11 +69,15 @@ public:
 
 	CHeightMapTerrain			*m_pTerrain = NULL;
 
-	// 추가 처리 함수
-	void CheckObjectByObjectCollisions();
+
+	void EnemySpawn();
+	void ChangeSpawnField();
+
 	void CheckPlayerByObjectCollisions();
 	void CheckMissileByObjectCollisions();
 	void CheckObjectArriveEndline();
+	void CheckPlayerByGroundCollisions();
+	void CheckPlayerArriveEndline();
 
 public:
 	ID3D12RootSignature			*m_pd3dGraphicsRootSignature = NULL;
@@ -89,4 +93,15 @@ public:
 	LIGHTS						*m_pcbMappedLights = NULL;
 
 	float						m_fElapsedTime = 0.0f;
+
+	float						m_fSpawnDelay = 3.0f;
+	float						m_fSpawnElapsed = 0.0f;
+	bool						m_bIsChangeSpawnField = false;
+
+	CGameObject* pGunshipModel;
+	CGunshipObject* pGunShipObject;
+	CGameObject* pSuperCobraModel;
+	CSuperCobraObject* pSuperCobraObject;
+	CGameObject* pMi24Model;
+	CMi24Object* pMi24Object;
 };

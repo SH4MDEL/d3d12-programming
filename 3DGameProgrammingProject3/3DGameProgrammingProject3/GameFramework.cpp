@@ -319,6 +319,9 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		case VK_F3:
 			m_pCamera = m_pPlayer->ChangeCamera((DWORD)(wParam - VK_F1 + 1), m_GameTimer.GetTimeElapsed());
 			break;
+		case VK_F4:
+			m_pScene->ChangeSpawnField();
+			break;
 		case VK_F9:
 			ChangeSwapChainState();
 			break;
@@ -405,7 +408,7 @@ void CGameFramework::BuildObjects()
 
 	CAirplanePlayer *pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
 	pAirplanePlayer->SetBoundingBox(pAirplanePlayer->m_xmOOBB, pAirplanePlayer);
-	pAirplanePlayer->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	pAirplanePlayer->SetPosition(XMFLOAT3(2600.0f, 860.0f, 300.0f));
 	pAirplanePlayer->SetScale(0.1f, 0.1f, 0.1f);
 	m_pScene->m_pPlayer = m_pPlayer = pAirplanePlayer;
 	m_pCamera = m_pPlayer->GetCamera();

@@ -728,73 +728,33 @@ CHeightMapTerrain::CHeightMapTerrain(ID3D12Device* pd3dDevice, ID3D12GraphicsCom
 	//지형 전체를 표현하기 위한 격자 메쉬의 개수이다. 
 	m_nMeshes = cxBlocks * czBlocks;
 	//지형 전체를 표현하기 위한 격자 메쉬에 대한 포인터 배열을 생성한다. 
-	m_ppMeshes = new CDiffusedMesh * [m_nMeshes];
-	for (int i = 0; i < m_nMeshes; i++) m_ppMeshes[i] = NULL;
+	m_pMesh = new CMesh;
 
-	CHeightMapGridMesh* pHeightMapGridMesh = NULL;
-	for (int z = 0, zStart = 0; z < czBlocks; z++)
-	{
-		for (int x = 0, xStart = 0; x < cxBlocks; x++)
-		{
-			//지형의 일부분을 나타내는 격자 메쉬의 시작 위치(좌표)이다. 
-			xStart = x * (nBlockWidth - 1);
-			zStart = z * (nBlockLength - 1);
-			//지형의 일부분을 나타내는 격자 메쉬를 생성하여 지형 메쉬에 저장한다. 
-			pHeightMapGridMesh = new CHeightMapGridMesh(pd3dDevice, pd3dCommandList, xStart,
-				zStart, nBlockWidth, nBlockLength, xmf3Scale, xmf4Color, m_pHeightMapImage);
-			SetMesh(x + (z * cxBlocks), pHeightMapGridMesh);
-		}
-	}
-	//지형을 렌더링하기 위한 셰이더를 생성한다. 
-	//CTerrainShader* pShader = new CTerrainShader();
-	//pShader->CreateShader(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
-	//if (m_pTerrainShader) m_pTerrainShader->Release();
-	//m_pTerrainShader = pShader;
-	//if (m_pTerrainShader) m_pTerrainShader->AddRef();
+	CHeightMapGridMesh* pHeightMapGridMesh = nullptr;
+	pHeightMapGridMesh = new CHeightMapGridMesh(pd3dDevice, pd3dCommandList, 0,
+		0, nBlockWidth, nBlockLength, xmf3Scale, xmf4Color, m_pHeightMapImage);
+	SetMesh(pHeightMapGridMesh);
+
+	SetShader(CMaterial::m_pIlluminatedShader);
+
+	CMaterial* pMaterial = new CMaterial();
+	MATERIALLOADINFO Material = MATERIALLOADINFO();
+	Material.m_xmf4AlbedoColor.x = 106.0f / 256.f;
+	Material.m_xmf4AlbedoColor.y = 133.0f / 256.f;
+	Material.m_xmf4AlbedoColor.z = 24.0f / 256.f;
+	Material.m_fMetallic = 0.0f;
+	Material.m_fGlossyReflection = 1.0f;
+	CMaterialColors* pMaterialColors = new CMaterialColors(&Material);
+	pMaterial->SetMaterialColors(pMaterialColors);
+	pMaterial->SetIlluminatedShader();
+
+	SetMaterial(0, pMaterial);
+
 }
 
 CHeightMapTerrain::~CHeightMapTerrain(void)
 {
 	if (m_pHeightMapImage) delete m_pHeightMapImage;
-}
-
-void CHeightMapTerrain::SetMesh(int nIndex, CDiffusedMesh* pMesh)
-{
-	if (m_ppMeshes)
-	{
-		if (m_ppMeshes[nIndex]) m_ppMeshes[nIndex]->Release();
-		m_ppMeshes[nIndex] = pMesh;
-		if (pMesh) pMesh->AddRef();
-	}
-}
-
-void CHeightMapTerrain::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
-{
-	OnPrepareRender();
-
-	UpdateShaderVariable(pd3dCommandList, &m_xmf4x4World);
-
-	//if (m_pTerrainShader) m_pTerrainShader->Render(pd3dCommandList, pCamera);
-
-	//게임 객체가 포함하는 모든 메쉬를 렌더링한다. 
-	if (m_ppMeshes)
-	{
-		for (int i = 0; i < m_nMeshes; i++)
-		{
-			if (m_ppMeshes[i]) m_ppMeshes[i]->Render(pd3dCommandList);
-		}
-	}
-}
-
-void CHeightMapTerrain::ReleaseUploadBuffers()
-{
-	if (m_ppMeshes)
-	{
-		for (int i = 0; i < m_nMeshes; i++)
-		{
-			if (m_ppMeshes[i]) m_ppMeshes[i]->ReleaseUploadBuffers();
-		}
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -867,8 +827,8 @@ void CMissileObject::PrepareExplosion(ID3D12Device* pd3dDevice, ID3D12GraphicsCo
 {
 	for (int i = 0; i < EXPLOSION_DEBRISES; i++) XMStoreFloat3(&m_pxmf3SphereVectors[i], ::RandomUnitVectorOnSphere());
 
-	m_pExplosionMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList, 2.0f, 2.0f, 2.0f);
-	m_pMissileMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList, 4.0f, 4.0f, 12.0f);
+	m_pExplosionMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList, 4.0f, 4.0f, 4.0f);
+	m_pMissileMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList, 4.0f, 4.0f, 20.0f);
 }
 
 void CMissileObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent, int iMissileNumber)
@@ -975,6 +935,8 @@ void CMissileObject::ExploseMissile()
 //
 
 std::vector<XMFLOAT3> CHellicopterObject::m_vxmf3MovePosition;
+XMFLOAT3 CHellicopterObject::m_pxmf3SphereVectors[EXPLOSION_DEBRISES];
+CDiffusedMesh* CHellicopterObject::m_pExplosionMesh = NULL;
 
 CHellicopterObject::CHellicopterObject()
 {
@@ -989,61 +951,114 @@ void CHellicopterObject::OnInitialize()
 {
 }
 
+void CHellicopterObject::PrepareExplosion(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	for (int i = 0; i < EXPLOSION_DEBRISES; i++) XMStoreFloat3(&m_pxmf3SphereVectors[i], ::RandomUnitVectorOnSphere());
+
+	m_pExplosionMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList, 4.0f, 4.0f, 4.0f);
+}
+
 void CHellicopterObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 {
-	if (m_pMainRotorFrame)
+	if (m_bBlowingUp)
 	{
-		XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(360.0f * 2.0f) * fTimeElapsed);
-		m_pMainRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pMainRotorFrame->m_xmf4x4Transform);
+		m_fElapsedTimes += fTimeElapsed;
+		if (m_fElapsedTimes <= m_fDuration)
+		{
+			XMFLOAT3 xmf3Position = GetPosition();
+			for (int i = 0; i < EXPLOSION_DEBRISES; i++)
+			{
+				m_pxmf4x4Transforms[i] = Matrix4x4::Identity();
+				m_pxmf4x4Transforms[i]._41 = xmf3Position.x + m_pxmf3SphereVectors[i].x * m_fExplosionSpeed * m_fElapsedTimes;
+				m_pxmf4x4Transforms[i]._42 = xmf3Position.y + m_pxmf3SphereVectors[i].y * m_fExplosionSpeed * m_fElapsedTimes;
+				m_pxmf4x4Transforms[i]._43 = xmf3Position.z + m_pxmf3SphereVectors[i].z * m_fExplosionSpeed * m_fElapsedTimes;
+				m_pxmf4x4Transforms[i] = Matrix4x4::Multiply(Matrix4x4::RotationAxis(m_pxmf3SphereVectors[i], m_fExplosionRotation * m_fElapsedTimes), m_pxmf4x4Transforms[i]);
+			}
+		}
+		else
+		{
+
+		}
 	}
-	if (m_pTailRotorFrame)
+	else
 	{
-		XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
-		m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
-	}
+		CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
 
-	m_xmfPositionCache = GetPosition();
+		if (m_pMainRotorFrame)
+		{
+			XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(360.0f * 2.0f) * fTimeElapsed);
+			m_pMainRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pMainRotorFrame->m_xmf4x4Transform);
+		}
+		if (m_pTailRotorFrame)
+		{
+			XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
+			m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
+		}
 
-	if (m_iPosition + 1 != m_vxmf3MovePosition.size()) {
-		XMFLOAT3 xmfDirection;
-		xmfDirection.x = m_vxmf3MovePosition[m_iPosition + 1].x - m_vxmf3MovePosition[m_iPosition].x;
-		xmfDirection.y = m_vxmf3MovePosition[m_iPosition + 1].y - m_vxmf3MovePosition[m_iPosition].y;
-		xmfDirection.z = m_vxmf3MovePosition[m_iPosition + 1].z - m_vxmf3MovePosition[m_iPosition].z;
-		bool xjudge = false;
-		bool yjudge = false;
-		bool zjudge = false;
-		if ((xmfDirection.x < 0 && GetPosition().x <= m_vxmf3MovePosition[m_iPosition + 1].x) ||
-			(xmfDirection.x >= 0 && GetPosition().x >= m_vxmf3MovePosition[m_iPosition + 1].x)) {
-			xjudge = true;
+		m_xmfPositionCache = GetPosition();
+
+		if (m_iPosition + 1 != m_vxmf3MovePosition.size()) {
+			XMFLOAT3 xmfDirection;
+			xmfDirection.x = m_vxmf3MovePosition[m_iPosition + 1].x - m_vxmf3MovePosition[m_iPosition].x;
+			xmfDirection.y = m_vxmf3MovePosition[m_iPosition + 1].y - m_vxmf3MovePosition[m_iPosition].y;
+			xmfDirection.z = m_vxmf3MovePosition[m_iPosition + 1].z - m_vxmf3MovePosition[m_iPosition].z;
+			bool xjudge = false;
+			bool yjudge = false;
+			bool zjudge = false;
+			if ((xmfDirection.x < 0 && GetPosition().x <= m_vxmf3MovePosition[m_iPosition + 1].x) ||
+				(xmfDirection.x >= 0 && GetPosition().x >= m_vxmf3MovePosition[m_iPosition + 1].x)) {
+				xjudge = true;
+			}
+			if ((xmfDirection.y < 0 && GetPosition().y <= m_vxmf3MovePosition[m_iPosition + 1].y) ||
+				(xmfDirection.y >= 0 && GetPosition().y >= m_vxmf3MovePosition[m_iPosition + 1].y)) {
+				yjudge = true;
+			}
+			if ((xmfDirection.z < 0 && GetPosition().z <= m_vxmf3MovePosition[m_iPosition + 1].z) ||
+				(xmfDirection.z >= 0 && GetPosition().z >= m_vxmf3MovePosition[m_iPosition + 1].z)) {
+				zjudge = true;
+			}
+			if (xjudge && yjudge && zjudge) {
+				SetPosition(m_vxmf3MovePosition[m_iPosition + 1]);
+				++m_iPosition;
+			}
+			else {
+				float sum = sqrt((xmfDirection.x * xmfDirection.x) + (xmfDirection.y * xmfDirection.y) + (xmfDirection.z * xmfDirection.z));
+				m_xmf4x4Transform._31 = xmfDirection.x / sum;
+				m_xmf4x4Transform._32 = xmfDirection.y / sum;
+				m_xmf4x4Transform._33 = xmfDirection.z / sum;
+				MoveForward(100.0f * fTimeElapsed);
+			}
 		}
-		if ((xmfDirection.y < 0 && GetPosition().y <= m_vxmf3MovePosition[m_iPosition + 1].y) ||
-			(xmfDirection.y >= 0 && GetPosition().y >= m_vxmf3MovePosition[m_iPosition + 1].y)) {
-			yjudge = true;
-		}
-		if ((xmfDirection.z < 0 && GetPosition().z <= m_vxmf3MovePosition[m_iPosition + 1].z) ||
-			(xmfDirection.z >= 0 && GetPosition().z >= m_vxmf3MovePosition[m_iPosition + 1].z)) {
-			zjudge = true;
-		}
-		if (xjudge && yjudge && zjudge) {
-			SetPosition(m_vxmf3MovePosition[m_iPosition + 1]);
-			++m_iPosition;
-		}
-		else {
-			float sum = sqrt((xmfDirection.x * xmfDirection.x) + (xmfDirection.y * xmfDirection.y) + (xmfDirection.z * xmfDirection.z));
-			m_xmf4x4Transform._31 = xmfDirection.x / sum;
-			m_xmf4x4Transform._32 = xmfDirection.y / sum;
-			m_xmf4x4Transform._33 = xmfDirection.z / sum;
-			MoveForward(100.0f * fTimeElapsed);
+		CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
+	}
+}
+
+void CHellicopterObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+{
+	if (m_bBlowingUp && m_fElapsedTimes >= m_fDuration)
+	{
+	}
+	else if (m_bBlowingUp) {
+		for (int i = 0; i < EXPLOSION_DEBRISES; i++)
+		{
+			CGameObject::Render(pd3dCommandList, &m_pxmf4x4Transforms[i], m_pExplosionMesh);
 		}
 	}
-	CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
+	else
+	{
+		CGameObject::Render(pd3dCommandList, pCamera);
+	}
 }
 
 void CHellicopterObject::PrepareMovePosition()
 {
-	m_vxmf3MovePosition.push_back(XMFLOAT3(-500.0f, 0.0f, -500.0f));
-	m_vxmf3MovePosition.push_back(XMFLOAT3(0.0f, 0.0f, 0.0f));
-	m_vxmf3MovePosition.push_back(XMFLOAT3(-500.0f, 0.0f, -500.0f));
+	m_vxmf3MovePosition.push_back(XMFLOAT3(6344.0f, 818.0f, 3981.0f));
+	m_vxmf3MovePosition.push_back(XMFLOAT3(6183.0f, 702.0f, 5448.0f));
+	m_vxmf3MovePosition.push_back(XMFLOAT3(4680.0f, 1514.0f, 7249.0f));
+	m_vxmf3MovePosition.push_back(XMFLOAT3(2946.0f, 1514.0f, 7208.0f));
+	m_vxmf3MovePosition.push_back(XMFLOAT3(1821.0f, 853.0f, 4722.0f));
+	m_vxmf3MovePosition.push_back(XMFLOAT3(2680.0f, 950.0f, 2855.0f));
+	m_vxmf3MovePosition.push_back(XMFLOAT3(2600.0f, 860.0f, 0.0f));
 }
 
 void CHellicopterObject::ResetPosition()

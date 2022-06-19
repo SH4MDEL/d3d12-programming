@@ -99,7 +99,7 @@ public:
 
 	void UpdateShaderVariable(ID3D12GraphicsCommandList *pd3dCommandList);
 
-protected:
+public:
 	static CShader					*m_pIlluminatedShader;
 
 public:
@@ -139,9 +139,9 @@ public:
 	float							m_fCollisionDuration = 1.0f;
 	float							m_fElapsedTime = 0.0f;
 
-	CGameObject 					*m_pParent = NULL;
-	CGameObject 					*m_pChild = NULL;
-	CGameObject 					*m_pSibling = NULL;
+	CGameObject 					*m_pParent = nullptr;
+	CGameObject 					*m_pChild = nullptr;
+	CGameObject 					*m_pSibling = nullptr;
 
 	bool							m_bBlowingUp = false;
 
@@ -217,7 +217,6 @@ public:
 		xmf4Color);
 	virtual ~CHeightMapTerrain();
 private:
-	CDiffusedMesh** m_ppMeshes = nullptr;
 	int m_nMeshes = 0;
 
 	CTerrainShader* m_pTerrainShader = nullptr;
@@ -232,10 +231,6 @@ private:
 	//지형을 실제로 몇 배 확대할 것인가를 나타내는 스케일 벡터이다. 
 	XMFLOAT3 m_xmf3Scale;
 public:
-	void SetMesh(int nIndex, CDiffusedMesh* pMesh);
-	void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
-	void ReleaseUploadBuffers();
-
 	//지형의 높이를 계산하는 함수이다(월드 좌표계). 높이 맵의 높이에 스케일의 y를 곱한 값이다. 
 	float GetHeight(float x, float z) {
 		return(m_pHeightMapImage->GetHeight(x /
@@ -306,7 +301,7 @@ public:
 	float							m_fDuration = 5.0f;
 	float						m_fExplosionSpeed = 100.0f;
 	float						m_fExplosionRotation = 360.0f;
-	float						m_fMoveSpeed = 300.0f;
+	float						m_fMoveSpeed = 600.0f;
 
 	bool						m_bIsShooted = false;
 
@@ -344,8 +339,23 @@ public:
 	void								ResetPosition();
 
 
+	XMFLOAT4X4					m_pxmf4x4Transforms[EXPLOSION_DEBRISES];
+
+	float							m_fElapsedTimes = 0.0f;
+	float							m_fDuration = 3.0f;
+	float						m_fExplosionSpeed = 100.0f;
+	float						m_fExplosionRotation = 360.0f;
+
+
 	virtual void OnInitialize();
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
+
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera = NULL);
+
+	static CDiffusedMesh* m_pExplosionMesh;
+	static XMFLOAT3				m_pxmf3SphereVectors[EXPLOSION_DEBRISES];
+
+	static void PrepareExplosion(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 };
 
 class CApacheObject : public CHellicopterObject

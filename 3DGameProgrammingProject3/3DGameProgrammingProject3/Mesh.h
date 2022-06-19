@@ -161,6 +161,13 @@ protected:
 	// 인덱스 버퍼(인덱스의 배열)와 인덱스 버퍼를 위한 업로드 버퍼에 대한 인터페이스 포인터이다. 
 	// 인덱스 버퍼는 정점 버퍼(배열)에 대한 인덱스를 가진다.
 
+	ID3D12Resource* m_pd3dVertexBuffer = NULL;
+	ID3D12Resource* m_pd3dVertexUploadBuffer = NULL;
+	ID3D12Resource* m_pd3dNormalBuffer = NULL;
+	ID3D12Resource* m_pd3dNormalUploadBuffer = NULL;
+
+	D3D12_VERTEX_BUFFER_VIEW m_d3dNormalBufferView;
+	D3D12_VERTEX_BUFFER_VIEW m_d3dVertexBufferView;
 	D3D12_INDEX_BUFFER_VIEW m_d3dIndexBufferView;
 
 	UINT m_nIndices = 0;
@@ -171,10 +178,6 @@ protected:
 
 	int m_nBaseVertex = 0;
 	//인덱스 버퍼의 인덱스에 더해질 인덱스이다. 
-
-	ID3D12Resource* m_pd3dVertexBuffer = NULL;
-	ID3D12Resource* m_pd3dVertexUploadBuffer = NULL;
-	D3D12_VERTEX_BUFFER_VIEW m_d3dVertexBufferView;
 
 	UINT m_nStride = 0;
 
@@ -239,6 +242,10 @@ public:
 		* pContext = NULL);
 	virtual ~CHeightMapGridMesh();
 
+	virtual void ReleaseUploadBuffers() {
+		m_pd3dVertexUploadBuffer->Release(); m_pd3dIndexUploadBuffer->Release(); m_pd3dNormalUploadBuffer->Release();
+	}
+
 	XMFLOAT3 GetScale() { return(m_xmf3Scale); }
 	int GetWidth() { return(m_nWidth); }
 	int GetLength() { return(m_nLength); }
@@ -247,4 +254,7 @@ public:
 	virtual float OnGetHeight(int x, int z, void* pContext);
 	//격자의 좌표가 (x, z)일 때 교점(정점)의 색상을 반환하는 함수이다. 
 	virtual XMFLOAT4 OnGetColor(int x, int z, void* pContext);
+	virtual XMFLOAT3 OnGetAverageNormal(int x, int z, void* pContext);
+
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, int nSubSet);
 };
