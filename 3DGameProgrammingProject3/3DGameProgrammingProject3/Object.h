@@ -335,8 +335,6 @@ public:
 	static std::vector<XMFLOAT3>			m_vxmf3MovePosition;
 	static void PrepareMovePosition();
 	int									m_iPosition;
-	XMFLOAT3							m_xmfPositionCache;
-	void								ResetPosition();
 
 
 	XMFLOAT4X4					m_pxmf4x4Transforms[EXPLOSION_DEBRISES];
@@ -348,7 +346,7 @@ public:
 
 
 	virtual void OnInitialize();
-	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
+	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent, XMFLOAT3 xmfMovePosition);
 
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera = NULL);
 

@@ -76,8 +76,9 @@ public:
 	void CheckPlayerByObjectCollisions();
 	void CheckMissileByObjectCollisions();
 	void CheckObjectArriveEndline();
-	void CheckPlayerByGroundCollisions();
+	void CheckObjectByGroundCollisions();
 	void CheckPlayerArriveEndline();
+	void CheckPlayerByGroundCollisions();
 
 public:
 	ID3D12RootSignature			*m_pd3dGraphicsRootSignature = NULL;

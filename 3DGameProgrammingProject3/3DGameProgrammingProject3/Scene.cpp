@@ -99,7 +99,6 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 #endif
 
 	m_pTerrain->SetPosition(0.0f, 0.0f, 0.0f);
-
 	
 	pGunshipModel = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Gunship.bin");
 	pGunshipModel->SetBoundingBox(pGunshipModel->m_xmOOBB, pGunshipModel);
@@ -228,9 +227,9 @@ void CScene::AnimateObjects(float fTimeElapsed)
 	m_fElapsedTime = fTimeElapsed;
 
 	for (const auto& elm : m_lpGameObjects) {
-		elm->Animate(fTimeElapsed, NULL);
+		CHellicopterObject* Object = (CHellicopterObject*)elm;
+		Object->Animate(fTimeElapsed, NULL, m_pPlayer->GetPosition());
 	}
-
 
 	if (m_pLights)
 	{
@@ -248,8 +247,9 @@ void CScene::AnimateObjects(float fTimeElapsed)
 	CheckMissileByObjectCollisions();
 	CheckObjectArriveEndline();
 	CheckPlayerByObjectCollisions();
-	CheckPlayerByGroundCollisions();
 	CheckPlayerArriveEndline();
+	CheckObjectByGroundCollisions();
+	CheckPlayerByGroundCollisions();
 }
 
 void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
@@ -366,6 +366,20 @@ void CScene::CheckObjectArriveEndline()
 		if (Hellicopter->m_iPosition + 1 == Hellicopter->m_vxmf3MovePosition.size()) {
 			m_lpGameObjects.erase(iter);
 			break;
+		}
+	}
+}
+
+void CScene::CheckObjectByGroundCollisions()
+{
+	for (auto iter = m_lpGameObjects.begin(); iter != m_lpGameObjects.end(); ++iter) {
+		CHellicopterObject* Hellicopter = (CHellicopterObject*)*iter;
+		XMFLOAT3 xmf3HellicopterPosition = Hellicopter->GetPosition();
+		float fHeight = m_pTerrain->GetHeight(xmf3HellicopterPosition.x, xmf3HellicopterPosition.z);
+		if (xmf3HellicopterPosition.y < fHeight)
+		{
+			xmf3HellicopterPosition.y = fHeight;
+			Hellicopter->SetPosition(xmf3HellicopterPosition);
 		}
 	}
 }

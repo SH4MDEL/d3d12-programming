@@ -742,8 +742,6 @@ CHeightMapTerrain::CHeightMapTerrain(ID3D12Device* pd3dDevice, ID3D12GraphicsCom
 	Material.m_xmf4AlbedoColor.x = 106.0f / 256.f;
 	Material.m_xmf4AlbedoColor.y = 133.0f / 256.f;
 	Material.m_xmf4AlbedoColor.z = 24.0f / 256.f;
-	Material.m_fMetallic = 0.0f;
-	Material.m_fGlossyReflection = 1.0f;
 	CMaterialColors* pMaterialColors = new CMaterialColors(&Material);
 	pMaterial->SetMaterialColors(pMaterialColors);
 	pMaterial->SetIlluminatedShader();
@@ -958,7 +956,7 @@ void CHellicopterObject::PrepareExplosion(ID3D12Device* pd3dDevice, ID3D12Graphi
 	m_pExplosionMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList, 4.0f, 4.0f, 4.0f);
 }
 
-void CHellicopterObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
+void CHellicopterObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent, XMFLOAT3 xmfMovePosition)
 {
 	if (m_bBlowingUp)
 	{
@@ -982,8 +980,6 @@ void CHellicopterObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 	}
 	else
 	{
-		CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
-
 		if (m_pMainRotorFrame)
 		{
 			XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(360.0f * 2.0f) * fTimeElapsed);
@@ -995,40 +991,21 @@ void CHellicopterObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 			m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
 		}
 
-		m_xmfPositionCache = GetPosition();
+		XMFLOAT3 xmf3MovePosition = Vector3::Subtract(xmfMovePosition, GetPosition());
+		xmf3MovePosition = Vector3::Normalize(xmf3MovePosition);
+		XMFLOAT3 xmf3Look = GetLook();
 
-		if (m_iPosition + 1 != m_vxmf3MovePosition.size()) {
-			XMFLOAT3 xmfDirection;
-			xmfDirection.x = m_vxmf3MovePosition[m_iPosition + 1].x - m_vxmf3MovePosition[m_iPosition].x;
-			xmfDirection.y = m_vxmf3MovePosition[m_iPosition + 1].y - m_vxmf3MovePosition[m_iPosition].y;
-			xmfDirection.z = m_vxmf3MovePosition[m_iPosition + 1].z - m_vxmf3MovePosition[m_iPosition].z;
-			bool xjudge = false;
-			bool yjudge = false;
-			bool zjudge = false;
-			if ((xmfDirection.x < 0 && GetPosition().x <= m_vxmf3MovePosition[m_iPosition + 1].x) ||
-				(xmfDirection.x >= 0 && GetPosition().x >= m_vxmf3MovePosition[m_iPosition + 1].x)) {
-				xjudge = true;
-			}
-			if ((xmfDirection.y < 0 && GetPosition().y <= m_vxmf3MovePosition[m_iPosition + 1].y) ||
-				(xmfDirection.y >= 0 && GetPosition().y >= m_vxmf3MovePosition[m_iPosition + 1].y)) {
-				yjudge = true;
-			}
-			if ((xmfDirection.z < 0 && GetPosition().z <= m_vxmf3MovePosition[m_iPosition + 1].z) ||
-				(xmfDirection.z >= 0 && GetPosition().z >= m_vxmf3MovePosition[m_iPosition + 1].z)) {
-				zjudge = true;
-			}
-			if (xjudge && yjudge && zjudge) {
-				SetPosition(m_vxmf3MovePosition[m_iPosition + 1]);
-				++m_iPosition;
-			}
-			else {
-				float sum = sqrt((xmfDirection.x * xmfDirection.x) + (xmfDirection.y * xmfDirection.y) + (xmfDirection.z * xmfDirection.z));
-				m_xmf4x4Transform._31 = xmfDirection.x / sum;
-				m_xmf4x4Transform._32 = xmfDirection.y / sum;
-				m_xmf4x4Transform._33 = xmfDirection.z / sum;
-				MoveForward(100.0f * fTimeElapsed);
-			}
+		XMFLOAT3 xmf3CrossProduct = Vector3::CrossProduct(xmf3Look, xmf3MovePosition);
+		if (xmf3Look.z > 0) {
+			xmf3CrossProduct.x *= 1.0f;
 		}
+		else {
+			xmf3CrossProduct.x *= -1.0f;
+		}
+
+		Rotate(xmf3CrossProduct.x, xmf3CrossProduct.y, 0.0f);
+		MoveForward(100.0f * fTimeElapsed);
+
 		CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
 	}
 }
@@ -1059,12 +1036,6 @@ void CHellicopterObject::PrepareMovePosition()
 	m_vxmf3MovePosition.push_back(XMFLOAT3(1821.0f, 853.0f, 4722.0f));
 	m_vxmf3MovePosition.push_back(XMFLOAT3(2680.0f, 950.0f, 2855.0f));
 	m_vxmf3MovePosition.push_back(XMFLOAT3(2600.0f, 860.0f, 0.0f));
-}
-
-void CHellicopterObject::ResetPosition()
-{
-	SetPosition(m_xmfPositionCache);
-	UpdateBoundingBox();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
