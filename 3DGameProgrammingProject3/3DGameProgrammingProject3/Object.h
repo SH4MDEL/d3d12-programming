@@ -132,13 +132,6 @@ public:
 
 	BoundingOrientedBox				m_xmOOBB = BoundingOrientedBox();
 
-	CGameObject*					m_pObjetCollided = nullptr;
-	XMFLOAT3						m_xmCollidedShift{ XMFLOAT3(0.0f, 0.0f, 0.0f) };
-
-	bool							m_bIsCollide = false;
-	float							m_fCollisionDuration = 1.0f;
-	float							m_fElapsedTime = 0.0f;
-
 	CGameObject 					*m_pParent = nullptr;
 	CGameObject 					*m_pChild = nullptr;
 	CGameObject 					*m_pSibling = nullptr;
