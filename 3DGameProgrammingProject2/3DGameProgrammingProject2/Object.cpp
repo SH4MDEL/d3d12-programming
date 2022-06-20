@@ -75,13 +75,31 @@ CGameObject::~CGameObject()
 		}
 	}
 	if (m_ppMaterials) delete[] m_ppMaterials;
-
-	if (m_pSibling) delete m_pSibling;
-	if (m_pChild) delete m_pChild;
 }
 
-void CGameObject::SetChild(CGameObject* pChild)
+void CGameObject::AddRef()
 {
+	m_nReferences++;
+
+	if (m_pSibling) m_pSibling->AddRef();
+	if (m_pChild) m_pChild->AddRef();
+}
+
+void CGameObject::Release()
+{
+	if (m_pChild) m_pChild->Release();
+	if (m_pSibling) m_pSibling->Release();
+
+	if (--m_nReferences <= 0) delete this;
+}
+
+void CGameObject::SetChild(CGameObject* pChild, bool bReferenceUpdate)
+{
+	if (pChild)
+	{
+		pChild->m_pParent = this;
+		if (bReferenceUpdate) pChild->AddRef();
+	}
 	if (m_pChild)
 	{
 		if (pChild) pChild->m_pSibling = m_pChild->m_pSibling;
@@ -91,7 +109,6 @@ void CGameObject::SetChild(CGameObject* pChild)
 	{
 		m_pChild = pChild;
 	}
-	if (pChild) pChild->m_pParent = this;
 }
 
 void CGameObject::SetMesh(CMesh* pMesh)

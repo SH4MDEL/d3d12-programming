@@ -30,43 +30,46 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	CGameObject* Rock1Model = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, L"Models/Rock.txt");
 	CGameObject* Rock2Model = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, L"Models/Rock2.txt");
 
-	CGameObject* Object = nullptr;
+	CTreeObject* TreeObject = nullptr;
+	CCactusObject* CactusObject = nullptr;
+	CRock1Object* Rock1Object = nullptr;
+	CRock2Object* Rock2Object = nullptr;
 
 	while (in >> data) {
 		if (data == '1') {
-			Object = new CTreeObject();
-			Object->OnInitialize();
-			Object->SetChild(TreeModel);
-			Object->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
-			Object->UpdateBoundingBox();
-			m_vGameObjects.push_back(Object);
+			TreeObject = new CTreeObject();
+			TreeObject->SetChild(TreeModel, true);
+			TreeObject->OnInitialize();
+			TreeObject->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
+			TreeObject->UpdateBoundingBox();
+			m_vGameObjects.push_back(TreeObject);
 		}
 		else if (data == '2') {
-			Object = new CCactusObject();
-			Object->SetChild(CactusModel);
-			Object->OnInitialize();
-			Object->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
-			Object->SetScale(2.0f, 2.0f, 2.0f);
-			Object->UpdateBoundingBox();
-			m_vGameObjects.push_back(Object);
+			CactusObject = new CCactusObject();
+			CactusObject->SetChild(CactusModel, true);
+			CactusObject->OnInitialize();
+			CactusObject->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
+			CactusObject->SetScale(2.0f, 2.0f, 2.0f);
+			CactusObject->UpdateBoundingBox();
+			m_vGameObjects.push_back(CactusObject);
 		}
 		else if (data == '3') {
-			Object = new CRock1Object();
-			Object->SetChild(Rock1Model);
-			Object->OnInitialize();
-			Object->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
-			Object->SetScale(1.5f, 1.5f, 1.5f);
-			Object->UpdateBoundingBox();
-			m_vGameObjects.push_back(Object);
+			Rock1Object = new CRock1Object();
+			Rock1Object->SetChild(Rock1Model, true);
+			Rock1Object->OnInitialize();
+			Rock1Object->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
+			Rock1Object->SetScale(1.5f, 1.5f, 1.5f);
+			Rock1Object->UpdateBoundingBox();
+			m_vGameObjects.push_back(Rock1Object);
 		}
 		else if (data == '4') {
-			Object = new CRock2Object();
-			Object->SetChild(Rock2Model);
-			Object->OnInitialize();
-			Object->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
-			Object->SetScale(1.5f, 1.5f, 1.5f);
-			Object->UpdateBoundingBox();
-			m_vGameObjects.push_back(Object);
+			Rock2Object = new CRock2Object();
+			Rock2Object->SetChild(Rock2Model, true);
+			Rock2Object->OnInitialize();
+			Rock2Object->SetPosition(x * 5.0f, 0.0f, z * 5.0f);
+			Rock2Object->SetScale(1.5f, 1.5f, 1.5f);
+			Rock2Object->UpdateBoundingBox();
+			m_vGameObjects.push_back(Rock2Object);
 		}
 		if (x == 99.0f) {
 			x = 0.0f;
@@ -196,5 +199,8 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 
 	UpdateShaderVariables(pd3dCommandList);
 
-	for (const auto& elem : m_vGameObjects) elem->Render(pd3dCommandList, pCamera);
+	for (const auto& elem : m_vGameObjects) {
+		elem->UpdateTransform(NULL);
+		elem->Render(pd3dCommandList, pCamera);
+	}
 }

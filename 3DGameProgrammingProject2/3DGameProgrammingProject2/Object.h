@@ -89,6 +89,13 @@ public:
 	CGameObject();
     virtual ~CGameObject();
 
+private:
+	int								m_nReferences = 0;
+
+public:
+	void AddRef();
+	void Release();
+
 public:
 	TCHAR							m_pstrFrameName[256];
 
@@ -115,7 +122,7 @@ public:
 	void SetShader(int nMaterial, CShader *pShader);
 	void SetMaterial(int nMaterial, CMaterial *pMaterial);
 
-	void SetChild(CGameObject *pChild);
+	void SetChild(CGameObject *pChild, bool bReferenceUpdate = false);
 
 	virtual void BuildMaterials(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList) { }
 
