@@ -6,7 +6,6 @@
 
 #include "Mesh.h"
 #include "Camera.h"
-#include "Mesh_Village.h"
 
 #define DIR_FORWARD					0x01
 #define DIR_BACKWARD				0x02
@@ -38,7 +37,6 @@ public:
 	virtual void ReleaseShaderVariables() = 0;
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList) = 0;
 
-	virtual void Animate(float fTimeElapsed) = 0;
 	virtual void OnPrepareRender() = 0;
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera=NULL) = 0;
 

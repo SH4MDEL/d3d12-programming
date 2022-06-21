@@ -169,19 +169,19 @@ void CPlayer_Village::Update(float fTimeElapsed)
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(m_xmf3Velocity, -fDeceleration, true));
 }
 
-CCamera * CPlayer_Village::OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode)
+CCamera_Village* CPlayer_Village::OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode)
 {
-	CCamera *pNewCamera = NULL;
+	CCamera_Village *pNewCamera = NULL;
 	switch (nNewCameraMode)
 	{
 		case FIRST_PERSON_CAMERA:
-			pNewCamera = new CFirstPersonCamera(m_pCamera);
+			pNewCamera = new CFirstPersonCamera_Village(m_pCamera);
 			break;
 		case THIRD_PERSON_CAMERA:
-			pNewCamera = new CThirdPersonCamera(m_pCamera);
+			pNewCamera = new CThirdPersonCamera_Village(m_pCamera);
 			break;
 		case SPACESHIP_CAMERA:
-			pNewCamera = new CSpaceShipCamera(m_pCamera);
+			pNewCamera = new CSpaceShipCamera_Village(m_pCamera);
 			break;
 	}
 	if (nCurrentCameraMode == SPACESHIP_CAMERA)
@@ -260,7 +260,7 @@ void CAirplanePlayer::ReleaseShaderVariables()
 	CPlayer_Village::ReleaseShaderVariables();
 }
 
-CCamera *CAirplanePlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
+CCamera_Village *CAirplanePlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 {
 	DWORD nCurrentCameraMode = (m_pCamera) ? m_pCamera->GetMode() : 0x00;
 	if (nCurrentCameraMode == nNewCameraMode) return(m_pCamera);

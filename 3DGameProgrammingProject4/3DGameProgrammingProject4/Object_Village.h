@@ -1,5 +1,6 @@
 #pragma once
 #include "Object.h"
+#include "Mesh_Village.h"
 
 #define RESOURCE_TEXTURE2D			0x01
 #define RESOURCE_TEXTURE2D_ARRAY	0x02	//[]
@@ -126,7 +127,7 @@ public:
 	virtual void ReleaseShaderVariables() override;
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList) override;
 
-	virtual void Animate(float fTimeElapsed) override {}
+	virtual void Animate(float fTimeElapsed) {}
 	virtual void OnPrepareRender() override {}
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera = NULL) override;
 

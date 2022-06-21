@@ -31,14 +31,15 @@ CGameFramework::CGameFramework()
 	m_nWndClientWidth = FRAME_BUFFER_WIDTH;
 	m_nWndClientHeight = FRAME_BUFFER_HEIGHT;
 
-	m_pSceneMember = new SceneMember[2];
-	m_pSceneMember[0].m_pScene = nullptr;
-	m_pSceneMember[0].m_pCamera = nullptr;
+	m_pVScene = nullptr;
+	m_pVPlayer = nullptr;
+	m_pVCamera = nullptr;
 
-	m_pSceneMember[1].m_pScene = nullptr;
-	m_pSceneMember[1].m_pCamera = nullptr;
+	m_pRScene = nullptr;
+	m_pRPlayer = nullptr;
+	m_pRCamera = nullptr;
 
-	m_iSelectedScene = 1;
+	m_iSelectedScene = 0;
 
 	_tcscpy_s(m_pszFrameRate, _T("LabProject ("));
 }
@@ -359,19 +360,58 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		case VK_F2:
 		case VK_F3:
 			if (m_iSelectedScene == 1) {
-				m_pSceneMember[m_iSelectedScene].m_pCamera = 
-					m_pSceneMember[m_iSelectedScene].m_pPlayer->ChangeCamera((DWORD)(wParam - VK_F1 + 1), m_GameTimer.GetTimeElapsed());
+				m_pVCamera = m_pVPlayer->ChangeCamera((DWORD)(wParam - VK_F1 + 1), m_GameTimer.GetTimeElapsed());
 			}
+			break;
+		case VK_F5:
+			if (m_iSelectedScene == 0) {
+				m_pRPlayer->SetPosition(XMFLOAT3(80.0f, 0.0f, 200.0f));
+			}
+		case VK_F6:
+			m_iSelectedScene = 0;
+			break;
+		case VK_F7:
+			m_iSelectedScene = 1;
 			break;
 		case VK_F9:
 			ChangeSwapChainState();
+			break;
+		case VK_SPACE:
+			if (m_iSelectedScene == 0) {
+				//m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_BASIC_CAMERA, m_GameTimer.GetTimeElapsed());
+				m_pRCamera->SetTimeLag(0.25f);
+				m_pRCamera->SetOffset(XMFLOAT3(0.0f, 4.5f, -14.0f));
+				m_pRPlayer->SetisBoost(false);
+			}
+			break;
+		case VK_SHIFT:
+			if (m_iSelectedScene == 0) {
+				m_pRPlayer->SetisDrift(false);
+			}
 			break;
 		default:
 			break;
 		}
 		break;
-	default:
-		break;
+	case WM_KEYDOWN:
+		switch (wParam)
+		{
+		case VK_SPACE:
+			if (m_iSelectedScene == 0) {
+				//m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_BOOST_CAMERA, m_GameTimer.GetTimeElapsed());
+				m_pRCamera->SetTimeLag(0.20f);
+				m_pRCamera->SetOffset(XMFLOAT3(0.0f, 3.5f, -11.0f));
+				m_pRPlayer->SetisBoost(true);
+			}
+			break;
+		case VK_SHIFT:
+			if (m_iSelectedScene == 0) {
+				m_pRPlayer->SetisDrift(true);
+			}
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -436,12 +476,22 @@ void CGameFramework::BuildObjects()
 {
 	m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
 
-	m_pSceneMember[m_iSelectedScene].m_pScene = new CScene_Village();
-	if (m_pSceneMember[m_iSelectedScene].m_pScene) m_pSceneMember[m_iSelectedScene].m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
+	m_pRScene = new CScene_Racing();
+	if (m_pRScene) m_pRScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
 
-	CAirplanePlayer *pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice, m_pd3dCommandList, m_pSceneMember[m_iSelectedScene].m_pScene->GetGraphicsRootSignature());
-	m_pSceneMember[m_iSelectedScene].m_pScene->m_pPlayer = m_pSceneMember[m_iSelectedScene].m_pPlayer = pAirplanePlayer;
-	m_pSceneMember[m_iSelectedScene].m_pCamera = m_pSceneMember[m_iSelectedScene].m_pPlayer->GetCamera();
+	CCarPlayer* pCarPlayer = new CCarPlayer(m_pd3dDevice, m_pd3dCommandList, m_pRScene->GetGraphicsRootSignature());
+
+	pCarPlayer->SetPosition(XMFLOAT3(80.0f, 0.0f, 200.0f));
+	m_pRScene->m_pPlayer = m_pRPlayer = pCarPlayer;
+	m_pRCamera = m_pRPlayer->GetCamera();
+
+
+	m_pVScene = new CScene_Village();
+	if (m_pVScene) m_pVScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
+
+	CAirplanePlayer *pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice, m_pd3dCommandList, m_pVScene->GetGraphicsRootSignature());
+	m_pVScene->m_pPlayer = m_pVPlayer = pAirplanePlayer;
+	m_pVCamera = m_pVPlayer->GetCamera();
 
 	m_pd3dCommandList->Close();
 	ID3D12CommandList *ppd3dCommandLists[] = { m_pd3dCommandList };
@@ -449,63 +499,111 @@ void CGameFramework::BuildObjects()
 
 	WaitForGpuComplete();
 
-	if (m_pSceneMember[m_iSelectedScene].m_pScene) m_pSceneMember[m_iSelectedScene].m_pScene->ReleaseUploadBuffers();
-	if (m_pSceneMember[m_iSelectedScene].m_pPlayer) m_pSceneMember[m_iSelectedScene].m_pPlayer->ReleaseUploadBuffers();
+	if (m_pRScene) m_pRScene->ReleaseUploadBuffers();
+	if (m_pRPlayer) m_pRPlayer->ReleaseUploadBuffers();
+
+	if (m_pVScene) m_pVScene->ReleaseUploadBuffers();
+	if (m_pVPlayer) m_pVPlayer->ReleaseUploadBuffers();
 
 	m_GameTimer.Reset();
 }
 
 void CGameFramework::ReleaseObjects()
 {
-	if (m_pSceneMember[m_iSelectedScene].m_pPlayer) delete m_pSceneMember[m_iSelectedScene].m_pPlayer;
+	if (m_pRPlayer) delete m_pRPlayer;
 
-	if (m_pSceneMember[m_iSelectedScene].m_pScene) m_pSceneMember[m_iSelectedScene].m_pScene->ReleaseObjects();
-	if (m_pSceneMember[m_iSelectedScene].m_pScene) delete m_pSceneMember[m_iSelectedScene].m_pScene;
+	if (m_pRScene) m_pRScene->ReleaseObjects();
+	if (m_pRScene) delete m_pRScene;
+
+
+	if (m_pVPlayer) delete m_pVPlayer;
+
+	if (m_pVScene) m_pVScene->ReleaseObjects();
+	if (m_pVScene) delete m_pVScene;
 }
 
 void CGameFramework::ProcessInput()
 {
 	static UCHAR pKeysBuffer[256];
-	DWORD dwDirection = 0;
-	if (::GetKeyboardState(pKeysBuffer))
-	{
-		if (pKeysBuffer[VK_UP] & 0xF0) dwDirection |= DIR_FORWARD;
-		if (pKeysBuffer[VK_DOWN] & 0xF0) dwDirection |= DIR_BACKWARD;
-		if (pKeysBuffer[VK_LEFT] & 0xF0) dwDirection |= DIR_LEFT;
-		if (pKeysBuffer[VK_RIGHT] & 0xF0) dwDirection |= DIR_RIGHT;
-		if (pKeysBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
-		if (pKeysBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
-	}
 
-	float cxDelta = 0.0f, cyDelta = 0.0f;
-	if (GetCapture() == m_hWnd)
-	{
-		::SetCursor(NULL);
-		POINT ptCursorPos;
-		::GetCursorPos(&ptCursorPos);
-		cxDelta = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
-		cyDelta = (float)(ptCursorPos.y - m_ptOldCursorPos.y) / 3.0f;
-		::SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
-	}
+	if (m_iSelectedScene == 0) {
+		m_pRPlayer->SetPrePosition(m_pRPlayer->GetPosition());
 
-	if ((dwDirection != 0) || (cxDelta != 0.0f) || (cyDelta != 0.0f))
-	{
-		if (cxDelta || cyDelta)
+		bool bProcessedByScene = false;
+		if (GetKeyboardState(pKeysBuffer) && m_pRScene) bProcessedByScene = m_pRScene->ProcessInput(pKeysBuffer);
+		if (!bProcessedByScene)
 		{
-			if (pKeysBuffer[VK_RBUTTON] & 0xF0)
-				m_pSceneMember[m_iSelectedScene].m_pPlayer->Rotate(cyDelta, 0.0f, -cxDelta);
-			else
-				m_pSceneMember[m_iSelectedScene].m_pPlayer->Rotate(cyDelta, cxDelta, 0.0f);
+			DWORD dwDirection = 0;
+			if (pKeysBuffer[VK_UP] & 0xF0) dwDirection |= DIR_FORWARD;
+			if (pKeysBuffer[VK_DOWN] & 0xF0) dwDirection |= DIR_BACKWARD;
+			if (pKeysBuffer[VK_LEFT] & 0xF0) dwDirection |= DIR_LEFT;
+			if (pKeysBuffer[VK_RIGHT] & 0xF0) dwDirection |= DIR_RIGHT;
+			if (pKeysBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
+			if (pKeysBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
+
+			if (dwDirection) m_pRPlayer->Move(dwDirection, 150.0f, true);
 		}
-		if (dwDirection) m_pSceneMember[m_iSelectedScene].m_pPlayer->Move(dwDirection, 50.0f * m_GameTimer.GetTimeElapsed(), true);
+		m_pRPlayer->Update(m_GameTimer.GetTimeElapsed());
+		m_pRPlayer->UpdateBoundingBox();
+
+		if (m_pRScene->CheckPlayerByObjectCollisions()) {
+			m_pRPlayer->SetPosition(m_pRPlayer->GetPrePosition());
+		}
 	}
 
-	m_pSceneMember[m_iSelectedScene].m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
+	if (m_iSelectedScene == 1) {
+
+		DWORD dwDirection = 0;
+		if (::GetKeyboardState(pKeysBuffer))
+		{
+			if (pKeysBuffer[VK_UP] & 0xF0) dwDirection |= DIR_FORWARD;
+			if (pKeysBuffer[VK_DOWN] & 0xF0) dwDirection |= DIR_BACKWARD;
+			if (pKeysBuffer[VK_LEFT] & 0xF0) dwDirection |= DIR_LEFT;
+			if (pKeysBuffer[VK_RIGHT] & 0xF0) dwDirection |= DIR_RIGHT;
+			if (pKeysBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
+			if (pKeysBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
+		}
+
+		float cxDelta = 0.0f, cyDelta = 0.0f;
+		if (GetCapture() == m_hWnd)
+		{
+			::SetCursor(NULL);
+			POINT ptCursorPos;
+			::GetCursorPos(&ptCursorPos);
+			cxDelta = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
+			cyDelta = (float)(ptCursorPos.y - m_ptOldCursorPos.y) / 3.0f;
+			::SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
+		}
+
+		if ((dwDirection != 0) || (cxDelta != 0.0f) || (cyDelta != 0.0f))
+		{
+			if (cxDelta || cyDelta)
+			{
+				if (pKeysBuffer[VK_RBUTTON] & 0xF0)
+					m_pVPlayer->Rotate(cyDelta, 0.0f, -cxDelta);
+				else
+					m_pVPlayer->Rotate(cyDelta, cxDelta, 0.0f);
+			}
+			if (dwDirection) m_pVPlayer->Move(dwDirection, 50.0f * m_GameTimer.GetTimeElapsed(), true);
+		}
+
+		m_pVPlayer->Update(m_GameTimer.GetTimeElapsed());
+	}
+
 }
 
 void CGameFramework::AnimateObjects()
 {
-	if (m_pSceneMember[m_iSelectedScene].m_pScene) m_pSceneMember[m_iSelectedScene].m_pScene->AnimateObjects(m_GameTimer.GetTimeElapsed());
+	if (m_iSelectedScene == 0) {
+		float fTimeElapsed = m_GameTimer.GetTimeElapsed();
+
+		if (m_pRScene) m_pRScene->AnimateObjects(fTimeElapsed);
+
+		m_pRPlayer->Animate(fTimeElapsed, NULL);
+	}
+	if (m_iSelectedScene == 1) {
+		if (m_pVScene) m_pVScene->AnimateObjects(m_GameTimer.GetTimeElapsed());
+	}
 }
 
 void CGameFramework::WaitForGpuComplete()
@@ -566,12 +664,22 @@ void CGameFramework::FrameAdvance()
 
 	m_pd3dCommandList->OMSetRenderTargets(1, &d3dRtvCPUDescriptorHandle, TRUE, &d3dDsvCPUDescriptorHandle);
 
-	if (m_pSceneMember[m_iSelectedScene].m_pScene) m_pSceneMember[m_iSelectedScene].m_pScene->Render(m_pd3dCommandList, m_pSceneMember[m_iSelectedScene].m_pCamera);
+	if (m_iSelectedScene == 0) {
+		if (m_pRScene) m_pRScene->Render(m_pd3dCommandList, m_pRCamera);
+	}
+	if (m_iSelectedScene == 1) {
+		if (m_pVScene) m_pVScene->Render(m_pd3dCommandList, m_pVCamera);
+	}
 
 #ifdef _WITH_PLAYER_TOP
 	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 #endif
-	if (m_pSceneMember[m_iSelectedScene].m_pPlayer) m_pSceneMember[m_iSelectedScene].m_pPlayer->Render(m_pd3dCommandList, m_pSceneMember[m_iSelectedScene].m_pCamera);
+	if (m_iSelectedScene == 0) {
+		if (m_pRPlayer) m_pRPlayer->Render(m_pd3dCommandList, m_pRCamera);
+	}
+	if (m_iSelectedScene == 1) {
+		if (m_pVPlayer) m_pVPlayer->Render(m_pd3dCommandList, m_pVCamera);
+	}
 
 	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;

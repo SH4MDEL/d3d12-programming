@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Shader.h"
-#include "Player_Village.h"
+
 
 struct LIGHT
 {
@@ -55,8 +55,6 @@ public:
 	virtual void BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList) = 0;
 	virtual void ReleaseObjects() = 0;
 
-	virtual void BuildLightsAndMaterials() = 0;
-
 	virtual ID3D12RootSignature *CreateGraphicsRootSignature(ID3D12Device *pd3dDevice) = 0;
 	ID3D12RootSignature *GetGraphicsRootSignature() { return(m_pd3dGraphicsRootSignature); }
 	void SetGraphicsRootSignature(ID3D12GraphicsCommandList *pd3dCommandList) { pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature); }
@@ -67,7 +65,6 @@ public:
 
 	virtual bool ProcessInput(UCHAR *pKeysBuffer) = 0;
 	virtual void AnimateObjects(float fTimeElapsed) = 0;
-	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera=NULL) = 0;
 
 	virtual void ReleaseUploadBuffers() = 0;
 

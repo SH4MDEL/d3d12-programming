@@ -141,6 +141,8 @@
   <ItemGroup>
     <ClInclude Include="3DGameProgrammingProject4.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Camera_Racing.h" />
+    <ClInclude Include="Camera_Village.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mesh_Racing.h" />
@@ -148,6 +150,7 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="Object_Racing.h" />
     <ClInclude Include="Object_Village.h" />
+    <ClInclude Include="Player_Racing.h" />
     <ClInclude Include="Player_Village.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Scene.h" />
@@ -163,6 +166,8 @@
   <ItemGroup>
     <ClCompile Include="3DGameProgrammingProject4.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Camera_Racing.cpp" />
+    <ClCompile Include="Camera_Village.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Mesh_Racing.cpp" />
@@ -170,6 +175,7 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Object_Racing.cpp" />
     <ClCompile Include="Object_Village.cpp" />
+    <ClCompile Include="Player_Racing.cpp" />
     <ClCompile Include="Player_Village.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Scene_Racing.cpp" />

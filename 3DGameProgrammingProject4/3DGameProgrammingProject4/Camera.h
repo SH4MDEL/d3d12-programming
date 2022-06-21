@@ -13,8 +13,6 @@ struct VS_CB_CAMERA_INFO
 	XMFLOAT3						m_xmf3CameraPosition;
 };
 
-class CPlayer_Village;
-
 class CCamera
 {
 protected:
@@ -39,14 +37,11 @@ protected:
 	D3D12_VIEWPORT					m_d3dViewport;
 	D3D12_RECT						m_d3dScissorRect;
 
-	CPlayer_Village					*m_pPlayer;
-
 	ID3D12Resource					*m_pd3dcbCamera = NULL;
 	VS_CB_CAMERA_INFO				*m_pcbMappedCamera = NULL;
 
 public:
 	CCamera();
-	CCamera(CCamera *pCamera);
 	virtual ~CCamera();
 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList);
@@ -63,9 +58,6 @@ public:
 
 	void SetViewport(int xTopLeft, int yTopLeft, int nWidth, int nHeight, float fMinZ = 0.0f, float fMaxZ = 1.0f);
 	void SetScissorRect(LONG xLeft, LONG yTop, LONG xRight, LONG yBottom);
-
-	void SetPlayer(CPlayer_Village *pPlayer) { m_pPlayer = pPlayer; }
-	CPlayer_Village *GetPlayer() { return(m_pPlayer); }
 
 	void SetMode(DWORD nMode) { m_nMode = nMode; }
 	DWORD GetMode() { return(m_nMode); }
@@ -100,33 +92,5 @@ public:
 	virtual void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f) { }
 	virtual void Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed) { }
 	virtual void SetLookAt(XMFLOAT3& xmf3LookAt) { }
-};
-
-class CSpaceShipCamera : public CCamera
-{
-public:
-	CSpaceShipCamera(CCamera *pCamera);
-	virtual ~CSpaceShipCamera() { }
-
-	virtual void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
-};
-
-class CFirstPersonCamera : public CCamera
-{
-public:
-	CFirstPersonCamera(CCamera *pCamera);
-	virtual ~CFirstPersonCamera() { }
-
-	virtual void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
-};
-
-class CThirdPersonCamera : public CCamera
-{
-public:
-	CThirdPersonCamera(CCamera *pCamera);
-	virtual ~CThirdPersonCamera() { }
-
-	virtual void Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed);
-	virtual void SetLookAt(XMFLOAT3& vLookAt);
 };
 

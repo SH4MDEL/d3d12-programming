@@ -75,6 +75,15 @@
     <ClInclude Include="Shader_Racing.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Camera_Village.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera_Racing.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Player_Racing.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3DGameProgrammingProject4.cpp">
@@ -129,6 +138,15 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Shader_Racing.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera_Village.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera_Racing.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Player_Racing.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

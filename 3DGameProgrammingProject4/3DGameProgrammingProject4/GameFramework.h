@@ -77,12 +77,14 @@ private:
 #if defined(_DEBUG)
 	ID3D12Debug					*m_pd3dDebugController;
 #endif
-	struct SceneMember {
-		CScene_Village* m_pScene = NULL;
-		CPlayer_Village* m_pPlayer = NULL;
-		CCamera* m_pCamera = NULL;
-	};
-	SceneMember* m_pSceneMember;
+	CScene_Village* m_pVScene = NULL;
+	CPlayer_Village* m_pVPlayer = NULL;
+	CCamera_Village* m_pVCamera = NULL;
+
+	CScene_Racing* m_pRScene = NULL;
+	CPlayer_Racing* m_pRPlayer = NULL;
+	CCamera_Racing* m_pRCamera = NULL;
+
 	int m_iSelectedScene;
 
 	POINT						m_ptOldCursorPos;

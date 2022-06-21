@@ -261,7 +261,7 @@ void CScene_Village::AnimateObjects(float fTimeElapsed)
 	}
 }
 
-void CScene_Village::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+void CScene_Village::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera_Village* pCamera)
 {
 	pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature);
 
