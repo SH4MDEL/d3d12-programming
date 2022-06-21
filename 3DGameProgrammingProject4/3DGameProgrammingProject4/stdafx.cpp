@@ -88,7 +88,7 @@ ID3D12Resource *CreateBufferResource(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 	return(pd3dBuffer);
 }
 
-CGameObject **LoadGameObjectsFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, const char *pstrFileName, int *pnGameObjects)
+CGameObject_Village **LoadGameObjectsFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, const char *pstrFileName, int *pnGameObjects)
 {
 	FILE *pFile = NULL;
 	::fopen_s(&pFile, pstrFileName, "rb");
@@ -106,9 +106,9 @@ CGameObject **LoadGameObjectsFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCo
 	nReads = (UINT)::fread(pstrToken, sizeof(char), nStrLength, pFile); //"<GameObjects>:"
 	nReads = (UINT)::fread(pnGameObjects, sizeof(int), 1, pFile);
 
-	CGameObject **ppGameObjects = new CGameObject*[*pnGameObjects];
+	CGameObject_Village**ppGameObjects = new CGameObject_Village *[*pnGameObjects];
 
-	CGameObject *pGameObject = NULL, *pObjectFound = NULL;
+	CGameObject_Village*pGameObject = NULL, *pObjectFound = NULL;
 	for (int i = 0; i < *pnGameObjects; i++)
 	{
 		nReads = (UINT)::fread(&nStrLength, sizeof(BYTE), 1, pFile);
@@ -121,10 +121,10 @@ CGameObject **LoadGameObjectsFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCo
 		nReads = (UINT)::fread(pstrToken, sizeof(char), nStrLength, pFile); //"<Materials>:"
 		nReads = (UINT)::fread(&nMaterials, sizeof(int), 1, pFile);
 
-		pGameObject = new CGameObject(nMaterials);
+		pGameObject = new CGameObject_Village(nMaterials);
 		strcpy_s(pGameObject->m_pstrName, 64, pstrGameObjectName);
 
-		CGameObject *pObjectFound = NULL;
+		CGameObject_Village*pObjectFound = NULL;
 		for (int j = 0; j < i; j++)
 		{
 			if (!strcmp(pstrGameObjectName, ppGameObjects[j]->m_pstrName))
@@ -155,7 +155,7 @@ CGameObject **LoadGameObjectsFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCo
 			strcpy_s(pstrFilePath, 64, "Models/");
 			strcpy_s(pstrFilePath + 7, 64 - 7, pstrGameObjectName);
 			strcpy_s(pstrFilePath + 7 + nObjectNameLength, 64 - 7 - nObjectNameLength, ".bin");
-			CMesh *pMesh = new CMesh(pd3dDevice, pd3dCommandList, pstrFilePath);
+			CMesh_Village*pMesh = new CMesh_Village(pd3dDevice, pd3dCommandList, pstrFilePath);
 			pGameObject->SetMesh(pMesh);
 		}
 

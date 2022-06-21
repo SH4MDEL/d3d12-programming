@@ -8,9 +8,10 @@
 #define DIR_DOWN				0x20
 
 #include "Object.h"
+#include "Object_Village.h"
 #include "Camera.h"
 
-class CPlayer : public CGameObject
+class CPlayer_Village : public CGameObject_Village
 {
 protected:
 	XMFLOAT3					m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -35,9 +36,9 @@ protected:
 	CCamera						*m_pCamera = NULL;
 
 public:
-	CPlayer() { }
-	CPlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, void *pContext=NULL);
-	virtual ~CPlayer();
+	CPlayer_Village() { }
+	CPlayer_Village(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, void *pContext=NULL);
+	virtual ~CPlayer_Village();
 
 	XMFLOAT3 GetPosition() { return(m_xmf3Position); }
 	XMFLOAT3 GetLookVector() { return(m_xmf3Look); }
@@ -59,7 +60,7 @@ public:
 	CCamera *GetCamera() { return(m_pCamera); }
 	void SetCamera(CCamera *pCamera) { m_pCamera = pCamera; }
 
-	void Move(ULONG nDirection, float fDistance, bool bVelocity = false);
+	void Move(DWORD nDirection, float fDistance, bool bVelocity = false);
 	void Move(const XMFLOAT3& xmf3Shift, bool bVelocity = false);
 	void Move(float fxOffset = 0.0f, float fyOffset = 0.0f, float fzOffset = 0.0f);
 	void Rotate(float x, float y, float z);
@@ -83,7 +84,7 @@ public:
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera = NULL);
 };
 
-class CAirplanePlayer : public CPlayer
+class CAirplanePlayer : public CPlayer_Village
 {
 public:
 	CAirplanePlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, void *pContext=NULL);

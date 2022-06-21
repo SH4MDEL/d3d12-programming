@@ -3,13 +3,14 @@
 //-----------------------------------------------------------------------------
 
 #include "stdafx.h"
-#include "Player.h"
+#include "Player_Village.h"
 #include "Shader.h"
+#include "Shader_Village.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// CPlayer
+// CPlayer_Village
 
-CPlayer::CPlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, void *pContext) 
+CPlayer_Village::CPlayer_Village(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, void *pContext)
 {
 	m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
@@ -27,29 +28,29 @@ CPlayer::CPlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dComman
 	m_fYaw = 0.0f;
 }
 
-CPlayer::~CPlayer()
+CPlayer_Village::~CPlayer_Village()
 {
 	if (m_pCamera) delete m_pCamera;
 }
 
-void CPlayer::CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList)
+void CPlayer_Village::CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList)
 {
 	if (m_pCamera) m_pCamera->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 
-	CGameObject::CreateShaderVariables(pd3dDevice, pd3dCommandList);
+	CGameObject_Village::CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
-void CPlayer::ReleaseShaderVariables()
+void CPlayer_Village::ReleaseShaderVariables()
 {
-	CGameObject::ReleaseShaderVariables();
+	CGameObject_Village::ReleaseShaderVariables();
 }
 
-void CPlayer::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList)
+void CPlayer_Village::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList)
 {
-	CGameObject::UpdateShaderVariables(pd3dCommandList);
+	CGameObject_Village::UpdateShaderVariables(pd3dCommandList);
 }
 
-void CPlayer::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
+void CPlayer_Village::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
 {
 	if (dwDirection)
 	{
@@ -65,7 +66,7 @@ void CPlayer::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
 	}
 }
 
-void CPlayer::Move(const XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
+void CPlayer_Village::Move(const XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
 {
 	if (bUpdateVelocity)
 	{
@@ -78,7 +79,7 @@ void CPlayer::Move(const XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
 	}
 }
 
-void CPlayer::Rotate(float x, float y, float z)
+void CPlayer_Village::Rotate(float x, float y, float z)
 {
 	DWORD nCurrentCameraMode = m_pCamera->GetMode();
 	if ((nCurrentCameraMode == FIRST_PERSON_CAMERA) || (nCurrentCameraMode == THIRD_PERSON_CAMERA))
@@ -137,7 +138,7 @@ void CPlayer::Rotate(float x, float y, float z)
 	m_xmf3Up = Vector3::CrossProduct(m_xmf3Look, m_xmf3Right, true);
 }
 
-void CPlayer::Update(float fTimeElapsed)
+void CPlayer_Village::Update(float fTimeElapsed)
 {
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(m_xmf3Gravity, fTimeElapsed, false));
 	float fLength = sqrtf(m_xmf3Velocity.x * m_xmf3Velocity.x + m_xmf3Velocity.z * m_xmf3Velocity.z);
@@ -168,7 +169,7 @@ void CPlayer::Update(float fTimeElapsed)
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(m_xmf3Velocity, -fDeceleration, true));
 }
 
-CCamera *CPlayer::OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode)
+CCamera * CPlayer_Village::OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode)
 {
 	CCamera *pNewCamera = NULL;
 	switch (nNewCameraMode)
@@ -212,7 +213,7 @@ CCamera *CPlayer::OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode)
 	return(pNewCamera);
 }
 
-void CPlayer::OnPrepareRender()
+void CPlayer_Village::OnPrepareRender()
 {
 	m_xmf4x4World._11 = m_xmf3Right.x; m_xmf4x4World._12 = m_xmf3Right.y; m_xmf4x4World._13 = m_xmf3Right.z;
 	m_xmf4x4World._21 = m_xmf3Up.x; m_xmf4x4World._22 = m_xmf3Up.y; m_xmf4x4World._23 = m_xmf3Up.z;
@@ -220,10 +221,10 @@ void CPlayer::OnPrepareRender()
 	m_xmf4x4World._41 = m_xmf3Position.x; m_xmf4x4World._42 = m_xmf3Position.y; m_xmf4x4World._43 = m_xmf3Position.z;
 }
 
-void CPlayer::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
+void CPlayer_Village::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
 {
 	DWORD nCameraMode = (pCamera) ? pCamera->GetMode() : 0x00;
-	if (nCameraMode == THIRD_PERSON_CAMERA) CGameObject::Render(pd3dCommandList, pCamera);
+	if (nCameraMode == THIRD_PERSON_CAMERA) CGameObject_Village::Render(pd3dCommandList, pCamera);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -251,12 +252,12 @@ CAirplanePlayer::~CAirplanePlayer()
 
 void CAirplanePlayer::OnPrepareRender()
 {
-	CPlayer::OnPrepareRender();
+	CPlayer_Village::OnPrepareRender();
 }
 
 void CAirplanePlayer::ReleaseShaderVariables()
 {
-	CPlayer::ReleaseShaderVariables();
+	CPlayer_Village::ReleaseShaderVariables();
 }
 
 CCamera *CAirplanePlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)

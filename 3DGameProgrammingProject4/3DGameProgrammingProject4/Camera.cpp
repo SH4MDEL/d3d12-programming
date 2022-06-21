@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Player.h"
+#include "Player_Village.h"
 #include "Camera.h"
 
 CCamera::CCamera()

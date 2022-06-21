@@ -143,11 +143,19 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Mesh_Racing.h" />
+    <ClInclude Include="Mesh_Village.h" />
     <ClInclude Include="Object.h" />
-    <ClInclude Include="Player.h" />
+    <ClInclude Include="Object_Racing.h" />
+    <ClInclude Include="Object_Village.h" />
+    <ClInclude Include="Player_Village.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="Scene_Racing.h" />
+    <ClInclude Include="Scene_Village.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Shader_Racing.h" />
+    <ClInclude Include="Shader_Village.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Timer.h" />
@@ -157,10 +165,18 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Mesh_Racing.cpp" />
+    <ClCompile Include="Mesh_Village.cpp" />
     <ClCompile Include="Object.cpp" />
-    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Object_Racing.cpp" />
+    <ClCompile Include="Object_Village.cpp" />
+    <ClCompile Include="Player_Village.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Scene_Racing.cpp" />
+    <ClCompile Include="Scene_Village.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Shader_Racing.cpp" />
+    <ClCompile Include="Shader_Village.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Timer.cpp" />
   </ItemGroup>
@@ -183,6 +199,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders_Racing.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

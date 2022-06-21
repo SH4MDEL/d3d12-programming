@@ -1,9 +1,15 @@
-//-----------------------------------------------------------------------------
-// File: CGameObject.cpp
-//-----------------------------------------------------------------------------
-
 #include "stdafx.h"
-#include "Mesh.h"
+#include "Mesh_Racing.h"
+
+CMesh_Racing::CMesh_Racing()
+{
+
+}
+
+CMesh_Racing::~CMesh_Racing()
+{
+
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -77,7 +83,7 @@ CMeshFromFile::~CMeshFromFile()
 
 void CMeshFromFile::ReleaseUploadBuffers()
 {
-	CMesh::ReleaseUploadBuffers();
+	CMesh_Racing::ReleaseUploadBuffers();
 
 	if (m_pd3dPositionUploadBuffer) m_pd3dPositionUploadBuffer->Release();
 	m_pd3dPositionUploadBuffer = NULL;
@@ -93,7 +99,7 @@ void CMeshFromFile::ReleaseUploadBuffers()
 	}
 }
 
-void CMeshFromFile::Render(ID3D12GraphicsCommandList* pd3dCommandList, UINT nSubSet)
+void CMeshFromFile::Render(ID3D12GraphicsCommandList* pd3dCommandList, int nSubSet)
 {
 	pd3dCommandList->IASetPrimitiveTopology(m_d3dPrimitiveTopology);
 	pd3dCommandList->IASetVertexBuffers(m_nSlot, 1, &m_d3dPositionBufferView);

@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Timer.h"
-#include "Player.h"
+#include "Player_Village.h"
 #include "Scene.h"
+#include "Scene_Racing.h"
+#include "Scene_Village.h"
 
 class CGameFramework
 {
@@ -76,11 +78,12 @@ private:
 	ID3D12Debug					*m_pd3dDebugController;
 #endif
 	struct SceneMember {
-		CScene* m_pScene = NULL;
-		CPlayer* m_pPlayer = NULL;
+		CScene_Village* m_pScene = NULL;
+		CPlayer_Village* m_pPlayer = NULL;
 		CCamera* m_pCamera = NULL;
 	};
 	SceneMember* m_pSceneMember;
+	int m_iSelectedScene;
 
 	POINT						m_ptOldCursorPos;
 
