@@ -12,6 +12,8 @@ public:
 
 	CPlayer_Village* m_pPlayer;
 
+	virtual void SetOffset(XMFLOAT3 xmf3Offset) { m_xmf3Offset = xmf3Offset; m_xmf3Position.x += xmf3Offset.x; m_xmf3Position.y += xmf3Offset.y; m_xmf3Position.z += xmf3Offset.z; }
+
 	void SetPlayer(CPlayer_Village* pPlayer) { m_pPlayer = pPlayer; }
 	CPlayer_Village* GetPlayer() { return(m_pPlayer); }
 };

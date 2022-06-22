@@ -284,6 +284,10 @@ void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
 {
 	int nSceneTextures = 0;
 	m_ppObjects = ::LoadGameObjectsFromFile(pd3dDevice, pd3dCommandList, pstrFileName, &m_nObjects);
+	for (int j = 0; j < m_nObjects; ++j)
+	{
+		if (m_ppObjects[j]) m_ppObjects[j]->SetBoundingBox();
+	}
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }

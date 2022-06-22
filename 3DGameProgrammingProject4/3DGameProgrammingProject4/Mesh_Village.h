@@ -44,9 +44,9 @@ protected:
 	UINT							m_nStartIndex = 0;
 	int								m_nBaseVertex = 0;
 
+public:
 	BoundingBox						m_xmBoundingBox;
 
-public:
 	UINT							m_nSubsets = 0;
 
 public:

@@ -167,6 +167,8 @@ void CPlayer_Village::Update(float fTimeElapsed)
 	float fDeceleration = (m_fFriction * fTimeElapsed);
 	if (fDeceleration > fLength) fDeceleration = fLength;
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(m_xmf3Velocity, -fDeceleration, true));
+
+	UpdateBoundingBox();
 }
 
 CCamera_Village* CPlayer_Village::OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode)

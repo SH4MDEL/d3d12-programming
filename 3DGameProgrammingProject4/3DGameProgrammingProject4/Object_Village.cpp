@@ -50,6 +50,12 @@ CGameObject_Village::~CGameObject_Village()
 	if (m_pShader) m_pShader->Release();
 }
 
+void CGameObject_Village::SetBoundingBox()
+{
+	m_xmOOBB.Center = m_pMesh->m_xmBoundingBox.Center;
+	m_xmOOBB.Extents = m_pMesh->m_xmBoundingBox.Extents;
+}
+
 void CGameObject_Village::SetMesh(CMesh_Village* pMesh)
 {
 	if (m_pMesh) m_pMesh->Release();
@@ -140,6 +146,11 @@ void CGameObject_Village::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dC
 	pd3dCommandList->SetGraphicsRootConstantBufferView(1, d3dGpuVirtualAddress);
 }
 
+void CGameObject_Village::Animate(float fTimeElapsed)
+{
+	UpdateBoundingBox();
+}
+
 void CGameObject_Village::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
 	OnPrepareRender();
@@ -166,6 +177,14 @@ void CGameObject_Village::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCa
 		}
 	}
 }
+
+void CGameObject_Village::UpdateBoundingBox()
+{
+	// OOBB의 중심을 월드좌표로 이동
+	XMFLOAT3 Pos = GetPosition();
+	m_xmOOBB.Center = Pos;
+}
+
 
 void CGameObject_Village::ReleaseUploadBuffers()
 {

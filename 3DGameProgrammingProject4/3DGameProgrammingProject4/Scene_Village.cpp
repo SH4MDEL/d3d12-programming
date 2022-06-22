@@ -259,6 +259,8 @@ void CScene_Village::AnimateObjects(float fTimeElapsed)
 		m_pLights->m_pLights[4].m_xmf3Position = Vector3::Add(m_pPlayer->GetPosition(), Vector3::Add(Vector3::ScalarProduct(m_pPlayer->GetLookVector(), -15.0f, false), XMFLOAT3(0.0f, 5.0f, 0.0f)));
 		m_pLights->m_pLights[4].m_xmf3Direction = m_pPlayer->GetLookVector();
 	}
+
+	CheckPlayerByObjectCollisions();
 }
 
 void CScene_Village::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera_Village* pCamera)
@@ -280,5 +282,18 @@ void CScene_Village::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera_
 	{
 		m_ppShaders[i]->Render(pd3dCommandList, pCamera);
 	}
+}
+
+void CScene_Village::CheckPlayerByObjectCollisions()
+{
+	CAirplanePlayer* Player = (CAirplanePlayer*)m_pPlayer;
+	CObjectsShader* Objects = (CObjectsShader*)m_ppShaders[0];
+	for (int i = 0; i < Objects->m_nObjects; ++i) {
+		if (Objects->m_ppObjects[i]->m_xmOOBB.Intersects(Player->m_xmOOBB)) {
+			cout << "충충돌돌" << endl;
+			return;
+		}
+	}
+	cout << "충돌안함!" << endl;
 }
 

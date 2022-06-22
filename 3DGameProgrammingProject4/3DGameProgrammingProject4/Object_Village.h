@@ -103,11 +103,13 @@ public:
 	char							m_pstrName[64] = { '\0' };
 
 
-	CMesh_Village* m_pMesh = NULL;
-	CShader_Village* m_pShader = NULL;
+	CMesh_Village*					m_pMesh = NULL;
+	CShader_Village*				m_pShader = NULL;
 
 	UINT							m_nMaterials = 0;
-	CMaterial_Village** m_ppMaterials = NULL;
+	CMaterial_Village**				m_ppMaterials = NULL;
+
+	BoundingOrientedBox				m_xmOOBB = BoundingOrientedBox();
 
 protected:
 	ID3D12Resource* m_pd3dcbGameObject = NULL;
@@ -116,6 +118,8 @@ public:
 	CB_GAMEOBJECT_INFO* m_pcbMappedGameObject = NULL;
 
 public:
+	void SetBoundingBox();
+
 	void SetMesh(CMesh_Village* pMesh);
 	void SetShader(CShader_Village* pShader);
 	void SetAlbedoColor(UINT nIndex, XMFLOAT4 xmf4Color);
@@ -127,9 +131,11 @@ public:
 	virtual void ReleaseShaderVariables() override;
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList) override;
 
-	virtual void Animate(float fTimeElapsed) {}
+	virtual void Animate(float fTimeElapsed);
 	virtual void OnPrepareRender() override {}
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera = NULL) override;
+
+	void UpdateBoundingBox();
 
 	virtual void ReleaseUploadBuffers() override;
 

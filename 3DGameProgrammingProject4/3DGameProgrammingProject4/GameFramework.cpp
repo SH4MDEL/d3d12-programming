@@ -378,7 +378,6 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			break;
 		case VK_SPACE:
 			if (m_iSelectedScene == 0) {
-				//m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_BASIC_CAMERA, m_GameTimer.GetTimeElapsed());
 				m_pRCamera->SetTimeLag(0.25f);
 				m_pRCamera->SetOffset(XMFLOAT3(0.0f, 4.5f, -14.0f));
 				m_pRPlayer->SetisBoost(false);
@@ -398,7 +397,6 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		{
 		case VK_SPACE:
 			if (m_iSelectedScene == 0) {
-				//m_pCamera = m_pPlayer->ChangeCamera(THIRD_PERSON_BOOST_CAMERA, m_GameTimer.GetTimeElapsed());
 				m_pRCamera->SetTimeLag(0.20f);
 				m_pRCamera->SetOffset(XMFLOAT3(0.0f, 3.5f, -11.0f));
 				m_pRPlayer->SetisBoost(true);
@@ -490,6 +488,7 @@ void CGameFramework::BuildObjects()
 	if (m_pVScene) m_pVScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
 
 	CAirplanePlayer *pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice, m_pd3dCommandList, m_pVScene->GetGraphicsRootSignature());
+	pAirplanePlayer->SetBoundingBox();
 	m_pVScene->m_pPlayer = m_pVPlayer = pAirplanePlayer;
 	m_pVCamera = m_pVPlayer->GetCamera();
 

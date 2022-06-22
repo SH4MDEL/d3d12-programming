@@ -12,26 +12,10 @@ public:
 
 	CPlayer_Racing* m_pPlayer;
 
+	virtual void SetOffset(XMFLOAT3 xmf3Offset) { m_xmf3Offset = xmf3Offset; }
+
 	void SetPlayer(CPlayer_Racing* pPlayer) { m_pPlayer = pPlayer; }
 	CPlayer_Racing* GetPlayer() { return(m_pPlayer); }
-};
-
-class CSpaceShipCamera_Racing : public CCamera_Racing
-{
-public:
-	CSpaceShipCamera_Racing(CCamera_Racing* pCamera);
-	virtual ~CSpaceShipCamera_Racing();
-
-	virtual void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
-};
-
-class CFirstPersonCamera_Racing : public CCamera_Racing
-{
-public:
-	CFirstPersonCamera_Racing(CCamera_Racing* pCamera);
-	virtual ~CFirstPersonCamera_Racing();
-
-	virtual void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
 };
 
 class CThirdPersonCamera_Racing : public CCamera_Racing

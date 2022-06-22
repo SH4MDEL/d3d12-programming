@@ -30,6 +30,7 @@ public:
 
 	virtual void ReleaseUploadBuffers();
 
+	void CheckPlayerByObjectCollisions();
 
 	CPlayer_Village* m_pPlayer = NULL;
 

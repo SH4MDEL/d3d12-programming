@@ -157,6 +157,7 @@ CGameObject_Village **LoadGameObjectsFromFile(ID3D12Device *pd3dDevice, ID3D12Gr
 			strcpy_s(pstrFilePath + 7 + nObjectNameLength, 64 - 7 - nObjectNameLength, ".bin");
 			CMesh_Village*pMesh = new CMesh_Village(pd3dDevice, pd3dCommandList, pstrFilePath);
 			pGameObject->SetMesh(pMesh);
+			
 		}
 
 		ppGameObjects[i] = pGameObject;
