@@ -1,0 +1,46 @@
+Collision Detection
+
+Axis Aligned Bounding Box: 축과 정렬된 바운딩 박스
+
+- 충돌 구조체
+
+BoundingBox
+- 중심 Center와 중심부터 거리 Extents
+
+BoundingOrientedBox
+- 회전을 포함하는 쿼터니언 Orientation을 포함하고 있음
+
+BoundingSphere
+- 중심 Center와 반지름 Radius 존재
+
+BoundingFrustum
+- 프러스텀 형태, 카메라의 공간을 바운딩 박스로 표현할 때 사용.
+- 트리 구조로 객체의 충돌 여부를 파악한 후, 프러스텀과 겹치는 부분만 렌더링 한다.
+
+
+TriangleTests namespace : 삼각형 충돌 검사 네임스페이스
+삼각형-평면, 삼각형-삼각형, 삼각형-광선 등의 충돌 검사 제공
+
+enum ContainmentType
+- DISJOINT : 교차하는 부분 없음.
+- INTERSECTS : 일부만 겹침
+- CONTAINS : 포함됨
+
+enum PlaneIntersectionType
+- FRONT : Plane 앞에 위치
+- BACK : Plane 뒤에 위치
+- INTERSECTING : 서로 겹침
+
+
+구조체에 대한 설명
+- 생성자
+BoundingBox를 통한 복사 생성, 또는 center와 extents를 통한 생성 가능
+
+- static 함수 CreateFromPoints
+입력한 &out으로 바운딩 박스를 리턴 받는다. center와 extents를 인자로 받거나 정점의 개수와 정점의 포인터, 정점 하나의 구조체의 크기를 인자로 받는다(두 번째 정점의 위치를 알기 위함).
+- static 함수 CreateMerged
+입력한 &out으로 바운딩 박스를 리턴 받는다. 입력한 두 개의 바운딩 박스를 합쳐 둘 모두를 포함하는 더 큰 바운딩 박스를 생성한다.
+
+BoundingFrustum만이 행렬을 인자로 받는다.
+
+
