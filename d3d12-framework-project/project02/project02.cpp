@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "project02.h"
+#include "framework.h"
 
 // 다음을 정의하면 프로그램 실행시 콘솔이 출력됩니다.
 #ifdef UNICODE
@@ -14,9 +15,10 @@
 #define MAX_LOADSTRING 100
 
 // 전역 변수:
-HINSTANCE hInst;                                // 현재 인스턴스입니다.
-WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
-WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
+HINSTANCE           hInst;                          // 현재 인스턴스입니다.
+WCHAR               szTitle[MAX_LOADSTRING];        // 제목 표시줄 텍스트입니다.
+WCHAR               szWindowClass[MAX_LOADSTRING];  // 기본 창 클래스 이름입니다.
+GameFramework       g_GameFramework(1280, 720);     // 게임프레임워크
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -42,7 +44,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 애플리케이션 초기화를 수행합니다:
     if (!InitInstance(hInstance, nCmdShow))
     {
-        return FALSE;
+        return false;
     }
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_PROJECT02));
@@ -52,13 +54,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 기본 메시지 루프입니다:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
+        if (msg.message == WM_QUIT) break;
         if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
+        else
+        {
+        }
     }
 
+    g_GameFramework.OnDestroy();
     return (int)msg.wParam;
 }
 
