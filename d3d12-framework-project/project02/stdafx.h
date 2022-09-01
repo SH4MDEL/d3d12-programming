@@ -28,6 +28,7 @@
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
 #include <dxgidebug.h>
+#include "d3dx12.h"
 using namespace DirectX;
 using namespace DirectX::PackedVector;
 using Microsoft::WRL::ComPtr;
@@ -37,3 +38,14 @@ using Microsoft::WRL::ComPtr;
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "dxguid.lib")
 
+namespace DX
+{
+    inline void ThrowIfFailed(HRESULT hr)
+    {
+        if (FAILED(hr))
+        {
+            // Set a breakpoint on this line to catch DirectX API errors
+            throw std::exception{};
+        }
+    }
+}

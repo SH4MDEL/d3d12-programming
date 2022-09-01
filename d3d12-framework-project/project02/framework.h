@@ -8,19 +8,38 @@ public:
 	~GameFramework();
 
 	void OnCreate(HINSTANCE hInstance, HWND hWnd);
-	void BuildObjects();
 	void OnDestroy();
+	void StartPipeline();
 
+	// 1. 디바이스 생성
 	void CreateDevice();
-	void CreateCommandQueue();
+
+	// 2. 펜스 객체 생성
+	void CreateFence();
+
+	// 3. 4X MSAA 품질 수준 지원 여부 점검
+	void Check4xMSAAMultiSampleQuality();
+
+	// 4. 명령 큐, 명령 할당자, 명령 리스트 생성
+	void CreateCommandQueueAndList();
+
+	// 5. 스왑 체인 생성
 	void CreateSwapChain();
+
+	// 6. 서술자 힙 생성
 	void CreateRtvDsvDescriptorHeap();
+
+	// 7. 후면 버퍼에 대한 렌더 타겟 뷰 생성
 	void CreateRenderTargetView();
+
+	// 8. 깊이 스텐실 버퍼, 깊이 스텐실 뷰 생성
 	void CreateDepthStencilView();
 
-	void ProcessInput();
+	// 9. 뷰포트, 시저렉트 생성
+
+	void BuildObjects();
+
 	void AnimateObjects();
-	void FrameAdvance();
 
 	void WaitForGpuComplete();
 
@@ -44,6 +63,7 @@ private:
 	ComPtr<ID3D12GraphicsCommandList>	m_commandList;
 	ComPtr<ID3D12Resource>				m_renderTargets[SwapChainBufferCount];
 	ComPtr<ID3D12DescriptorHeap>		m_rtvHeap;
+	UINT								m_rtvDescriptorSize;
 	ComPtr<ID3D12Resource>				m_depthStencil;
 	ComPtr<ID3D12DescriptorHeap>		m_dsvHeap;
 	ComPtr<ID3D12PipelineState>			m_pipelineState;
