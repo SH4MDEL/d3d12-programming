@@ -23,7 +23,7 @@ void GameFramework::OnCreate(HINSTANCE hInstance, HWND hWnd)
 
 	StartPipeline();
 
-	BuildObjects();
+	//BuildObjects(); 
 }
 
 void GameFramework::OnDestroy()
@@ -223,4 +223,61 @@ void GameFramework::CreateDepthStencilView()
 	depthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Flags = D3D12_DSV_FLAG_NONE;
 	m_device->CreateDepthStencilView(m_depthStencil.Get(), &depthStencilViewDesc, m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
+}
+
+
+void GameFramework::WaitForGpuComplete()
+{
+	//GPU가 펜스의 값을 설정하는 명령을 명령 큐에 추가한다. 
+	const UINT64 fence = m_fenceValue;
+	DX::ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), fence));
+	//CPU 펜스의 값을 증가시킨다. 
+	++m_fenceValue;
+
+	//펜스의 현재 값이 설정한 값보다 작으면 펜스의 현재 값이 설정한 값이 될 때까지 기다린다. 
+	if (m_fence->GetCompletedValue() < fence)
+	{
+		DX::ThrowIfFailed(m_fence->SetEventOnCompletion(fence, m_fenceEvent));
+		::WaitForSingleObject(m_fenceEvent, INFINITE);
+	}
+	m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+}
+
+void GameFramework::FrameAdvance()
+{
+	// 명령 할당자와 명령 리스트를 리셋한다. 
+	DX::ThrowIfFailed(m_commandAllocator->Reset());
+	DX::ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
+
+	// 자원 용도와 관련된 상태 전이를 Direct3D에 통지한다.
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	//뷰포트와 씨저 사각형을 설정한다. 
+	m_commandList->RSSetViewports(1, &m_viewport);
+	m_commandList->RSSetScissorRects(1, &m_scissorRect);
+
+	//현재의 렌더 타겟에 해당하는 서술자와 깊이 스텐실 서술자의 CPU 주소(핸들)를 계산한다. 
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ m_rtvHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(m_frameIndex), m_rtvDescriptorSize };
+	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle{ m_dsvHeap->GetCPUDescriptorHandleForHeapStart() };
+	m_commandList->OMSetRenderTargets(1, &rtvHandle, TRUE, &dsvHandle);
+
+	// 원하는 색상으로 렌더 타겟을 지우고, 원하는 값으로 깊이 스텐실 뷰를 지운다.
+	const FLOAT clearColor[]{ 0.0f, 0.125f, 0.3f, 1.0f };
+	m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, NULL);
+	m_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
+
+	// 자원 용도와 관련된 상태 전이를 Direct3D에 통지한다.
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+	// 명령들의 기록을 마친다.
+	DX::ThrowIfFailed(m_commandList->Close());
+
+
+	// 명령 실행을 위해 커맨드 리스트를 커맨드 큐에 추가한다.
+	ID3D12CommandList* ppCommandList[] = { m_commandList.Get() };
+	m_commandQueue->ExecuteCommandLists(_countof(ppCommandList), ppCommandList);
+
+	DX::ThrowIfFailed(m_swapChain->Present(1, 0));
+
+	WaitForGpuComplete();
 }

@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{8a6827a0-46cf-48c4-a945-4eca1ed3235e}</ProjectGuid>
-    <RootNamespace>project02</RootNamespace>
+    <ProjectGuid>{172cc65a-f47a-47a2-9e35-523765391183}</ProjectGuid>
+    <RootNamespace>project03</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -115,8 +115,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -130,8 +129,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -141,23 +139,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="d3dx12.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="project02.h" />
+    <ClInclude Include="project03.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="framework.cpp" />
-    <ClCompile Include="project02.cpp" />
-    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="project03.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="project02.rc" />
+    <ResourceCompile Include="project03.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="project02.ico" />
+    <Image Include="project03.ico" />
     <Image Include="small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
