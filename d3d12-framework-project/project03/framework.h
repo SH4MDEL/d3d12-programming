@@ -1,15 +1,87 @@
-ï»¿// header.h: í‘œì¤€ ì‹œìŠ¤í…œ í¬í•¨ íŒŒì¼
-// ë˜ëŠ” í”„ë¡œì íŠ¸ íŠ¹ì • í¬í•¨ íŒŒì¼ì´ ë“¤ì–´ ìˆëŠ” í¬í•¨ íŒŒì¼ì…ë‹ˆë‹¤.
-//
-
 #pragma once
+#include "stdafx.h"
+#include "timer.h"
 
-#include "targetver.h"
-#define WIN32_LEAN_AND_MEAN             // ê±°ì˜ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ë‚´ìš©ì„ Windows í—¤ë”ì—ì„œ ì œì™¸í•©ë‹ˆë‹¤.
-// Windows í—¤ë” íŒŒì¼
-#include <windows.h>
-// C ëŸ°íƒ€ì„ í—¤ë” íŒŒì¼ì…ë‹ˆë‹¤.
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
-#include <tchar.h>
+class GameFramework
+{
+public:
+	GameFramework(UINT width, UINT height);
+	~GameFramework();
+
+	void OnCreate(HINSTANCE hInstance, HWND hWnd);
+	void OnDestroy();
+	void StartPipeline();
+
+	// 1. µğ¹ÙÀÌ½º »ı¼º
+	void CreateDevice();
+
+	// 2. Ææ½º °´Ã¼ »ı¼º
+	void CreateFence();
+
+	// 3. 4X MSAA Ç°Áú ¼öÁØ Áö¿ø ¿©ºÎ Á¡°Ë
+	void Check4xMSAAMultiSampleQuality();
+
+	// 4. ¸í·É Å¥, ¸í·É ÇÒ´çÀÚ, ¸í·É ¸®½ºÆ® »ı¼º
+	void CreateCommandQueueAndList();
+
+	// 5. ½º¿Ò Ã¼ÀÎ »ı¼º
+	void CreateSwapChain();
+
+	// 6. ¼­¼úÀÚ Èü »ı¼º
+	void CreateRtvDsvDescriptorHeap();
+
+	// 7. ÈÄ¸é ¹öÆÛ¿¡ ´ëÇÑ ·»´õ Å¸°Ù ºä »ı¼º
+	void CreateRenderTargetView();
+
+	// 8. ±íÀÌ ½ºÅÙ½Ç ¹öÆÛ, ±íÀÌ ½ºÅÙ½Ç ºä »ı¼º
+	void CreateDepthStencilView();
+
+	// 9. ·çÆ® ½Ã±×´ÏÃ³ »ı¼º
+	void CreateRootSignature();
+
+	//void BuildObjects();
+
+	void FrameAdvance();
+	void Update();
+	void Render();
+	//void AnimateObjects();
+
+	void WaitForGpuComplete();
+
+	UINT GetWindowWidth() const { return m_width; }
+	UINT GetWindowHeight() const { return m_height; }
+
+private:
+	static const INT					SwapChainBufferCount = 2;
+
+	// Window
+	HINSTANCE							m_hInstance;
+	HWND								m_hWnd;
+	UINT								m_width;
+	UINT								m_height;
+
+	D3D12_VIEWPORT						m_viewport;
+	D3D12_RECT							m_scissorRect;
+	ComPtr<IDXGIFactory4>				m_factory;
+	ComPtr<IDXGISwapChain3>				m_swapChain;
+	ComPtr<ID3D12Device>				m_device;
+	INT									m_MSAA4xQualityLevel;
+	ComPtr<ID3D12CommandAllocator>		m_commandAllocator;
+	ComPtr<ID3D12CommandQueue>			m_commandQueue;
+	ComPtr<ID3D12GraphicsCommandList>	m_commandList;
+	ComPtr<ID3D12Resource>				m_renderTargets[SwapChainBufferCount];
+	ComPtr<ID3D12DescriptorHeap>		m_rtvHeap;
+	UINT								m_rtvDescriptorSize;
+	ComPtr<ID3D12Resource>				m_depthStencil;
+	ComPtr<ID3D12DescriptorHeap>		m_dsvHeap;
+	ComPtr<ID3D12PipelineState>			m_pipelineState;
+
+	ComPtr<ID3D12Fence>					m_fence;
+	UINT								m_frameIndex;
+	UINT64								m_fenceValue;
+	HANDLE								m_fenceEvent;
+
+	Timer								m_timer;
+
+};
+
