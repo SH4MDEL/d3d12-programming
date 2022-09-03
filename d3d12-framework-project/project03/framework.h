@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "timer.h"
+#include "scene.h"
 
 class GameFramework
 {
@@ -39,7 +40,10 @@ public:
 	// 9. 루트 시그니처 생성
 	void CreateRootSignature();
 
-	//void BuildObjects();
+	// 10. 파이프라인 스테이트 생성
+	void CreatePipelineState();
+
+	void BuildObjects();
 
 	void FrameAdvance();
 	void Update();
@@ -74,6 +78,7 @@ private:
 	UINT								m_rtvDescriptorSize;
 	ComPtr<ID3D12Resource>				m_depthStencil;
 	ComPtr<ID3D12DescriptorHeap>		m_dsvHeap;
+	ComPtr<ID3D12RootSignature>			m_rootSignature;
 	ComPtr<ID3D12PipelineState>			m_pipelineState;
 
 	ComPtr<ID3D12Fence>					m_fence;
@@ -82,6 +87,8 @@ private:
 	HANDLE								m_fenceEvent;
 
 	Timer								m_timer;
+
+	unique_ptr<Scene>					m_scene;
 
 };
 

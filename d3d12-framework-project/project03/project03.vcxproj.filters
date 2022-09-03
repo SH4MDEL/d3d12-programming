@@ -36,6 +36,9 @@
     <ClInclude Include="timer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="scene.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="project03.cpp">
@@ -48,6 +51,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="timer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="scene.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -63,5 +69,8 @@
     <Image Include="project03.ico">
       <Filter>리소스 파일</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders.hlsl" />
   </ItemGroup>
 </Project>

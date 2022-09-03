@@ -23,7 +23,7 @@ void GameFramework::OnCreate(HINSTANCE hInstance, HWND hWnd)
 
 	StartPipeline();
 
-	//BuildObjects(); 
+	BuildObjects(); 
 }
 
 void GameFramework::OnDestroy()
@@ -70,6 +70,12 @@ void GameFramework::StartPipeline()
 
 	// 8. 깊이 스텐실 버퍼, 깊이 스텐실 뷰 생성
 	CreateDepthStencilView();
+
+	// 9. 루트 시그니처 생성
+	CreateRootSignature();
+
+	// 10. 파이프라인 스테이트 생성
+	CreatePipelineState();
 }
 
 void GameFramework::CreateDevice()
@@ -227,9 +233,77 @@ void GameFramework::CreateDepthStencilView()
 
 void GameFramework::CreateRootSignature()
 {
+	CD3DX12_ROOT_PARAMETER rootParameter[2];
 
+	// cbGameObject : 월드 변환 행렬(16)
+	rootParameter[0].InitAsConstants(16, 0, 0, D3D12_SHADER_VISIBILITY_ALL);
+
+	// cbCamera : 뷰 변환 행렬(16) + 투영 변환 행렬(16)
+	rootParameter[1].InitAsConstants(32, 1, 0, D3D12_SHADER_VISIBILITY_ALL);
+
+	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+	rootSignatureDesc.Init(_countof(rootParameter), rootParameter, 0, NULL, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+	ComPtr<ID3DBlob> signature, error;
+	DX::ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
+	DX::ThrowIfFailed(m_device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature)));
 }
 
+void GameFramework::CreatePipelineState()
+{
+	ComPtr<ID3DBlob> mvsByteCode;
+	ComPtr<ID3DBlob> mpsByteCode;
+
+#if defined(_DEBUG)
+	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	UINT compileFlags = 0;
+#endif
+
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), NULL, NULL, "VSMain", "vs_5_1", compileFlags, 0, &mvsByteCode, NULL));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), NULL, NULL, "PSMain", "ps_5_1", compileFlags, 0, &mpsByteCode, NULL));
+
+	// 정점 레이아웃 설정
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+	// PSO 생성
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
+	psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+	psoDesc.pRootSignature = m_rootSignature.Get();
+	psoDesc.VS =
+	{
+		reinterpret_cast<BYTE*>(mvsByteCode->GetBufferPointer()),
+		mvsByteCode->GetBufferSize()
+	};
+	psoDesc.PS = 
+	{
+		reinterpret_cast<BYTE*>(mpsByteCode->GetBufferPointer()),
+		mpsByteCode->GetBufferSize()
+	};
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.NumRenderTargets = 1;
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psoDesc.SampleDesc.Count = 1;
+	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	DX::ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
+}
+
+
+void GameFramework::BuildObjects()
+{
+	m_scene = make_unique<Scene>();
+
+	m_timer.Tick();
+}
 
 void GameFramework::FrameAdvance()
 {
@@ -283,6 +357,9 @@ void GameFramework::Render()
 	const FLOAT clearColor[]{ 0.0f, 0.125f, 0.3f, 1.0f };
 	m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, NULL);
 	m_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
+
+	// Scene을 Render한다.
+	m_scene->Render(m_commandList);
 
 	// 자원 용도와 관련된 상태 전이를 Direct3D에 통지한다.
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
