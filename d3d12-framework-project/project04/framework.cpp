@@ -254,9 +254,9 @@ void GameFramework::BuildObjects()
 	m_scene = make_unique<Scene>();
 
 	vector<Vertex> vertices;
-	vertices.emplace_back(XMFLOAT3{ 0.0f, 0.5f, 0.0f }, XMFLOAT4{ 1.0f, 0.0f, 0.0f, 1.0f });
-	vertices.emplace_back(XMFLOAT3{ 0.5f, -0.5f, 0.0f }, XMFLOAT4{ 0.0f, 1.0f, 0.0f, 1.0f });
-	vertices.emplace_back(XMFLOAT3{ -0.5f, -0.5f, 0.0f }, XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f });
+	vertices.emplace_back(XMFLOAT3{ 0.0f, 0.5f, 0.0f }, XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.5f });
+	vertices.emplace_back(XMFLOAT3{ 0.5f, -0.5f, 0.0f }, XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.5f });
+	vertices.emplace_back(XMFLOAT3{ -0.5f, -0.5f, 0.0f }, XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.5f });
 
 	vector<UINT> indices;
 	indices.push_back(0); indices.push_back(1); indices.push_back(2);
@@ -268,7 +268,7 @@ void GameFramework::BuildObjects()
 
 	// 게임오브젝트 생성
 	unique_ptr<GameObject> obj{ make_unique<GameObject>() };
-	obj->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 5.0f });
+	obj->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f });
 	obj->SetMesh(mesh);
 	obj->SetShader(shader);
 	m_scene->GetGameObjects().push_back(move(obj));
