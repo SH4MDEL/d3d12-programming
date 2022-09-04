@@ -35,13 +35,15 @@ public:
 	// 8. 깊이 스텐실 버퍼, 깊이 스텐실 뷰 생성
 	void CreateDepthStencilView();
 
-	// 9. 뷰포트, 시저렉트 생성
+	//void BuildObjects();
 
-	void BuildObjects();
-
-	void AnimateObjects();
+	void FrameAdvance();
+	//void AnimateObjects();
 
 	void WaitForGpuComplete();
+
+	UINT GetWindowWidth() const { return m_width; }
+	UINT GetWindowHeight() const { return m_height; }
 
 private:
 	static const INT					SwapChainBufferCount = 2;

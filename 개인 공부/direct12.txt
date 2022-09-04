@@ -35,7 +35,7 @@ Command List & Command Queue
 비동기 렌더링을 위한 디자인
 Graphics Command를 Command List에 Recording해서 Command Queue에 전송. (이 시점에 GPU Queue로 전송)
 1개의 Command List만으로도 처리는 가능 -> 성능 안나옴
-멀티스레드로 여러 개의 Command List를 동시에 Recording하고 각각의 스레드가 독립저긍로 Execute하는 것을 권장.
+멀티스레드로 여러 개의 Command List를 동시에 Recording하고 각각의 스레드가 독립적으로 Execute하는 것을 권장.
 
 Command Queue - 완료 체크
 ID3D12Fence 객체를 사용해서 작업이 완료되었는지를 표시한다.
