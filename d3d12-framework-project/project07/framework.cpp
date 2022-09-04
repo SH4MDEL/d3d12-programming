@@ -451,7 +451,7 @@ void GameFramework::Render()
 	// 명령들의 기록을 마친다.
 	DX::ThrowIfFailed(m_commandList->Close());
 
-
+	
 	// 명령 실행을 위해 커맨드 리스트를 커맨드 큐에 추가한다.
 	ID3D12CommandList* ppCommandList[] = { m_commandList.Get() };
 	m_commandQueue->ExecuteCommandLists(_countof(ppCommandList), ppCommandList);
