@@ -102,5 +102,6 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders.hlsl" />
+    <FxCompile Include="Instance.hlsl" />
   </ItemGroup>
 </Project>

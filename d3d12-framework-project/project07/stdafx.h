@@ -87,6 +87,17 @@ namespace Vector3
     }
 }
 
+namespace Matrix
+{
+    inline XMFLOAT4X4 Transpose(const XMFLOAT4X4& a)
+    {
+        XMFLOAT4X4 result;
+        XMMATRIX m{ XMMatrixTranspose(XMLoadFloat4x4(&a)) };
+        XMStoreFloat4x4(&result, m);
+        return result;
+    }
+}
+
 struct Vertex
 {
     Vertex(const XMFLOAT3& p, const XMFLOAT4& c) : position{ p }, color{ c } { }
