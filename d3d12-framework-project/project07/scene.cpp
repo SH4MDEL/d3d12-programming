@@ -25,7 +25,19 @@ void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
 	if (m_camera) m_camera->UpdateShaderVariable(commandList);
 	if (m_player) m_player->Render(commandList);
-	for (const auto& object : m_gameObjects) object->Render(commandList);
+
+	if (m_shader) {
+		InstanceData* inst{ m_shader->GetInstancingPointer() };
+
+		int i = 0;
+		for (const auto& obj : m_gameObjects)
+			inst[i++].worldMatrix = Matrix::Transpose(obj->GetWorldMatrix());
+
+		m_shader->Render(commandList);
+	}
+	else {
+		for (const auto& object : m_gameObjects) object->Render(commandList);
+	}
 }
 
 void Scene::SetPlayer(const shared_ptr<Player>& player)
@@ -38,4 +50,10 @@ void Scene::SetCamera(const shared_ptr<Camera>& camera)
 {
 	if (m_camera) m_camera.reset();
 	m_camera = camera;
+}
+
+void Scene::SetShader(const shared_ptr<InstancingShader>& shader)
+{
+	if (m_shader) m_shader.reset();
+	m_shader = shader;
 }

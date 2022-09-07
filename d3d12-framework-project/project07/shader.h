@@ -5,6 +5,7 @@
 class Shader
 {
 public:
+	Shader() {}
 	Shader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 	~Shader() = default;
 
@@ -16,7 +17,7 @@ protected:
 	ComPtr<ID3D12PipelineState>			m_pipelineState;
 };
 
-struct Instance
+struct InstanceData
 {
 	XMFLOAT4X4 worldMatrix;
 };
@@ -28,7 +29,19 @@ public:
 	~InstancingShader();
 
 	virtual void CreatePipelineState(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature) override;
+	void CreateInstancingBuffer(const ComPtr<ID3D12Device>& device);
+
+	ComPtr<ID3D12Resource> GetInstancingBuffer() const { return m_instancingBuffer; }
+	InstanceData* GetInstancingPointer() const { return m_instancingBufferPointer; }
+
+	void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList);
 
 private:
-	unique_ptr<Mesh>					m_mesh;
+	shared_ptr<Mesh>					m_mesh;
+	
+	UINT								m_sizeInBytes;
+	UINT								m_strideInBytes;
+	ComPtr<ID3D12Resource>				m_instancingBuffer;
+	D3D12_VERTEX_BUFFER_VIEW			m_instancingBufferView;
+	InstanceData*						m_instancingBufferPointer;
 };

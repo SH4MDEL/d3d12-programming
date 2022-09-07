@@ -3,6 +3,7 @@
 #include "object.h"
 #include "player.h"
 #include "camera.h"
+#include "shader.h"
 
 class Scene
 {
@@ -21,10 +22,12 @@ public:
 
 	void SetPlayer(const shared_ptr<Player>& player);
 	void SetCamera(const shared_ptr<Camera>& camera);
+	void SetShader(const shared_ptr<InstancingShader>& shader);
 
 private:
 	vector<unique_ptr<GameObject>>	m_gameObjects;
 
 	shared_ptr<Player>				m_player;
 	shared_ptr<Camera>				m_camera;
+	shared_ptr<InstancingShader>	m_shader;
 };
