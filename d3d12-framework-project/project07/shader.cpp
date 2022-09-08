@@ -64,7 +64,9 @@ void Shader::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 	UpdateShaderVariable(commandList);
 
 	if (m_camera) m_camera->UpdateShaderVariable(commandList);
+
 	if (m_player) m_player->Render(commandList);
+
 	for (const auto& elm : m_gameObjects)
 		if (elm) elm->Render(commandList);
 }
