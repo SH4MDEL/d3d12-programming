@@ -70,3 +70,8 @@ void RotatingObject::Update(FLOAT timeElapsed)
 {
 	GameObject::Rotate(0.0f, m_rotationSpeed * timeElapsed, 0.0f);
 }
+
+void RotatingObject::SetRotationSpeed(FLOAT rotationSpeed)
+{
+	m_rotationSpeed = rotationSpeed;
+}

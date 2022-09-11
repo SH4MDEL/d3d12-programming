@@ -9,12 +9,13 @@ class Shader
 public:
 	Shader() {};
 	Shader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
-	~Shader() = default;
+	~Shader();
 
 	virtual void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+	virtual void ReleaseShaderVariable();
 
-	void Update(FLOAT timeElapsed);
-	void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+	virtual void Update(FLOAT timeElapsed);
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 
 	shared_ptr<Player> GetPlayer() const { return m_player; }
 	shared_ptr<Camera> GetCamera() const { return m_camera; }
@@ -37,8 +38,7 @@ protected:
 
 struct InstancingData
 {
-	XMFLOAT4X4	worldMatrix;
-	XMFLOAT4	color;
+	XMFLOAT4X4 worldMatrix;
 };
 
 class InstancingShader : public Shader 
@@ -46,6 +46,9 @@ class InstancingShader : public Shader
 public:
 	InstancingShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature, const Mesh& mesh, UINT count);
 	~InstancingShader() = default;
+
+	virtual void Update(FLOAT timeElapsed);
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 
 	virtual void CreateShaderVariable(const ComPtr<ID3D12Device>& device);
 	virtual void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override;

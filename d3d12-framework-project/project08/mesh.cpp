@@ -86,6 +86,20 @@ void Mesh::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const
 	}
 }
 
+void Mesh::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const D3D12_VERTEX_BUFFER_VIEW& instanceBufferView) const
+{
+	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
+	m_commandList->IASetVertexBuffers(1, 1, &instanceBufferView);
+	if (m_nIndices) {
+		m_commandList->IASetIndexBuffer(&m_indexBufferView);
+		m_commandList->DrawIndexedInstanced(m_nIndices, instanceBufferView.SizeInBytes / instanceBufferView.StrideInBytes, 0, 0, 0);
+	}
+	else {
+		m_commandList->DrawInstanced(m_nVertices, instanceBufferView.SizeInBytes / instanceBufferView.StrideInBytes, 0, 0);
+	}
+}
+
 void Mesh::ReleaseUploadBuffer()
 {
 	if (m_vertexUploadBuffer) m_vertexUploadBuffer.Reset();

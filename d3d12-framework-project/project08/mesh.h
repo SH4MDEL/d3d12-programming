@@ -8,6 +8,7 @@ public:
 	~Mesh() = default;
 
 	void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
+	void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const D3D12_VERTEX_BUFFER_VIEW& instanceBufferView) const;
 	void ReleaseUploadBuffer();
 
 private:

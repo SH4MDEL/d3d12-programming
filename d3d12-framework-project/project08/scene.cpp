@@ -17,8 +17,6 @@ void Scene::OnProcessingKeyboardMessage(FLOAT timeElapsed) const
 
 void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandlist, const ComPtr<ID3D12RootSignature>& rootsignature, FLOAT aspectRatio)
 {
-	unique_ptr<Shader> shader{ make_unique<Shader>(device, rootsignature) };
-
 	// Render by index buffer
 	vector<Vertex> vertices;
 	vertices.emplace_back(XMFLOAT3{ -0.5f, +0.5f, +0.5f }, XMFLOAT4{ 1.0f, 0.0f, 0.0f, 1.0f });
@@ -51,17 +49,21 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	indices.push_back(2); indices.push_back(5); indices.push_back(6);
 
 	Mesh cube{ device, commandlist, vertices, indices };
-	shared_ptr<Mesh> mesh{ make_shared<Mesh>(cube) };
+
+	unique_ptr<InstancingShader> shader{ make_unique<InstancingShader>(device, rootsignature, cube, 1000) };
 
 	// 게임오브젝트 생성
-	unique_ptr<RotatingObject> obj{ make_unique<RotatingObject>() };
-	obj->SetPosition(XMFLOAT3{ 0.0f, -0.8f, 5.0f });
-	obj->SetMesh(mesh);
-	shader->GetGameObjects().push_back(move(obj));
+	for (int i = 0; i < 1000; ++i)
+	{
+		unique_ptr<RotatingObject> obj{ make_unique<RotatingObject>() };
+		obj->SetPosition(XMFLOAT3(i % 10 * 5, (i / 10) % 10 * 5, (i / 100) % 10 * 5));
+		obj->SetRotationSpeed((FLOAT)(i % 200));
+		shader->GetGameObjects().push_back(move(obj));
+	}
 
 	// 플레이어 생성
 	shared_ptr<Player> player{ make_shared<Player>() };
-	player->SetMesh(mesh);
+	player->SetPosition(XMFLOAT3(20.0f, 20.0f, 0.0f));
 	shader->SetPlayer(player);
 
 	// 카메라 생성
@@ -71,13 +73,13 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	camera->SetUp(XMFLOAT3{ 0.0f, 1.0f, 0.0f });
 	camera->SetPlayer(shader->GetPlayer());
 
+	// 플레이어 카메라 설정
+	shader->GetPlayer()->SetCamera(shader->GetCamera());
+
 	XMFLOAT4X4 projMatrix;
 	XMStoreFloat4x4(&projMatrix, XMMatrixPerspectiveFovLH(0.25f * XM_PI, aspectRatio, 0.1f, 1000.0f));
 	camera->SetProjMatrix(projMatrix);
 	shader->SetCamera(camera);
-
-	// 플레이어 카메라 설정
-	shader->GetPlayer()->SetCamera(shader->GetCamera());
 
 	m_shader.push_back(move(shader));
 }

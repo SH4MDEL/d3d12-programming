@@ -48,6 +48,11 @@ Shader::Shader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignat
 
 }
 
+Shader::~Shader()
+{
+	ReleaseShaderVariable();
+}
+
 void Shader::Update(FLOAT timeElapsed)
 {
 	if (m_player) m_player->Update(timeElapsed);
@@ -70,6 +75,11 @@ void Shader::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 void Shader::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
 	commandList->SetPipelineState(m_pipelineState.Get());
+}
+
+void Shader::ReleaseShaderVariable()
+{
+
 }
 
 void Shader::SetPlayer(const shared_ptr<Player>& player)
@@ -99,16 +109,15 @@ InstancingShader::InstancingShader(const ComPtr<ID3D12Device>& device, const Com
 
 	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Instancing.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VSMain", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
 	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Instancing.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PSMain", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
-
+	
 	m_inputLayout =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "WORLDMATRIX", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1}, 
-		{ "WORLDMATRIX", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1},
-		{ "WORLDMATRIX", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1},
-		{ "WORLDMATRIX", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1},
-		{ "INSTANCECOLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 64, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1},
+		{ "INSTANCE", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1}, 
+		{ "INSTANCE", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1},
+		{ "INSTANCE", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1},
+		{ "INSTANCE", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1},
 	};
 
 	// PSO »ý¼º
@@ -139,6 +148,29 @@ InstancingShader::InstancingShader(const ComPtr<ID3D12Device>& device, const Com
 
 	CreateShaderVariable(device);
 	m_mesh = make_unique<Mesh>(mesh);
+}
+
+void InstancingShader::Update(FLOAT timeElapsed)
+{
+	if (m_player) m_player->Update(timeElapsed);
+	for (const auto& elm : m_gameObjects)
+		if (elm) elm->Update(timeElapsed);
+}
+
+void InstancingShader::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+{
+	UpdateShaderVariable(commandList);
+
+	if (m_camera) m_camera->UpdateShaderVariable(commandList);
+
+	if (m_player) m_player->Render(commandList);
+
+	int i = 0;
+	for (const auto& elm : m_gameObjects) {
+		m_instancingBufferPointer[i++].worldMatrix = Matrix::Transpose(elm->GetWorldMatrix());
+	}
+
+	m_mesh->Render(commandList, m_instancingBufferView);
 }
 
 void InstancingShader::CreateShaderVariable(const ComPtr<ID3D12Device>& device)

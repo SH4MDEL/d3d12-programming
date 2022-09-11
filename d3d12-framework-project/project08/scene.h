@@ -18,8 +18,8 @@ public:
 	void Update(FLOAT timeElapsed);
 	void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 
-	vector<unique_ptr<Shader>>& GetShader() { return m_shader; }
+	vector<unique_ptr<InstancingShader>>& GetShader() { return m_shader; }
 
 private:
-	vector<unique_ptr<Shader>> m_shader;
+	vector<unique_ptr<InstancingShader>> m_shader;
 };

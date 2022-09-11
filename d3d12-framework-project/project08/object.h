@@ -17,6 +17,7 @@ public:
 
 	void SetPosition(const XMFLOAT3& position);
 
+	XMFLOAT4X4 GetWorldMatrix() const { return m_worldMatrix; }
 	XMFLOAT3 GetPosition() const;
 	XMFLOAT3 GetRight() const { return m_right; }
 	XMFLOAT3 GetUp() const { return m_up; }
@@ -45,6 +46,9 @@ public:
 	~RotatingObject() = default;
 
 	virtual void Update(FLOAT timeElapsed);
+
+
+	void SetRotationSpeed(FLOAT rotationSpeed);
 
 private:
 	FLOAT				m_rotationSpeed;
