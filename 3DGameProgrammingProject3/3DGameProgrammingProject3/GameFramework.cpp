@@ -536,7 +536,7 @@ void CGameFramework::MoveToNextFrame()
 	}
 }
 
-//#define _WITH_PLAYER_TOP
+#define _WITH_PLAYER_TOP
 
 void CGameFramework::FrameAdvance()
 {    
