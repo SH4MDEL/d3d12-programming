@@ -83,9 +83,8 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	indices.push_back(2); indices.push_back(5); indices.push_back(6);
 
 	Mesh cube{ device, commandlist, vertices, indices };
-	shared_ptr<Mesh> mesh{ make_shared<Mesh>(cube) };
 
-	unique_ptr<InstancingShader> instancingshader{ make_unique<InstancingShader>(device, rootsignature, cube, 1000) };
+	unique_ptr<InstancingShader> instancingShader{ make_unique<InstancingShader>(device, rootsignature, cube, 1000) };
 
 	// 게임오브젝트 생성
 	for (int i = 0; i < 1000; ++i)
@@ -93,16 +92,16 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 		unique_ptr<RotatingObject> obj{ make_unique<RotatingObject>() };
 		obj->SetPosition(XMFLOAT3(i % 10 * 5, (i / 10) % 10 * 5, (i / 100) % 10 * 5));
 		obj->SetRotationSpeed((FLOAT)(i % 200));
-		instancingshader->GetGameObjects().push_back(move(obj));
+		instancingShader->GetGameObjects().push_back(move(obj));
 	}
 
-	unique_ptr<Shader> playershader{ make_unique<Shader>(device, rootsignature) };
+	unique_ptr<Shader> playerShader{ make_unique<Shader>(device, rootsignature) };
 
 	// 플레이어 생성
 	m_player = make_shared<Player>();
 	m_player->SetPosition(XMFLOAT3(20.0f, 20.0f, -10.0f));
 	m_player->SetMesh(Mesh(device, commandlist, vertices, indices));
-	playershader->SetPlayer(m_player);
+	playerShader->SetPlayer(m_player);
 
 	// 카메라 생성
 	m_camera = make_shared<ThirdPersonCamera>();
@@ -118,8 +117,8 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 
 
 	// 셰이더 설정
-	m_shader.insert(make_pair("Instancing", move(instancingshader)));
-	m_shader.insert(make_pair("player", move(playershader)));
+	m_shader.insert(make_pair("INSTANCING", move(instancingShader)));
+	m_shader.insert(make_pair("PLAYER", move(playerShader)));
 }
 
 void Scene::Update(FLOAT timeElapsed)
@@ -132,7 +131,6 @@ void Scene::Update(FLOAT timeElapsed)
 void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
 	if (m_camera) m_camera->UpdateShaderVariable(commandList);
-
 	for (const auto& shader : m_shader)
 		shader.second->Render(commandList);
 }

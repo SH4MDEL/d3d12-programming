@@ -22,14 +22,8 @@ void GameFramework::OnCreate(HINSTANCE hInstance, HWND hWnd)
 	m_hWnd = hWnd;
 
 	StartPipeline();
-
 	BuildObjects(); 
 }
-
-void GameFramework::OnUpdate()
-{
-}
-
 
 void GameFramework::OnDestroy()
 {
@@ -294,7 +288,6 @@ void GameFramework::FrameAdvance()
 		OnProcessingMouseMessage();
 		OnProcessingKeyboardMessage();
 	}
-	OnUpdate();
 	Update(m_timer.GetDeltaTime());
 	Render();
 }

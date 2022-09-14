@@ -12,7 +12,6 @@ public:
 	~GameFramework();
 
 	void OnCreate(HINSTANCE hInstance, HWND hWnd);
-	void OnUpdate();
 	void OnDestroy();
 	void OnProcessingMouseMessage() const;
 	void OnProcessingKeyboardMessage() const;
