@@ -105,3 +105,68 @@ void Mesh::ReleaseUploadBuffer()
 	if (m_vertexUploadBuffer) m_vertexUploadBuffer.Reset();
 	if (m_indexUploadBuffer) m_indexUploadBuffer.Reset();
 }
+
+
+HeightMapImage::HeightMapImage(const wstring& fileName, INT width, INT length, XMFLOAT3 scale) :
+	m_width(width), m_length(length), m_scale(scale)
+{
+	unique_ptr<BYTE[]> pixels{ new BYTE[m_width * m_length] };
+	HANDLE hFile{ CreateFile(fileName.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, nullptr) };
+	DWORD bytesRead;
+	ReadFile(hFile, pixels.get(), m_width * m_length, &bytesRead, NULL);
+	CloseHandle(hFile);
+
+	for (int y = 0; y < m_length; ++y) {
+		for (int x = 0; x < m_width; ++x) {
+			m_pixels[x + (y * m_width)] = pixels[x + ((m_length - y - 1) * m_width)];
+		}
+	}
+}
+
+FLOAT HeightMapImage::GetHeight(FLOAT x, FLOAT z) const
+{
+	//지형의 좌표(x, z)는 이미지 좌표계이다.
+	//높이 맵의 x-좌표와 z-좌표가 높이 맵의 범위를 벗어나면 지형의 높이는 0이다.
+	if ((x < 0.0f) || (z < 0.0f) || (x >= m_width) || (z >= m_length)) return 0.0f;
+
+	//높이 맵의 좌표의 정수 부분과 소수 부분을 계산한다. 
+	int mx{ (int)x };
+	int mz{ (int)z };
+	float px{ x - mx };
+	float pz{ z - mz };
+
+	float bottomLeft{ (float)m_pixels[mx + mz * m_width] };
+	float bottomRight{ (float)m_pixels[(mx + 1) + (mz * m_width)] };
+	float topLeft{ (float)m_pixels[mx + mz * m_width] };
+	float topRight{ (float)m_pixels[(mx + 1) + (mz * m_width)] };
+
+	//사각형의 네 점을 보간하여 높이(픽셀 값)를 계산한다. 
+	float fTopHeight{ topLeft * (1 - px) + topRight * px };
+	float fBottomHeight{ bottomLeft * (1 - px) + bottomRight * px };
+	return fBottomHeight * (1 - pz) + fTopHeight * pz;
+}
+
+XMFLOAT3 HeightMapImage::GetNormal(INT x, INT z) const
+{
+	//x-좌표와 z-좌표가 높이 맵의 범위를 벗어나면 지형의 법선 벡터는 y-축 방향 벡터이다. 
+	if ((x < 0.0f) || (z < 0.0f) || (x >= m_width) || (z >= m_length))
+		return(XMFLOAT3(0.0f, 1.0f, 0.0f));
+
+	/*높이 맵에서 (x, z) 좌표의 픽셀 값과 인접한 두 개의 점 (x+1, z), (z, z+1)에 대한 픽셀 값을 사용하여 법선 벡터를
+	계산한다.*/
+	int heightMapIndex { x + z * m_width };
+	int xAdd { x < m_width - 1 ? 1 : -1 };
+	int zAdd { z < m_length - 1 ? m_width : -m_width };
+
+	//(x, z), (x+1, z), (z, z+1)의 픽셀에서 지형의 높이를 구한다. 
+	float y1 { (float)m_pixels[heightMapIndex] * m_scale.y };
+	float y2 { (float)m_pixels[heightMapIndex + xAdd] * m_scale.y };
+	float y3 { (float)m_pixels[heightMapIndex + zAdd] * m_scale.y };
+
+	//xmf3Edge1은 (0, y3, m_xmf3Scale.z) - (0, y1, 0) 벡터이다. 
+	XMFLOAT3 xmf3Edge1 = XMFLOAT3(0.0f, y3 - y1, m_scale.z);
+	//xmf3Edge2는 (m_xmf3Scale.x, y2, 0) - (0, y1, 0) 벡터이다. 
+	XMFLOAT3 xmf3Edge2 = XMFLOAT3(m_scale.x, y2 - y1, 0.0f);
+	//법선 벡터는 xmf3Edge1과 xmf3Edge2의 외적을 정규화하면 된다. 
+	return Vector3::Cross(xmf3Edge1, xmf3Edge2);
+}

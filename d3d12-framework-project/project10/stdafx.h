@@ -115,10 +115,3 @@ namespace Matrix
         return result;
     }
 }
-
-struct Vertex
-{
-    Vertex(const XMFLOAT3& p, const XMFLOAT4& c) : position{ p }, color{ c } { }
-    XMFLOAT3 position;
-    XMFLOAT4 color;
-};
