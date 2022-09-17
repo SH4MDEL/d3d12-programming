@@ -35,6 +35,15 @@ protected:
 	shared_ptr<Camera>					m_camera;
 };
 
+class TerrainShader : public Shader
+{
+public:
+	TerrainShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~TerrainShader() = default;
+
+	virtual void CreatePipelineState(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+};
+
 
 struct InstancingData
 {

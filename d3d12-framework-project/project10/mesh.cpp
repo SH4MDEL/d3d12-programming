@@ -2,6 +2,8 @@
 
 Mesh::Mesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const vector<Vertex>& vertices, const vector<UINT>& indices)
 {
+	m_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
 	// 정점 버퍼 생성
 	m_nVertices = (UINT)vertices.size();
 	const UINT vertexBufferSize = (UINT)sizeof(Vertex) * (UINT)vertices.size();
@@ -75,7 +77,7 @@ Mesh::Mesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsComman
 
 void Mesh::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const
 {
-	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_commandList->IASetPrimitiveTopology(m_primitiveTopology);
 	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
 	if (m_nIndices) {
 		m_commandList->IASetIndexBuffer(&m_indexBufferView);
@@ -88,7 +90,7 @@ void Mesh::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const
 
 void Mesh::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const D3D12_VERTEX_BUFFER_VIEW& instanceBufferView) const
 {
-	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_commandList->IASetPrimitiveTopology(m_primitiveTopology);
 	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
 	m_commandList->IASetVertexBuffers(1, 1, &instanceBufferView);
 	if (m_nIndices) {
@@ -108,7 +110,7 @@ void Mesh::ReleaseUploadBuffer()
 
 
 HeightMapImage::HeightMapImage(const wstring& fileName, INT width, INT length, XMFLOAT3 scale) :
-	m_width(width), m_length(length), m_scale(scale)
+	m_width(width), m_length(length), m_scale(scale), m_pixels{ new BYTE[width * length] }
 {
 	unique_ptr<BYTE[]> pixels{ new BYTE[m_width * m_length] };
 	HANDLE hFile{ CreateFile(fileName.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, nullptr) };
@@ -169,4 +171,79 @@ XMFLOAT3 HeightMapImage::GetNormal(INT x, INT z) const
 	XMFLOAT3 xmf3Edge2 = XMFLOAT3(m_scale.x, y2 - y1, 0.0f);
 	//법선 벡터는 xmf3Edge1과 xmf3Edge2의 외적을 정규화하면 된다. 
 	return Vector3::Cross(xmf3Edge1, xmf3Edge2);
+}
+
+HeightMapGridMesh::HeightMapGridMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
+	INT xStart, INT zStart, INT width, INT length, XMFLOAT3 scale, HeightMapImage* heightMapImage)
+{
+	//격자는 삼각형 스트립으로 구성한다. 
+	m_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+	m_width = width;
+	m_length = length;
+	m_scale = scale;
+
+	vector<TerrainVertex> vertices;
+
+	/*xStart와 zStart는 격자의 시작 위치(x-좌표와 z-좌표)를 나타낸다. 커다란 지형은 격자들의 이차원 배열로 만들 필
+	요가 있기 때문에 전체 지형에서 각 격자의 시작 위치를 나타내는 정보가 필요하다.*/
+	for (int i = 0, z = zStart; z < (zStart + length); ++z) {
+		for (int x = xStart; x < (xStart + width); ++x, ++i)
+		{
+			//정점의 높이와 색상을 높이 맵으로부터 구한다.
+			XMFLOAT3 anormal = Vector3::Add(heightMapImage->GetNormal(x, z), heightMapImage->GetNormal(x + 1, z));
+			anormal = Vector3::Add(heightMapImage->GetNormal(x + 1, z + 1), heightMapImage->GetNormal(x, z + 1));
+			Vector3::Normalize(anormal);
+
+			vertices.emplace_back(XMFLOAT3((x * m_scale.x), heightMapImage->GetHeight(x, z), (z * m_scale.z)), anormal);
+		}
+	}
+
+	m_nVertices = vertices.size();
+	m_vertexBuffer = CreateBufferResource(device, commandList, vertices.data(),
+		sizeof(TerrainVertex) * vertices.size(), D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_vertexUploadBuffer);
+
+	m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
+	m_vertexBufferView.StrideInBytes = sizeof(TerrainVertex);
+	m_vertexBufferView.SizeInBytes = sizeof(TerrainVertex) * vertices.size();
+
+
+	vector<UINT> indices;
+
+	for (int j = 0, z = 0; z < length - 1; ++z)
+	{
+		if ((z % 2) == 0)
+		{
+			//홀수 번째 줄이므로(z = 0, 2, 4, ...) 인덱스의 나열 순서는 왼쪽에서 오른쪽 방향이다. 
+			for (int x = 0; x < width; x++)
+			{
+				//첫 번째 줄을 제외하고 줄이 바뀔 때마다(x == 0) 첫 번째 인덱스를 추가한다. 
+				if (x == 0 && z > 0) indices.push_back(x + (z * width));
+				//아래(x, z), 위(x, z+1)의 순서로 인덱스를 추가한다. 
+				indices.push_back(x + (z * width));
+				indices.push_back(x + (z * width) + width);
+			}
+		}
+		else
+		{
+			//짝수 번째 줄이므로(z = 1, 3, 5, ...) 인덱스의 나열 순서는 오른쪽에서 왼쪽 방향이다. 
+			for (int x = width - 1; x >= 0; --x)
+			{
+				//줄이 바뀔 때마다(x == (nWidth-1)) 첫 번째 인덱스를 추가한다. 
+				if (x == width - 1) indices.push_back(x + (z * width));
+				//아래(x, z), 위(x, z+1)의 순서로 인덱스를 추가한다. 
+				indices.push_back(x + (z * width));
+				indices.push_back(x + (z * width) + width);
+			}
+		}
+	}
+
+	m_nIndices = indices.size();
+	m_indexBuffer = CreateBufferResource(device, commandList, indices.data(),
+		sizeof(UINT) * indices.size(), D3D12_HEAP_TYPE_DEFAULT, 
+		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_indexUploadBuffer);
+
+	m_indexBufferView.BufferLocation = m_indexBuffer->GetGPUVirtualAddress();
+	m_indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	m_indexBufferView.SizeInBytes = sizeof(UINT) * indices.size();
 }

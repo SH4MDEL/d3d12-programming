@@ -25,6 +25,13 @@ struct VS_INSTANCE_INPUT
 	matrix worldMatrix : INSTANCE;
 };
 
+struct VS_TERRAIN_INPUT
+{
+	float4 position : POSITION;
+	float2 uv0 : TEXCOORD0;
+	float2 uv1 : TEXCOORD1;
+};
+
 //정점 셰이더의 출력(픽셀 셰이더의 입력)을 위한 구조체를 선언한다. 
 struct VS_OUTPUT
 {
