@@ -84,24 +84,13 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 
 	Mesh cube{ device, commandlist, vertices, indices };
 
-	unique_ptr<InstancingShader> instancingShader{ make_unique<InstancingShader>(device, rootsignature, cube, 1000) };
-
-	// 게임오브젝트 생성
-	for (int i = 0; i < 1000; ++i)
-	{
-		unique_ptr<RotatingObject> obj{ make_unique<RotatingObject>() };
-		obj->SetPosition(XMFLOAT3(i % 10 * 5, (i / 10) % 10 * 5, (i / 100) % 10 * 5));
-		obj->SetRotationSpeed((FLOAT)(i % 200));
-		instancingShader->GetGameObjects().push_back(move(obj));
-	}
-
-	unique_ptr<Shader> playerShader{ make_unique<Shader>(device, rootsignature) };
+	unique_ptr<Shader> basicShader{ make_unique<Shader>(device, rootsignature) };
 
 	// 플레이어 생성
 	m_player = make_shared<Player>();
-	m_player->SetPosition(XMFLOAT3(20.0f, 20.0f, -10.0f));
+	m_player->SetPosition(XMFLOAT3(20.0f, 20.0f, 20.0f));
 	m_player->SetMesh(Mesh(device, commandlist, vertices, indices));
-	playerShader->SetPlayer(m_player);
+	basicShader->SetPlayer(m_player);
 
 	// 카메라 생성
 	m_camera = make_shared<ThirdPersonCamera>();
@@ -115,15 +104,17 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	XMStoreFloat4x4(&projMatrix, XMMatrixPerspectiveFovLH(0.25f * XM_PI, aspectRatio, 0.1f, 1000.0f));
 	m_camera->SetProjMatrix(projMatrix);
 
+	unique_ptr<TerrainShader> terrainShader{ make_unique<TerrainShader>(device, rootsignature) };
+
 	unique_ptr<HeightMapTerrain> terrain{
-		make_unique<HeightMapTerrain>(device, commandlist, TEXT("heightMap.raw"), 257, 257, 257, 257, XMFLOAT3{ 1.0f, 0.2f, 1.0f })
+		make_unique<HeightMapTerrain>(device, commandlist, TEXT("heightMap.raw"), 257, 257, 257, 257, XMFLOAT3{ 1.0f, 0.1f, 1.0f })
 	};
-	terrain->SetPosition(XMFLOAT3{ 0.0f, -300.0f, 0.0f });
-	playerShader->GetGameObjects().push_back(move(terrain));
+	terrain->SetPosition(XMFLOAT3{ 0.0f, -100.0f, 0.0f });
+	terrainShader->GetGameObjects().push_back(move(terrain));
 
 	// 셰이더 설정
-	m_shader.insert(make_pair("INSTANCING", move(instancingShader)));
-	m_shader.insert(make_pair("PLAYER", move(playerShader)));
+	m_shader.insert(make_pair("BASIC", move(basicShader)));
+	m_shader.insert(make_pair("TERRAIN", move(terrainShader)));
 }
 
 void Scene::Update(FLOAT timeElapsed)

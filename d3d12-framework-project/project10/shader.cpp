@@ -99,15 +99,14 @@ void TerrainShader::CreatePipelineState(const ComPtr<ID3D12Device>& device, cons
 	UINT compileFlags = 0;
 #endif
 
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), NULL, NULL, "VS_Terrain_Main", "vs_5_1", compileFlags, 0, &vertexShader, NULL));
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), NULL, NULL, "PS_Terrain_Main", "ps_5_1", compileFlags, 0, &pixelShader, NULL));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_Terrain_Main", "vs_5_1", compileFlags, 0, &vertexShader, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_Terrain_Main", "ps_5_1", compileFlags, 0, &pixelShader, nullptr));
 
 	// 정점 셰이더 레이아웃 설정
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[]
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
 	// PSO 생성
