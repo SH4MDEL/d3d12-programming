@@ -127,6 +127,18 @@ void TerrainShader::CreatePipelineState(const ComPtr<ID3D12Device>& device, cons
 	DX::ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
 }
 
+void TerrainShader::Update(FLOAT timeElapsed)
+{
+	if (m_heightMap) m_heightMap->Update(timeElapsed);
+}
+
+void TerrainShader::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+{
+	UpdateShaderVariable(commandList);
+
+	if (m_heightMap) { m_heightMap->Render(commandList); }
+}
+
 
 InstancingShader::InstancingShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature, const Mesh& mesh, UINT count) : 
 	m_instancingCount(count)

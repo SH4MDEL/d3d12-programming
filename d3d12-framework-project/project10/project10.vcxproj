@@ -146,6 +146,7 @@
     <ClInclude Include="object.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="project10.h" />
+    <ClInclude Include="psysics.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="shader.h" />
@@ -160,6 +161,7 @@
     <ClCompile Include="object.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="project10.cpp" />
+    <ClCompile Include="psysics.cpp" />
     <ClCompile Include="scene.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="stdafx.cpp" />

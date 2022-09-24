@@ -9,16 +9,14 @@ void Scene::OnProcessingMouseMessage(HWND hWnd, UINT width, UINT height, FLOAT d
 {
 	SetCursor(NULL);
 	RECT rect; GetWindowRect(hWnd, &rect);
-	POINT oldMousePosition{ rect.left + width / 2, rect.top + height / 2 };
+	POINT prevPosition{ rect.left + width / 2, rect.top + height / 2 };
 
-	// 움직인 마우스 좌표
-	POINT newMousePosition; GetCursorPos(&newMousePosition);
+	POINT nextPosition; GetCursorPos(&nextPosition);
 
-	// 움직인 정도에 비례해서 회전
-	int dx = newMousePosition.x - oldMousePosition.x;
-	int dy = newMousePosition.y - oldMousePosition.y;
+	int dx = nextPosition.x - prevPosition.x;
+	int dy = nextPosition.y - prevPosition.y;
 	m_player->Rotate(dy * 5.0f * deltaTime, dx * 5.0f * deltaTime, 0.0f);
-	SetCursorPos(oldMousePosition.x, oldMousePosition.y);
+	SetCursorPos(prevPosition.x, prevPosition.y);
 }
 
 void Scene::OnProcessingKeyboardMessage(FLOAT timeElapsed) const
@@ -41,11 +39,11 @@ void Scene::OnProcessingKeyboardMessage(FLOAT timeElapsed) const
 	}
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
 	{
-		m_player->AddVelocity(Vector3::Mul(m_player->GetUp(), timeElapsed * 10.0f));
+		m_player->AddVelocity(Vector3::Mul(m_player->GetUp(), timeElapsed * 1.0f));
 	}
 	if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
 	{
-		m_player->AddVelocity(Vector3::Mul(m_player->GetUp(), timeElapsed * -10.0f));
+		m_player->AddVelocity(Vector3::Mul(m_player->GetUp(), timeElapsed * -1.0f));
 	}
 }
 
@@ -106,11 +104,12 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 
 	unique_ptr<TerrainShader> terrainShader{ make_unique<TerrainShader>(device, rootsignature) };
 
-	unique_ptr<HeightMapTerrain> terrain{
-		make_unique<HeightMapTerrain>(device, commandlist, TEXT("heightMap.raw"), 257, 257, 257, 257, XMFLOAT3{ 1.0f, 0.1f, 1.0f })
+	shared_ptr<HeightMapTerrain> terrain{
+		make_shared<HeightMapTerrain>(device, commandlist, TEXT("heightMap.raw"), 257, 257, 257, 257, XMFLOAT3{ 1.0f, 0.1f, 1.0f })
 	};
-	terrain->SetPosition(XMFLOAT3{ 0.0f, -100.0f, 0.0f });
-	terrainShader->GetGameObjects().push_back(move(terrain));
+	terrain->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f });
+	terrainShader->SetTerrain(terrain);
+	m_player->SetTerrain(terrain);
 
 	// 셰이더 설정
 	m_shader.insert(make_pair("BASIC", move(basicShader)));

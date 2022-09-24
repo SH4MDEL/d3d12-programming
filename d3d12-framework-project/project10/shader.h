@@ -19,7 +19,7 @@ public:
 
 	shared_ptr<Player> GetPlayer() const { return m_player; }
 	shared_ptr<Camera> GetCamera() const { return m_camera; }
-	vector<unique_ptr<GameObject>>& GetGameObjects() { return m_gameObjects; }
+	vector<shared_ptr<GameObject>>& GetGameObjects() { return m_gameObjects; }
 	ComPtr<ID3D12PipelineState> GetPipelineState() const { return m_pipelineState; }
 
 	void SetPlayer(const shared_ptr<Player>& player);
@@ -29,7 +29,7 @@ protected:
 	ComPtr<ID3D12PipelineState>			m_pipelineState;
 	vector<D3D12_INPUT_ELEMENT_DESC>	m_inputLayout;
 
-	vector<unique_ptr<GameObject>>		m_gameObjects;
+	vector<shared_ptr<GameObject>>		m_gameObjects;
 
 	shared_ptr<Player>					m_player;
 	shared_ptr<Camera>					m_camera;
@@ -42,6 +42,14 @@ public:
 	~TerrainShader() = default;
 
 	virtual void CreatePipelineState(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+
+	virtual void Update(FLOAT timeElapsed);
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+
+	void SetTerrain(const shared_ptr<HeightMapTerrain>& heightMap) { m_heightMap = heightMap; }
+
+private:
+	shared_ptr<HeightMapTerrain>		m_heightMap;
 };
 
 

@@ -12,6 +12,7 @@
 
 // C/C++ 런타임 헤더 파일입니다.
 #include <iostream>
+#include <fstream>
 #include <unordered_map>
 #include <stdlib.h>
 #include <malloc.h>

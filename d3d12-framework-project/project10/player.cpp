@@ -9,6 +9,21 @@ Player::Player() : GameObject{}, m_velocity{ 0.0f, 0.0f, 0.0f }, m_maxVelocity{ 
 void Player::Update(FLOAT timeElapsed)
 {
 	Move(m_velocity);
+	ApplyGravity(timeElapsed);
+	// 플레이어가 어떤 지형 위에 있다면
+	if (m_terrain)
+	{
+		// 지형 아래로 이동할 수 없도록 보정
+		XMFLOAT3 pos{ GetPosition() };
+		XMFLOAT3 terrainScale{ m_terrain->GetScale() };
+		FLOAT terrainHeight{ m_terrain->GetHeight(pos.x, pos.z) };
+
+		if ((terrainHeight + 0.1f) / terrainScale.y > pos.y) {
+			SetPosition(XMFLOAT3{ pos.x / terrainScale.x, (terrainHeight + 0.1f) / terrainScale.y, pos.z / terrainScale.z });
+			m_velocity.y = 0.0f;
+		}
+	}
+
 	ApplyFriction(timeElapsed);
 }
 
@@ -33,7 +48,14 @@ void Player::Rotate(FLOAT roll, FLOAT pitch, FLOAT yaw)
 
 void Player::ApplyFriction(FLOAT deltaTime)
 {
+	FLOAT yvalue = m_velocity.y;
 	m_velocity = Vector3::Mul(m_velocity, 1 / m_friction * deltaTime);
+	m_velocity.y = yvalue;
+}
+
+void Player::ApplyGravity(FLOAT deltaTime)
+{
+	m_velocity.y = m_velocity.y + m_gravity * deltaTime;
 }
 
 void Player::AddVelocity(const XMFLOAT3& increase)

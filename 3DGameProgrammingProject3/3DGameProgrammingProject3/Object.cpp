@@ -656,7 +656,7 @@ CGameObject *CGameObject::LoadGeometryFromFile(ID3D12Device *pd3dDevice, ID3D12G
 	for ( ; ; )
 	{
 		::ReadStringFromFile(pInFile, pstrToken);
-
+		cout << pstrToken << endl;
 		if (!strcmp(pstrToken, "<Hierarchy>:"))
 		{
 			pGameObject = CGameObject::LoadFrameHierarchyFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, pInFile);

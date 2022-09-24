@@ -603,6 +603,7 @@ CGameObject *CGameObject::LoadGeometryFromFile(ID3D12Device *pd3dDevice, ID3D12G
 	for ( ; ; )
 	{
 		InFile >> pstrToken;
+		//cout << pstrToken << endl;
 		if (!InFile) break;
 
 		if (!_tcscmp(pstrToken, _T("<Hierarchy>:"))) 

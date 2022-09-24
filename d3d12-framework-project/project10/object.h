@@ -47,7 +47,6 @@ public:
 
 	virtual void Update(FLOAT timeElapsed);
 
-
 	void SetRotationSpeed(FLOAT rotationSpeed);
 
 private:
