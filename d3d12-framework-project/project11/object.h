@@ -83,3 +83,17 @@ private:
 	INT								m_length;			// 이미지의 세로 길이
 	XMFLOAT3						m_scale;			// 확대 비율
 };
+
+class Skybox : public GameObject
+{
+public:
+	Skybox(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList);
+	~Skybox() = default;
+
+	virtual void Update(FLOAT timeElapsed);
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+
+private:
+
+	shared_ptr<Camera>		m_camera;
+};

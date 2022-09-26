@@ -9,21 +9,24 @@ cbuffer cbCamera : register(b1)
 	matrix projMatrix : packoffset(c4);
 };
 
-struct VS_INPUT
+/*
+ *  STANDARD_SHADER 
+ */
+struct VS_STANDARD_INPUT
 {
 	float3 position : POSITION;
 	float4 color : COLOR;
 };
 
-struct VS_OUTPUT
+struct VS_STANDARD_OUTPUT
 {
 	float4 position : SV_POSITION;
 	float4 color : COLOR;
 };
 
-VS_OUTPUT VSMain(VS_INPUT input)
+VS_STANDARD_OUTPUT VS_STANDARD_MAIN(VS_STANDARD_INPUT input)
 {
-	VS_OUTPUT output;
+	VS_STANDARD_OUTPUT output;
 	output.position = mul(float4(input.position, 1.0f), worldMatrix);
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projMatrix);
@@ -31,12 +34,14 @@ VS_OUTPUT VSMain(VS_INPUT input)
 	return output;
 }
 
-float4 PSMain(VS_OUTPUT input) : SV_TARGET
+float4 PS_STANDARD_MAIN(VS_STANDARD_OUTPUT input) : SV_TARGET
 {
 	return input.color;
 }
 
-
+/*
+ *  INSTANCE_SHADER
+ */
 struct VS_INSTANCE_INPUT
 {
 	float3 position : POSITION;
@@ -44,9 +49,15 @@ struct VS_INSTANCE_INPUT
 	matrix worldMatrix : INSTANCE;
 };
 
-VS_OUTPUT VS_Instance_Main(VS_INSTANCE_INPUT input)
+struct VS_INSTANCE_OUTPUT
 {
-	VS_OUTPUT output;
+	float4 position : SV_POSITION;
+	float4 color : COLOR;
+};
+
+VS_INSTANCE_OUTPUT VS_INSTANCE_MAIN(VS_INSTANCE_INPUT input)
+{
+	VS_INSTANCE_OUTPUT output;
 	output.position = mul(float4(input.position, 1.0f), input.worldMatrix);
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projMatrix);
@@ -54,12 +65,14 @@ VS_OUTPUT VS_Instance_Main(VS_INSTANCE_INPUT input)
 	return output;
 }
 
-float4 PS_Instance_Main(VS_OUTPUT input) : SV_TARGET
+float4 PS_INSTANCE_MAIN(VS_INSTANCE_OUTPUT input) : SV_TARGET
 {
 	return input.color;
 }
 
-
+/*
+ *  TERRAIN_SHADER
+ */
 Texture2D g_baseTexture : register(t0);
 Texture2D g_detailTexture : register(t1);
 SamplerState g_samplerState : register(s0);
@@ -70,7 +83,7 @@ struct VS_TERRAIN_INPUT
 	float2 uv0 : TEXCOORD0;
 	float2 uv1 : TEXCOORD1;
 };
-//
+
 struct VS_TERRAIN_OUTPUT
 {
 	float4 position : SV_POSITION;
@@ -78,7 +91,7 @@ struct VS_TERRAIN_OUTPUT
 	float2 uv1 : TEXCOORD1;
 };
 
-VS_TERRAIN_OUTPUT VS_Terrain_Main(VS_TERRAIN_INPUT input)
+VS_TERRAIN_OUTPUT VS_TERRAIN_MAIN(VS_TERRAIN_INPUT input)
 {
 	VS_TERRAIN_OUTPUT output;
 
@@ -90,10 +103,46 @@ VS_TERRAIN_OUTPUT VS_Terrain_Main(VS_TERRAIN_INPUT input)
 	return output;
 }
 
-float4 PS_Terrain_Main(VS_TERRAIN_OUTPUT input) : SV_TARGET
+float4 PS_TERRAIN_MAIN(VS_TERRAIN_OUTPUT input) : SV_TARGET
 {
 	float4 baseTexColor = g_baseTexture.Sample(g_samplerState, input.uv0);
 	float4 detailTexColor = g_detailTexture.Sample(g_samplerState, input.uv1);
 
 	return saturate((baseTexColor * 0.5f) + (detailTexColor * 0.5f));
+}
+
+/*
+ *  SKYBOX_SHADER
+ */
+TextureCube g_skyboxTexture : register(t2);
+SamplerState g_samplerClamp : register(s1);
+
+struct VS_SKYBOX_INPUT
+{
+	float3 position : POSITION;
+};
+
+struct VS_SKYBOX_OUTPUT
+{
+	float3	positionL : POSITION;
+	float4	position : SV_POSITION;
+};
+
+VS_SKYBOX_OUTPUT VS_SKYBOX_SHADER(VS_SKYBOX_INPUT input)
+{
+	VS_SKYBOX_OUTPUT output;
+
+	output.position = mul(float4(input.position, 1.0f), worldMatrix);
+	output.position = mul(output.position, viewMatrix);
+	output.position = mul(output.position, projMatrix);
+	output.positionL = input.position;
+
+	return output;
+}
+
+float4 PS_SKYBOX_SHADER(VS_SKYBOX_OUTPUT input) : SV_TARGET
+{
+	float4 color = g_skyboxTexture.Sample(g_samplerClamp, input.positionL);
+
+	return color;
 }

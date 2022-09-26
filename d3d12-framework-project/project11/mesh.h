@@ -18,6 +18,14 @@ struct TerrainVertex
 	XMFLOAT2 uv1;
 };
 
+class TextureVertex
+{
+	TextureVertex(const XMFLOAT3& position, const XMFLOAT2& uv) : position{ position }, uv{ uv } { }
+	~TextureVertex() = default;
+	XMFLOAT3 position;
+	XMFLOAT2 uv;
+};
+
 class Mesh
 {
 public:
@@ -86,4 +94,12 @@ protected:
 	//즉, 실제 격자의 x-축 방향의 간격은 1이 아니라 스케일 벡터의 x-좌표가 된다. 
 	//이렇게 하면 작은 격자(적은 정점)를 사용하더라도 큰 크기의 격자(지형)를 생성할 수 있다.
 	XMFLOAT3 m_scale;
+};
+
+class TextureRectMesh : public Mesh
+{
+public:
+	TextureRectMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
+		XMFLOAT3 position, FLOAT width=20.0f, FLOAT height=20.0f, FLOAT depth=20.0f);
+	~TextureRectMesh() = default;
 };
