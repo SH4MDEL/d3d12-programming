@@ -128,7 +128,7 @@ struct VS_SKYBOX_OUTPUT
 	float4	position : SV_POSITION;
 };
 
-VS_SKYBOX_OUTPUT VS_SKYBOX_SHADER(VS_SKYBOX_INPUT input)
+VS_SKYBOX_OUTPUT VS_SKYBOX_MAIN(VS_SKYBOX_INPUT input)
 {
 	VS_SKYBOX_OUTPUT output;
 
@@ -140,7 +140,7 @@ VS_SKYBOX_OUTPUT VS_SKYBOX_SHADER(VS_SKYBOX_INPUT input)
 	return output;
 }
 
-float4 PS_SKYBOX_SHADER(VS_SKYBOX_OUTPUT input) : SV_TARGET
+float4 PS_SKYBOX_MAIN(VS_SKYBOX_OUTPUT input) : SV_TARGET
 {
 	float4 color = g_skyboxTexture.Sample(g_samplerClamp, input.positionL);
 

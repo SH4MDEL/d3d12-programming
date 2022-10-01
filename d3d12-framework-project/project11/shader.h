@@ -80,3 +80,10 @@ protected:
 
 	UINT								m_instancingCount;
 };
+
+class SkyboxShader : public Shader
+{
+public:
+	SkyboxShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~SkyboxShader() = default;
+};

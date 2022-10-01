@@ -3,16 +3,20 @@
 
 struct Vertex
 {
+public:
 	Vertex(const XMFLOAT3& p, const XMFLOAT4& c) : position{ p }, color{ c } { }
 	~Vertex() = default;
+private:
 	XMFLOAT3 position;
 	XMFLOAT4 color;
 };
 
 struct TerrainVertex
 {
+public:
 	TerrainVertex(const XMFLOAT3& p, const XMFLOAT2& uv0, const XMFLOAT2& uv1) : position{ p }, uv0{ uv0 }, uv1{ uv1 } { }
 	~TerrainVertex() = default;
+private:
 	XMFLOAT3 position;
 	XMFLOAT2 uv0;
 	XMFLOAT2 uv1;
@@ -20,10 +24,22 @@ struct TerrainVertex
 
 class TextureVertex
 {
+public:
 	TextureVertex(const XMFLOAT3& position, const XMFLOAT2& uv) : position{ position }, uv{ uv } { }
 	~TextureVertex() = default;
+private:
 	XMFLOAT3 position;
 	XMFLOAT2 uv;
+};
+
+// 일관성을 위해 Wrapping 해주자.
+class SkyboxVertex
+{
+public:
+	SkyboxVertex(const XMFLOAT3& position) : position{ position } { }
+	~SkyboxVertex() = default;
+private:
+	XMFLOAT3 position;
 };
 
 class Mesh
@@ -102,4 +118,12 @@ public:
 	TextureRectMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
 		XMFLOAT3 position, FLOAT width=20.0f, FLOAT height=20.0f, FLOAT depth=20.0f);
 	~TextureRectMesh() = default;
+};
+
+class SkyboxMesh : public Mesh
+{
+public:
+	SkyboxMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, 
+		FLOAT width = 20.0f, FLOAT height = 20.0f, FLOAT depth = 20.0f);
+	~SkyboxMesh() = default;
 };

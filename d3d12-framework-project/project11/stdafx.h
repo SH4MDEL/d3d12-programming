@@ -14,6 +14,7 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
+#include <vector>
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>

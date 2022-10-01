@@ -10,7 +10,7 @@ public:
 
 	void LoadTextureFile(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName, UINT rootParameterIndex);
 	void CreateSrvDescriptorHeap(const ComPtr<ID3D12Device>& device);
-	void CreateShaderResourceView(const ComPtr<ID3D12Device>& device);
+	void CreateShaderResourceView(const ComPtr<ID3D12Device>& device, INT viewDemention);
 	void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList);
 	void ReleaseUploadBuffer();
 

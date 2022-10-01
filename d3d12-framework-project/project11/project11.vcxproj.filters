@@ -54,10 +54,10 @@
     <ClInclude Include="timer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="DDSTextureLoader12.h">
+    <ClInclude Include="texture.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="texture.h">
+    <ClInclude Include="DDSTextureLoader12.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -92,10 +92,10 @@
     <ClCompile Include="timer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="DDSTextureLoader12.cpp">
+    <ClCompile Include="texture.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="texture.cpp">
+    <ClCompile Include="DDSTextureLoader12.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

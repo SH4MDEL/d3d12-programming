@@ -87,13 +87,9 @@ private:
 class Skybox : public GameObject
 {
 public:
-	Skybox(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList);
+	Skybox(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
+		FLOAT width, FLOAT length, FLOAT depth);
 	~Skybox() = default;
 
 	virtual void Update(FLOAT timeElapsed);
-	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
-
-private:
-
-	shared_ptr<Camera>		m_camera;
 };

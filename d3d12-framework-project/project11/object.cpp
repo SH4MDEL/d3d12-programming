@@ -175,6 +175,14 @@ XMFLOAT3 HeightMapTerrain::GetNormal(FLOAT x, FLOAT z) const
 	return Vector3::Normalize(Vector3::Add(Vector3::Mul(bot, 1.0f - fz), Vector3::Mul(top, fz)));
 }
 
-Skybox::Skybox(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList)
+
+Skybox::Skybox(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
+	FLOAT width, FLOAT length, FLOAT depth) : GameObject()
 {
+	m_mesh = make_unique<SkyboxMesh>(device, commandList, width, length, depth);
+}
+
+void Skybox::Update(FLOAT timeElapsed)
+{
+
 }

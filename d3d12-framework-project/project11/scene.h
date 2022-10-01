@@ -26,6 +26,7 @@ public:
 
 private:
 	unordered_map<string, unique_ptr<Shader>>	m_shader;
+	unique_ptr<SkyboxShader>					m_skyboxShader;
 	shared_ptr<Player>							m_player;
 	shared_ptr<Camera>							m_camera;
 };

@@ -47,7 +47,7 @@ void Texture::CreateSrvDescriptorHeap(const ComPtr<ID3D12Device>& device)
 		&srvHeapDesc, IID_PPV_ARGS(&m_srvDescriptorHeap)));
 }
 
-void Texture::CreateShaderResourceView(const ComPtr<ID3D12Device>& device)
+void Texture::CreateShaderResourceView(const ComPtr<ID3D12Device>& device, INT viewDemention)
 {
 	// SRV를 생성한다.
 
@@ -59,11 +59,22 @@ void Texture::CreateShaderResourceView(const ComPtr<ID3D12Device>& device)
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		srvDesc.Format = texture.first->GetDesc().Format;
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MostDetailedMip = 0;
-		srvDesc.Texture2D.MipLevels = texture.first->GetDesc().MipLevels;
-		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 
+		switch (viewDemention)
+		{
+		case D3D12_SRV_DIMENSION_TEXTURE2D:
+			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			srvDesc.Texture2D.MostDetailedMip = 0;
+			srvDesc.Texture2D.MipLevels = texture.first->GetDesc().MipLevels;
+			srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+			break;
+		case D3D12_SRV_DIMENSION_TEXTURECUBE:
+			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+			srvDesc.TextureCube.MipLevels = 1;
+			srvDesc.TextureCube.MostDetailedMip = 0;
+			srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+			break;
+		}
 		device->CreateShaderResourceView(texture.first.Get(), &srvDesc, hDesciptor);
 		
 		hDesciptor.Offset(1, m_cbvsrvDescriptorSize);

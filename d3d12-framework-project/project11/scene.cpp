@@ -102,6 +102,20 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	XMStoreFloat4x4(&projMatrix, XMMatrixPerspectiveFovLH(0.25f * XM_PI, aspectRatio, 0.1f, 1000.0f));
 	m_camera->SetProjMatrix(projMatrix);
 
+	// 스카이박스 생성
+	m_skyboxShader = make_unique<SkyboxShader>(device, rootsignature);
+	shared_ptr<Skybox> skybox{ make_shared<Skybox>(device, commandlist, 20.0f, 20.0f, 20.0f) };
+	shared_ptr<Texture> skyboxTexture{
+		make_shared<Texture>()
+	};
+	skyboxTexture->LoadTextureFile(device, commandlist, TEXT("SkyBox.dds"), 4);
+	skyboxTexture->CreateSrvDescriptorHeap(device);
+	skyboxTexture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURECUBE);
+	skybox->SetTexture(skyboxTexture);
+
+	m_skyboxShader->GetGameObjects().push_back(skybox);
+
+	// 지형 생성
 	unique_ptr<TerrainShader> terrainShader{ make_unique<TerrainShader>(device, rootsignature) };
 
 	shared_ptr<HeightMapTerrain> terrain{
@@ -113,7 +127,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	terrainTexture->LoadTextureFile(device, commandlist, TEXT("Base_Texture.dds"), 2); // BaseTexture
 	terrainTexture->LoadTextureFile(device, commandlist, TEXT("Detail_Texture.dds"), 3); // DetailTexture
 	terrainTexture->CreateSrvDescriptorHeap(device);
-	terrainTexture->CreateShaderResourceView(device);
+	terrainTexture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
 
 	terrain->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f });
 	terrain->SetTexture(terrainTexture);
@@ -128,6 +142,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 void Scene::Update(FLOAT timeElapsed)
 {
 	m_camera->Update(timeElapsed);
+	if (m_skyboxShader) for (auto& skybox : m_skyboxShader->GetGameObjects()) skybox->SetPosition(m_camera->GetEye());
 	for (const auto& shader : m_shader)
 		shader.second->Update(timeElapsed);
 }
@@ -135,6 +150,7 @@ void Scene::Update(FLOAT timeElapsed)
 void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
 	if (m_camera) m_camera->UpdateShaderVariable(commandList);
+	if (m_skyboxShader) m_skyboxShader->Render(commandList);
 	for (const auto& shader : m_shader)
 		shader.second->Render(commandList);
 }

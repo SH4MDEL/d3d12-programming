@@ -200,7 +200,7 @@ HeightMapGridMesh::HeightMapGridMesh(const ComPtr<ID3D12Device>& device, const C
 		}
 	}
 
-	m_nVertices = vertices.size();
+	m_nVertices = (UINT)vertices.size();
 	m_vertexBuffer = CreateBufferResource(device, commandList, vertices.data(),
 		sizeof(TerrainVertex) * vertices.size(), D3D12_HEAP_TYPE_DEFAULT,
 		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_vertexUploadBuffer);
@@ -256,7 +256,7 @@ TextureRectMesh::TextureRectMesh(const ComPtr<ID3D12Device>& device, const ComPt
 	m_nIndices = 0;
 	m_nVertices = 6;
 
-	vector<TextureVertex> vertices(m_nVertices);
+	vector<TextureVertex> vertices;
 	FLOAT fx = (width * 0.5f) + position.x, fy = (height * 0.5f) + position.y, fz = (depth * 0.5f) + position.z;
 
 	if (width == 0.0f)
@@ -331,4 +331,65 @@ TextureRectMesh::TextureRectMesh(const ComPtr<ID3D12Device>& device, const ComPt
 	m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
 	m_vertexBufferView.StrideInBytes = sizeof(TextureVertex);
 	m_vertexBufferView.SizeInBytes = sizeof(TextureVertex) * vertices.size();
+}
+
+SkyboxMesh::SkyboxMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, FLOAT width, FLOAT height, FLOAT depth)
+{
+	m_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	m_nIndices = 0;
+	m_nVertices = 36;
+
+	vector<SkyboxVertex> vertices;
+	FLOAT fx = width * 0.5f, fy = height * 0.5f, fz = depth * 0.5f;
+
+	vertices.emplace_back(XMFLOAT3(-fx, +fx, +fx));
+	vertices.emplace_back(XMFLOAT3(+fx, +fx, +fx));
+	vertices.emplace_back(XMFLOAT3(-fx, -fx, +fx));
+	vertices.emplace_back(XMFLOAT3(-fx, -fx, +fx));
+	vertices.emplace_back(XMFLOAT3(+fx, +fx, +fx));
+	vertices.emplace_back(XMFLOAT3(+fx, -fx, +fx));
+		   
+	vertices.emplace_back(XMFLOAT3(+fx, +fx, -fx));
+	vertices.emplace_back(XMFLOAT3(-fx, +fx, -fx));
+	vertices.emplace_back(XMFLOAT3(+fx, -fx, -fx));
+	vertices.emplace_back(XMFLOAT3(+fx, -fx, -fx));
+	vertices.emplace_back(XMFLOAT3(-fx, +fx, -fx));
+	vertices.emplace_back(XMFLOAT3(-fx, -fx, -fx));
+		   
+	vertices.emplace_back(XMFLOAT3(-fx, +fx, -fx));
+	vertices.emplace_back(XMFLOAT3(-fx, +fx, +fx));
+	vertices.emplace_back(XMFLOAT3(-fx, -fx, -fx));
+	vertices.emplace_back(XMFLOAT3(-fx, -fx, -fx));
+	vertices.emplace_back(XMFLOAT3(-fx, +fx, +fx));
+	vertices.emplace_back(XMFLOAT3(-fx, -fx, +fx));
+		   
+	vertices.emplace_back(XMFLOAT3(+fx, +fx, +fx));
+	vertices.emplace_back(XMFLOAT3(+fx, +fx, -fx));
+	vertices.emplace_back(XMFLOAT3(+fx, -fx, +fx));
+	vertices.emplace_back(XMFLOAT3(+fx, -fx, +fx));
+	vertices.emplace_back(XMFLOAT3(+fx, +fx, -fx));
+	vertices.emplace_back(XMFLOAT3(+fx, -fx, -fx));
+		   
+	vertices.emplace_back(XMFLOAT3(-fx, +fx, -fx));
+	vertices.emplace_back(XMFLOAT3(+fx, +fx, -fx));
+	vertices.emplace_back(XMFLOAT3(-fx, +fx, +fx));
+	vertices.emplace_back(XMFLOAT3(-fx, +fx, +fx));
+	vertices.emplace_back(XMFLOAT3(+fx, +fx, -fx));
+	vertices.emplace_back(XMFLOAT3(+fx, +fx, +fx));
+		   
+	vertices.emplace_back(XMFLOAT3(-fx, -fx, +fx));
+	vertices.emplace_back(XMFLOAT3(+fx, -fx, +fx));
+	vertices.emplace_back(XMFLOAT3(-fx, -fx, -fx));
+	vertices.emplace_back(XMFLOAT3(-fx, -fx, -fx));
+	vertices.emplace_back(XMFLOAT3(+fx, -fx, +fx));
+	vertices.emplace_back(XMFLOAT3(+fx, -fx, -fx));
+
+	m_nVertices = vertices.size();
+	m_vertexBuffer = CreateBufferResource(device, commandList, vertices.data(),
+		sizeof(SkyboxVertex) * vertices.size(), D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_vertexUploadBuffer);
+
+	m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
+	m_vertexBufferView.StrideInBytes = sizeof(SkyboxVertex);
+	m_vertexBufferView.SizeInBytes = sizeof(SkyboxVertex) * vertices.size();
 }

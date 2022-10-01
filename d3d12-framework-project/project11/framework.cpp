@@ -239,11 +239,12 @@ void GameFramework::CreateDepthStencilView()
 
 void GameFramework::CreateRootSignature()
 {
-	CD3DX12_DESCRIPTOR_RANGE descriptorRange[2];
+	CD3DX12_DESCRIPTOR_RANGE descriptorRange[3];
 	descriptorRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);	// t0
 	descriptorRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);	// t1
+	descriptorRange[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);	// t2
 
-	CD3DX12_ROOT_PARAMETER rootParameter[4];
+	CD3DX12_ROOT_PARAMETER rootParameter[5];
 
 	// cbGameObject : 월드 변환 행렬(16)
 	rootParameter[0].InitAsConstants(16, 0, 0, D3D12_SHADER_VISIBILITY_ALL);
@@ -253,9 +254,10 @@ void GameFramework::CreateRootSignature()
 
 	rootParameter[2].InitAsDescriptorTable(1, &descriptorRange[0], D3D12_SHADER_VISIBILITY_PIXEL);
 	rootParameter[3].InitAsDescriptorTable(1, &descriptorRange[1], D3D12_SHADER_VISIBILITY_PIXEL);
+	rootParameter[4].InitAsDescriptorTable(1, &descriptorRange[2], D3D12_SHADER_VISIBILITY_PIXEL);
 
-	CD3DX12_STATIC_SAMPLER_DESC samplerDesc{};
-	samplerDesc.Init(
+	CD3DX12_STATIC_SAMPLER_DESC samplerDesc[2];
+	samplerDesc[0].Init(								// s0
 		0,								 				// ShaderRegister
 		D3D12_FILTER_MIN_MAG_MIP_LINEAR, 				// filter
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP, 				// addressU
@@ -271,8 +273,24 @@ void GameFramework::CreateRootSignature()
 		0												// registerSpace
 	);
 
+	samplerDesc[1].Init(								// s1
+		1,								 				// ShaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR, 				// filter
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 				// addressU
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 				// addressV
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 				// addressW
+		0.0f,											// mipLODBias
+		1,												// maxAnisotropy
+		D3D12_COMPARISON_FUNC_ALWAYS,					// comparisonFunc
+		D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK,	// borderColor
+		0.0f,											// minLOD
+		D3D12_FLOAT32_MAX,								// maxLOD
+		D3D12_SHADER_VISIBILITY_PIXEL,					// shaderVisibility
+		0												// registerSpace
+	);
+
 	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-	rootSignatureDesc.Init(_countof(rootParameter), rootParameter, 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	rootSignatureDesc.Init(_countof(rootParameter), rootParameter, _countof(samplerDesc), samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	ComPtr<ID3DBlob> signature, error;
 	DX::ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
