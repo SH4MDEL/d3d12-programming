@@ -70,6 +70,45 @@ void GameObject::ReleaseUploadBuffer() const
 
 }
 
+shared_ptr<GameObject> GameObject::LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName)
+{
+	ifstream in{ fileName,ios::binary };
+	if (!in) return nullptr;
+
+	return LoadFrameHierarchy(device, commandList, in);
+}
+
+shared_ptr<GameObject> GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
+{
+	return nullptr;
+
+	BYTE strLength;
+	string strToken;
+	INT frame, texture;
+
+	shared_ptr<GameObject> gameObject;
+
+	while (1) {
+		in.read((char*)(&strLength), sizeof(BYTE));
+		strToken.reserve(strLength);
+		in.read((char*)(&strToken), sizeof(char) * strLength);
+
+		if (strToken == "<Frame>:") {
+			gameObject = make_shared<GameObject>();
+
+			in.read((char*)(&frame), sizeof(INT));
+			in.read((char*)(&texture), sizeof(INT));
+
+			in.read((char*)(&strLength), sizeof(BYTE));
+			gameObject->m_frameName.reserve(strLength);
+			in.read((char*)(&gameObject->m_frameName), sizeof(char) * strLength);
+		}
+		else if (strToken == "<Transform>:") {
+
+		}
+	}
+}
+
 RotatingObject::RotatingObject() : m_rotationSpeed(100.0f)
 {
 
