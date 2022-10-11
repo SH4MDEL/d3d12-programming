@@ -56,7 +56,7 @@ public:
 	Mesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const vector<Vertex>& vertices, const vector<UINT>& indices);
 	~Mesh() = default;
 
-	void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
 	void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const D3D12_VERTEX_BUFFER_VIEW& instanceBufferView) const;
 	void ReleaseUploadBuffer();
 
@@ -80,7 +80,18 @@ public:
 	MeshFromFile() = default;
 	~MeshFromFile() = default;
 
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
+
 	void LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
+private:
+
+	UINT									m_nSubMeshes;
+	vector<INT>								m_vSubsetIndices;
+	vector<vector<INT>>						m_vvSubsetIndices;
+
+	vector<ComPtr<ID3D12Resource>>			m_subsetIndexBuffers;
+	vector<ComPtr<ID3D12Resource>>			m_subsetIndexUploadBuffers;
+	vector<D3D12_INDEX_BUFFER_VIEW>			m_subsetIndexBufferViews;
 };
 
 class HeightMapImage

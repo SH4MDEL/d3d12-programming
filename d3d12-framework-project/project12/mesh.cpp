@@ -108,6 +108,126 @@ void Mesh::ReleaseUploadBuffer()
 	if (m_indexUploadBuffer) m_indexUploadBuffer.Reset();
 }
 
+void MeshFromFile::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const
+{
+
+}
+
+void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
+{
+	m_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	vector<NormalVertex> vertices;
+	vector<UINT> indices;
+
+	BYTE strLength;
+	string strToken;
+
+	INT positionNum, colorNum, normalNum;
+
+	while (1) {
+		in.read((char*)(&strLength), sizeof(BYTE));
+		strToken.reserve(strLength);
+		in.read((char*)(&strToken), sizeof(char) * strLength);
+
+		if (strToken == "<Bounds>:") {
+			XMFLOAT3 dummy;
+			in.read((char*)(&dummy), sizeof(XMFLOAT3));
+			in.read((char*)(&dummy), sizeof(XMFLOAT3));
+		}
+		else if (strToken == "<Positions>:") {
+			in.read((char*)(&positionNum), sizeof(INT));
+			if (vertices.size() < positionNum) {
+				m_nVertices = positionNum;
+				vertices.resize(positionNum);
+			}
+			for (int i = 0; i < positionNum; ++i) {
+				in.read((char*)(&vertices.at(i).position), sizeof(XMFLOAT3));
+			}
+		}
+		else if (strToken == "<Colors>:") {
+			in.read((char*)(&colorNum), sizeof(INT));
+			if (vertices.size() < colorNum) {
+				m_nVertices = colorNum;
+				vertices.resize(colorNum);
+			}
+			for (int i = 0; i < colorNum; ++i) {
+				in.read((char*)(&vertices.at(i).color), sizeof(XMFLOAT3));
+			}
+		}
+		else if (strToken == "<Normals>:") {
+			in.read((char*)(&normalNum), sizeof(INT));
+			if (vertices.size() < normalNum) {
+				m_nVertices = normalNum;
+				vertices.resize(normalNum);
+			}
+			for (int i = 0; i < normalNum; ++i) {
+				in.read((char*)(&vertices.at(i).normal), sizeof(XMFLOAT3));
+			}
+		}
+		else if (strToken == "<Indices>:") {
+			in.read((char*)(&m_nIndices), sizeof(INT));
+			indices.reserve(m_nIndices);
+			in.read((char*)(&indices), sizeof(UINT) * m_nIndices);
+		}
+		else if (strToken == "<SubMeshes>:") {
+			in.read((char*)(&m_nSubMeshes), sizeof(INT));
+			if (m_nSubMeshes > 0) {
+				m_vSubsetIndices.reserve(m_nSubMeshes);
+				m_vvSubsetIndices.reserve(m_nSubMeshes);
+				m_subsetIndexBuffers.reserve(m_nSubMeshes);
+				m_subsetIndexUploadBuffers.reserve(m_nSubMeshes);
+				m_subsetIndexBufferViews.reserve(m_nSubMeshes);
+
+				for (int i = 0; i < m_nSubMeshes; ++i) {
+					in.read((char*)(&strLength), sizeof(BYTE));
+					strToken.reserve(strLength);
+					in.read((char*)(&strToken), sizeof(char) * strLength);
+
+					if (strToken == "<SubMesh>:") {
+						int index;
+						in.read((char*)(&index), sizeof(INT));
+						in.read((char*)(&m_vSubsetIndices[i]), sizeof(INT));
+						if (m_vSubsetIndices[i] > 0) {
+							m_vvSubsetIndices[i].reserve(m_vSubsetIndices[i]);
+							in.read((char*)(&m_vvSubsetIndices[i]), sizeof(INT) * m_vSubsetIndices[i]);
+
+							m_subsetIndexBuffers[i] = CreateBufferResource(device, commandList, m_vvSubsetIndices[i].data(),
+								sizeof(UINT) * m_vSubsetIndices[i], D3D12_HEAP_TYPE_DEFAULT,
+								D3D12_RESOURCE_STATE_INDEX_BUFFER, m_subsetIndexUploadBuffers[i]);
+
+							m_subsetIndexBufferViews[i].BufferLocation = m_subsetIndexBuffers[i]->GetGPUVirtualAddress();
+							m_subsetIndexBufferViews[i].Format = DXGI_FORMAT_R32_UINT;
+							m_subsetIndexBufferViews[i].SizeInBytes = sizeof(UINT) * m_vSubsetIndices[i];
+						}
+					}
+				}
+			}
+		}
+		else if (strToken == "</Mesh>:") {
+			break;
+		}
+	}
+
+	m_nVertices = (UINT)vertices.size();
+	m_vertexBuffer = CreateBufferResource(device, commandList, vertices.data(),
+		sizeof(NormalVertex) * vertices.size(), D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_vertexUploadBuffer);
+
+	m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
+	m_vertexBufferView.StrideInBytes = sizeof(NormalVertex);
+	m_vertexBufferView.SizeInBytes = sizeof(NormalVertex) * vertices.size();
+
+	m_nIndices = indices.size();
+	m_indexBuffer = CreateBufferResource(device, commandList, indices.data(),
+		sizeof(UINT) * indices.size(), D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_indexUploadBuffer);
+
+	m_indexBufferView.BufferLocation = m_indexBuffer->GetGPUVirtualAddress();
+	m_indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	m_indexBufferView.SizeInBytes = sizeof(UINT) * indices.size();
+}
+
 
 HeightMapImage::HeightMapImage(const wstring& fileName, INT width, INT length, XMFLOAT3 scale) :
 	m_width(width), m_length(length), m_scale(scale), m_pixels{ new BYTE[width * length] }

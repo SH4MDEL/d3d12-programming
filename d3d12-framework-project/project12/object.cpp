@@ -119,7 +119,9 @@ shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3
 			in.read((char*)(&gameObject->m_worldMatrix), sizeof(FLOAT) * 16);
 		}
 		else if (strToken == "<Mesh>:") {
-			m_mesh = make_unique<MeshFromFile>();
+			unique_ptr<MeshFromFile> mesh;
+			mesh->LoadMesh(device, commandList, in);
+			m_mesh = move(mesh);
 		}
 		else if (strToken == "<Materials>:") {
 
