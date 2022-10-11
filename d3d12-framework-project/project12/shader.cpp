@@ -44,6 +44,7 @@ Shader::~Shader()
 	ReleaseShaderVariable();
 }
 
+[[deprecated("DO NOT USE THIS!")]]
 void Shader::Update(FLOAT timeElapsed)
 {
 	if (m_player) m_player->Update(timeElapsed);
@@ -140,7 +141,7 @@ void TerrainShader::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 	if (m_heightMap) { m_heightMap->Render(commandList); }
 }
 
-
+[[DEPRECATED("DO NOT USE THIS!")]]
 InstancingShader::InstancingShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature, const Mesh& mesh, UINT count) : 
 	m_instancingCount(count)
 {

@@ -7,7 +7,6 @@ class GameObject
 {
 public:
 	GameObject();
-	GameObject(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName);
 	~GameObject();
 
 	virtual void Update(FLOAT timeElapsed) { };
@@ -28,9 +27,6 @@ public:
 
 	void ReleaseUploadBuffer() const;
 
-	shared_ptr<GameObject> LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName);
-	shared_ptr<GameObject> LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
-
 protected:
 	XMFLOAT4X4				m_worldMatrix;	// 월드 변환
 
@@ -44,10 +40,24 @@ protected:
 
 	unique_ptr<Mesh>		m_mesh;			// 메쉬
 	shared_ptr<Texture>		m_texture;		// 텍스처
+};
 
-	string					m_frameName;	// 현재 프레임의 이름
-	shared_ptr<GameObject>	m_sibling;
-	shared_ptr<GameObject>	m_child;
+class HierarchyObject : public GameObject
+{
+public:
+	HierarchyObject();
+	~HierarchyObject() = default;
+
+	shared_ptr<HierarchyObject> LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName);
+	shared_ptr<HierarchyObject> LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
+
+	void SetChild(const shared_ptr<HierarchyObject>& child);
+
+private:
+	string						m_frameName;	// 현재 프레임의 이름
+	shared_ptr<HierarchyObject> m_parent;
+	shared_ptr<HierarchyObject>	m_sibling;
+	shared_ptr<HierarchyObject>	m_child;
 };
 
 class RotatingObject : public GameObject

@@ -70,7 +70,12 @@ void GameObject::ReleaseUploadBuffer() const
 
 }
 
-shared_ptr<GameObject> GameObject::LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName)
+HierarchyObject::HierarchyObject() : GameObject()
+{
+
+}
+
+shared_ptr<HierarchyObject> HierarchyObject::LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName)
 {
 	ifstream in{ fileName,ios::binary };
 	if (!in) return nullptr;
@@ -78,15 +83,13 @@ shared_ptr<GameObject> GameObject::LoadGeometry(const ComPtr<ID3D12Device>& devi
 	return LoadFrameHierarchy(device, commandList, in);
 }
 
-shared_ptr<GameObject> GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
+shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
 {
-	return nullptr;
-
 	BYTE strLength;
 	string strToken;
 	INT frame, texture;
 
-	shared_ptr<GameObject> gameObject;
+	shared_ptr<HierarchyObject> gameObject;
 
 	while (1) {
 		in.read((char*)(&strLength), sizeof(BYTE));
@@ -94,7 +97,7 @@ shared_ptr<GameObject> GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>
 		in.read((char*)(&strToken), sizeof(char) * strLength);
 
 		if (strToken == "<Frame>:") {
-			gameObject = make_shared<GameObject>();
+			gameObject = make_shared<HierarchyObject>();
 
 			in.read((char*)(&frame), sizeof(INT));
 			in.read((char*)(&texture), sizeof(INT));
@@ -104,8 +107,50 @@ shared_ptr<GameObject> GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>
 			in.read((char*)(&gameObject->m_frameName), sizeof(char) * strLength);
 		}
 		else if (strToken == "<Transform>:") {
+			XMFLOAT3 position, rotation, scale;
+			XMFLOAT4 rotation;
+
+			in.read((char*)(&position), sizeof(FLOAT) * 3);
+			in.read((char*)(&rotation), sizeof(FLOAT) * 3);
+			in.read((char*)(&scale), sizeof(FLOAT) * 3);
+			in.read((char*)(&rotation), sizeof(FLOAT) * 4);
+		}
+		else if (strToken == "<TransformMatrix>:") {
+			in.read((char*)(&gameObject->m_worldMatrix), sizeof(FLOAT) * 16);
+		}
+		else if (strToken == "<Mesh>:") {
+			m_mesh = make_unique<MeshFromFile>();
+		}
+		else if (strToken == "<Materials>:") {
 
 		}
+		else if (strToken == "<Children>:") {
+			INT childNum = 0;
+			in.read((char*)(&childNum), sizeof(INT));
+			if (childNum) {
+				for (int i = 0; i < childNum; ++i) {
+					gameObject->SetChild(HierarchyObject::LoadFrameHierarchy(device, commandList, in));
+				}
+			}
+		}
+		else if (strToken == "</Frame>:") {
+			break;
+		}
+	}
+	return gameObject;
+}
+
+void HierarchyObject::SetChild(const shared_ptr<HierarchyObject>& child)
+{
+	if (m_child) {
+		if (child) child->m_sibling = m_child->m_sibling;
+		m_child->m_sibling = child;
+	}
+	else {
+		m_child = child;
+	}
+	if (child) {
+		child->m_parent = (shared_ptr<HierarchyObject>)this;
 	}
 }
 
