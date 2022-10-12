@@ -15,7 +15,7 @@ public:
 	virtual void Rotate(FLOAT roll, FLOAT pitch, FLOAT yaw);
 
 	void SetMesh(const Mesh& mesh);
-	virtual void SetTexture(const shared_ptr<Texture>& texture);
+	void SetTexture(const shared_ptr<Texture>& texture);
 
 	void SetPosition(const XMFLOAT3& position);
 
@@ -48,10 +48,10 @@ public:
 	HierarchyObject();
 	~HierarchyObject() = default;
 
-	virtual void SetTexture(const shared_ptr<Texture>& texture);
-
 	shared_ptr<HierarchyObject> LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName);
 	shared_ptr<HierarchyObject> LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
+	void LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
+
 
 	void SetChild(const shared_ptr<HierarchyObject>& child);
 

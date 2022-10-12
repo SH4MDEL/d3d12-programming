@@ -7,7 +7,7 @@
 
 class Camera;
 
-class Player : public GameObject
+class Player : public HierarchyObject
 {
 public:
 	Player();

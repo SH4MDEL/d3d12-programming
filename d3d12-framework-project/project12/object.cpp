@@ -75,15 +75,9 @@ HierarchyObject::HierarchyObject() : GameObject()
 
 }
 
-void HierarchyObject::SetTexture(const shared_ptr<Texture>& texture)
-{
-	if (m_texture) m_texture.reset();
-	m_mesh;
-}
-
 shared_ptr<HierarchyObject> HierarchyObject::LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName)
 {
-	ifstream in{ fileName,ios::binary };
+	ifstream in{ fileName };
 	if (!in) return nullptr;
 
 	return LoadFrameHierarchy(device, commandList, in);
@@ -92,7 +86,7 @@ shared_ptr<HierarchyObject> HierarchyObject::LoadGeometry(const ComPtr<ID3D12Dev
 shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
 {
 	BYTE strLength;
-	string strToken;
+	string strToken(64, '\0');
 	INT frame, texture;
 
 	shared_ptr<HierarchyObject> gameObject;
@@ -100,7 +94,7 @@ shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3
 	while (1) {
 		in.read((char*)(&strLength), sizeof(BYTE));
 		strToken.reserve(strLength);
-		in.read((char*)(&strToken), sizeof(char) * strLength);
+		in.read((&strToken[0]), sizeof(char) * strLength);
 
 		if (strToken == "<Frame>:") {
 			gameObject = make_shared<HierarchyObject>();
@@ -114,12 +108,12 @@ shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3
 		}
 		else if (strToken == "<Transform>:") {
 			XMFLOAT3 position, rotation, scale;
-			XMFLOAT4 rotation;
+			XMFLOAT4 rotate;
 
 			in.read((char*)(&position), sizeof(FLOAT) * 3);
 			in.read((char*)(&rotation), sizeof(FLOAT) * 3);
 			in.read((char*)(&scale), sizeof(FLOAT) * 3);
-			in.read((char*)(&rotation), sizeof(FLOAT) * 4);
+			in.read((char*)(&rotate), sizeof(FLOAT) * 4);
 		}
 		else if (strToken == "<TransformMatrix>:") {
 			in.read((char*)(&gameObject->m_worldMatrix), sizeof(FLOAT) * 16);
@@ -130,7 +124,7 @@ shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3
 			m_mesh = move(mesh);
 		}
 		else if (strToken == "<Materials>:") {
-
+			LoadMaterial(device, commandList, in);
 		}
 		else if (strToken == "<Children>:") {
 			INT childNum = 0;
@@ -146,6 +140,59 @@ shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3
 		}
 	}
 	return gameObject;
+}
+
+void HierarchyObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
+{
+	BYTE strLength;
+	string strToken;
+
+	while (1) {
+		in.read((char*)(&strLength), sizeof(BYTE));
+		strToken.reserve(strLength);
+		in.read((char*)(&strToken), sizeof(char) * strLength);
+
+		if (strToken == "<Material>:") {
+			in.read((char*)(&strLength), sizeof(BYTE));
+			strToken.reserve(strLength);
+			in.read((char*)(&strToken), sizeof(char) * strLength);
+		}
+		else if (strToken == "<AlbedoColor>:") {
+			XMFLOAT4 dummy;
+			in.read((char*)(&dummy), sizeof(XMFLOAT4));
+		}
+		else if (strToken == "<EmissiveColor>:") {
+			XMFLOAT4 dummy;
+			in.read((char*)(&dummy), sizeof(XMFLOAT4));
+		}
+		else if (strToken == "<SpecularColor>:") {
+			XMFLOAT4 dummy;
+			in.read((char*)(&dummy), sizeof(XMFLOAT4));
+		}
+		else if (strToken == "<Glossiness>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<Smoothness>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<Metallic>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<SpecularHighlight>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<GlossyReflection>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "</Materials>:") {
+			break;
+		}
+	}
 }
 
 void HierarchyObject::SetChild(const shared_ptr<HierarchyObject>& child)

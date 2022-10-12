@@ -1,7 +1,7 @@
 #include "player.h"
 #include "camera.h"
 
-Player::Player() : GameObject{}, m_velocity{ 0.0f, 0.0f, 0.0f }, m_maxVelocity{ 10.0f }, m_friction{ 0.5f }
+Player::Player() : HierarchyObject{}, m_velocity{ 0.0f, 0.0f, 0.0f }, m_maxVelocity{ 10.0f }, m_friction{ 0.5f }
 {
 
 }
