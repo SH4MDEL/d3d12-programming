@@ -86,21 +86,19 @@ shared_ptr<HierarchyObject> HierarchyObject::LoadGeometry(const ComPtr<ID3D12Dev
 shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
 {
 	BYTE strLength;
-	string strToken(64, '\0');
-	INT frame, texture;
+	INT frame;
 
 	shared_ptr<HierarchyObject> gameObject;
 
 	while (1) {
 		in.read((char*)(&strLength), sizeof(BYTE));
-		strToken.reserve(strLength);
+		string strToken(strLength, '\0');
 		in.read((&strToken[0]), sizeof(char) * strLength);
 
 		if (strToken == "<Frame>:") {
 			gameObject = make_shared<HierarchyObject>();
 
 			in.read((char*)(&frame), sizeof(INT));
-			in.read((char*)(&texture), sizeof(INT));
 
 			in.read((char*)(&strLength), sizeof(BYTE));
 			gameObject->m_frameName.reserve(strLength);
@@ -108,12 +106,12 @@ shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3
 		}
 		else if (strToken == "<Transform>:") {
 			XMFLOAT3 position, rotation, scale;
-			XMFLOAT4 rotate;
+			XMFLOAT4 qrotation;
 
 			in.read((char*)(&position), sizeof(FLOAT) * 3);
 			in.read((char*)(&rotation), sizeof(FLOAT) * 3);
 			in.read((char*)(&scale), sizeof(FLOAT) * 3);
-			in.read((char*)(&rotate), sizeof(FLOAT) * 4);
+			in.read((char*)(&qrotation), sizeof(FLOAT) * 4);
 		}
 		else if (strToken == "<TransformMatrix>:") {
 			in.read((char*)(&gameObject->m_worldMatrix), sizeof(FLOAT) * 16);
@@ -145,16 +143,15 @@ shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3
 void HierarchyObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
 {
 	BYTE strLength;
-	string strToken;
 
 	while (1) {
 		in.read((char*)(&strLength), sizeof(BYTE));
-		strToken.reserve(strLength);
-		in.read((char*)(&strToken), sizeof(char) * strLength);
+		string strToken(strLength, '\0');
+		in.read((&strToken[0]), sizeof(char) * strLength);
 
 		if (strToken == "<Material>:") {
 			in.read((char*)(&strLength), sizeof(BYTE));
-			strToken.reserve(strLength);
+			strToken.resize(strLength, '\0');
 			in.read((char*)(&strToken), sizeof(char) * strLength);
 		}
 		else if (strToken == "<AlbedoColor>:") {

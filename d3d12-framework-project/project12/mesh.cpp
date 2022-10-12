@@ -135,14 +135,13 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 	vector<UINT> indices;
 
 	BYTE strLength;
-	string strToken;
 
 	INT positionNum, colorNum, normalNum;
 
 	while (1) {
 		in.read((char*)(&strLength), sizeof(BYTE));
-		strToken.reserve(strLength);
-		in.read((char*)(&strToken), sizeof(char) * strLength);
+		string strToken(strLength, '\0');
+		in.read((&strToken[0]), sizeof(char) * strLength);
 
 		if (strToken == "<Bounds>:") {
 			XMFLOAT3 dummy;
@@ -195,8 +194,8 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 
 				for (int i = 0; i < m_nSubMeshes; ++i) {
 					in.read((char*)(&strLength), sizeof(BYTE));
-					strToken.reserve(strLength);
-					in.read((char*)(&strToken), sizeof(char) * strLength);
+					strToken.resize(64, '\0');
+					in.read((&strToken[0]), sizeof(char) * strLength);
 
 					if (strToken == "<SubMesh>:") {
 						int index;
