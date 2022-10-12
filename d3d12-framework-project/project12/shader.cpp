@@ -17,7 +17,8 @@ Shader::Shader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignat
 	m_inputLayout =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
@@ -44,7 +45,6 @@ Shader::~Shader()
 	ReleaseShaderVariable();
 }
 
-[[deprecated("DO NOT USE THIS!")]]
 void Shader::Update(FLOAT timeElapsed)
 {
 	if (m_player) m_player->Update(timeElapsed);
@@ -57,7 +57,10 @@ void Shader::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
 	Shader::UpdateShaderVariable(commandList);
 
-	if (m_player) m_player->Render(commandList);
+	if (m_player) {
+		//m_player->UpdateTransform(nullptr);
+		m_player->Render(commandList);
+	}
 
 	for (const auto& elm : m_gameObjects)
 		if (elm) elm->Render(commandList);
@@ -141,7 +144,6 @@ void TerrainShader::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 	if (m_heightMap) { m_heightMap->Render(commandList); }
 }
 
-[[DEPRECATED("DO NOT USE THIS!")]]
 InstancingShader::InstancingShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature, const Mesh& mesh, UINT count) : 
 	m_instancingCount(count)
 {

@@ -115,9 +115,7 @@ void MeshFromFile::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList
 	if ((m_nSubMeshes > 0))
 	{
 		for (int i = 0; i < m_nSubMeshes; ++i) {
-			//m_textures[i]->UpdateShaderVariable(m_commandList);
-
-			m_commandList->IASetIndexBuffer(&(m_subsetIndexBufferViews[i]));
+			m_commandList->IASetIndexBuffer(&m_subsetIndexBufferViews[i]);
 			m_commandList->DrawIndexedInstanced(m_vSubsetIndices[i], 1, 0, 0, 0);
 		}
 	}
@@ -138,10 +136,15 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 
 	INT positionNum, colorNum, normalNum;
 
+	in.read((char*)(&m_nVertices), sizeof(INT));
+
+	in.read((char*)(&strLength), sizeof(BYTE));
+	in.read(&m_meshName[0], sizeof(char) * strLength);
+
 	while (1) {
 		in.read((char*)(&strLength), sizeof(BYTE));
 		string strToken(strLength, '\0');
-		in.read((&strToken[0]), sizeof(char) * strLength);
+		in.read(&strToken[0], sizeof(char) * strLength);
 
 		if (strToken == "<Bounds>:") {
 			XMFLOAT3 dummy;
@@ -155,7 +158,7 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 				vertices.resize(positionNum);
 			}
 			for (int i = 0; i < positionNum; ++i) {
-				in.read((char*)(&vertices.at(i).position), sizeof(XMFLOAT3));
+				in.read((char*)(&vertices[i].position), sizeof(XMFLOAT3));
 			}
 		}
 		else if (strToken == "<Colors>:") {
@@ -165,7 +168,7 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 				vertices.resize(colorNum);
 			}
 			for (int i = 0; i < colorNum; ++i) {
-				in.read((char*)(&vertices.at(i).color), sizeof(XMFLOAT3));
+				in.read((char*)(&vertices.at(i).color), sizeof(XMFLOAT4));
 			}
 		}
 		else if (strToken == "<Normals>:") {
@@ -180,21 +183,21 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 		}
 		else if (strToken == "<Indices>:") {
 			in.read((char*)(&m_nIndices), sizeof(INT));
-			indices.reserve(m_nIndices);
+			indices.resize(m_nIndices);
 			in.read((char*)(&indices), sizeof(UINT) * m_nIndices);
 		}
 		else if (strToken == "<SubMeshes>:") {
 			in.read((char*)(&m_nSubMeshes), sizeof(INT));
 			if (m_nSubMeshes > 0) {
-				m_vSubsetIndices.reserve(m_nSubMeshes);
-				m_vvSubsetIndices.reserve(m_nSubMeshes);
-				m_subsetIndexBuffers.reserve(m_nSubMeshes);
-				m_subsetIndexUploadBuffers.reserve(m_nSubMeshes);
-				m_subsetIndexBufferViews.reserve(m_nSubMeshes);
+				m_vSubsetIndices.resize(m_nSubMeshes);
+				m_vvSubsetIndices.resize(m_nSubMeshes);
+				m_subsetIndexBuffers.resize(m_nSubMeshes);
+				m_subsetIndexUploadBuffers.resize(m_nSubMeshes);
+				m_subsetIndexBufferViews.resize(m_nSubMeshes);
 
 				for (int i = 0; i < m_nSubMeshes; ++i) {
 					in.read((char*)(&strLength), sizeof(BYTE));
-					strToken.resize(64, '\0');
+					string strToken(strLength, '\0');
 					in.read((&strToken[0]), sizeof(char) * strLength);
 
 					if (strToken == "<SubMesh>:") {
@@ -202,8 +205,8 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 						in.read((char*)(&index), sizeof(INT));
 						in.read((char*)(&m_vSubsetIndices[i]), sizeof(INT));
 						if (m_vSubsetIndices[i] > 0) {
-							m_vvSubsetIndices[i].reserve(m_vSubsetIndices[i]);
-							in.read((char*)(&m_vvSubsetIndices[i]), sizeof(INT) * m_vSubsetIndices[i]);
+							m_vvSubsetIndices[i].resize(m_vSubsetIndices[i]);
+							in.read((char*)(&m_vvSubsetIndices[i][0]), sizeof(INT) * m_vSubsetIndices[i]);
 
 							m_subsetIndexBuffers[i] = CreateBufferResource(device, commandList, m_vvSubsetIndices[i].data(),
 								sizeof(UINT) * m_vSubsetIndices[i], D3D12_HEAP_TYPE_DEFAULT,
@@ -217,7 +220,7 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 				}
 			}
 		}
-		else if (strToken == "</Mesh>:") {
+		else if (strToken == "</Mesh>") {
 			break;
 		}
 	}
@@ -231,14 +234,14 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 	m_vertexBufferView.StrideInBytes = sizeof(NormalVertex);
 	m_vertexBufferView.SizeInBytes = sizeof(NormalVertex) * vertices.size();
 
-	m_nIndices = indices.size();
-	m_indexBuffer = CreateBufferResource(device, commandList, indices.data(),
-		sizeof(UINT) * indices.size(), D3D12_HEAP_TYPE_DEFAULT,
-		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_indexUploadBuffer);
+	//m_nIndices = indices.size();
+	//m_indexBuffer = CreateBufferResource(device, commandList, indices.data(),
+	//	sizeof(UINT) * indices.size(), D3D12_HEAP_TYPE_DEFAULT,
+	//	D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_indexUploadBuffer);
 
-	m_indexBufferView.BufferLocation = m_indexBuffer->GetGPUVirtualAddress();
-	m_indexBufferView.Format = DXGI_FORMAT_R32_UINT;
-	m_indexBufferView.SizeInBytes = sizeof(UINT) * indices.size();
+	//m_indexBufferView.BufferLocation = m_indexBuffer->GetGPUVirtualAddress();
+	//m_indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	//m_indexBufferView.SizeInBytes = sizeof(UINT) * indices.size();
 }
 
 HeightMapImage::HeightMapImage(const wstring& fileName, INT width, INT length, XMFLOAT3 scale) :

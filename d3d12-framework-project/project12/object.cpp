@@ -72,23 +72,55 @@ void GameObject::ReleaseUploadBuffer() const
 
 HierarchyObject::HierarchyObject() : GameObject()
 {
-
 }
 
-shared_ptr<HierarchyObject> HierarchyObject::LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName)
+void HierarchyObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
-	ifstream in{ fileName };
-	if (!in) return nullptr;
+	XMFLOAT4X4 worldMatrix;
+	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_worldMatrix)));
+	commandList->SetGraphicsRoot32BitConstants(0, 16, &worldMatrix, 0);
 
-	return LoadFrameHierarchy(device, commandList, in);
+	if (m_texture) { m_texture->UpdateShaderVariable(commandList); }
+
+	if (m_mesh) m_mesh->Render(commandList);
+
+	if (m_sibling) m_sibling->Render(commandList);
+	if (m_child) m_child->Render(commandList);
 }
 
-shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
+void HierarchyObject::UpdateTransform(XMFLOAT4X4* worldMatrixParent)
+{
+	m_worldMatrix = (worldMatrixParent) ? Matrix::Mul(m_worldMatrix, *worldMatrixParent) : m_worldMatrix;
+
+	if (m_sibling) m_sibling->UpdateTransform(worldMatrixParent);
+	if (m_child) m_child->UpdateTransform(&m_worldMatrix);
+}
+
+void HierarchyObject::Update(FLOAT timeElapsed, XMFLOAT4X4* worldMatrixParent)
+{
+	if (m_sibling) m_sibling->Update(timeElapsed, worldMatrixParent);
+	if (m_child) m_child->Update(timeElapsed, &m_worldMatrix);
+}
+
+void HierarchyObject::SetPosition(const XMFLOAT3& position)
+{
+	GameObject::SetPosition(position);
+	if (m_sibling) m_sibling->SetPosition(position);
+	if (m_child) m_child->SetPosition(position);
+}
+
+void HierarchyObject::LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName)
+{
+	ifstream in{ fileName, std::ios::binary };
+	if (!in) return;
+
+	LoadFrameHierarchy(device, commandList, in);
+}
+
+void HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
 {
 	BYTE strLength;
 	INT frame;
-
-	shared_ptr<HierarchyObject> gameObject;
 
 	while (1) {
 		in.read((char*)(&strLength), sizeof(BYTE));
@@ -96,13 +128,11 @@ shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3
 		in.read((&strToken[0]), sizeof(char) * strLength);
 
 		if (strToken == "<Frame>:") {
-			gameObject = make_shared<HierarchyObject>();
-
 			in.read((char*)(&frame), sizeof(INT));
 
 			in.read((char*)(&strLength), sizeof(BYTE));
-			gameObject->m_frameName.reserve(strLength);
-			in.read((char*)(&gameObject->m_frameName), sizeof(char) * strLength);
+			//gameObject->m_frameName.reserve(strLength);
+			in.read((&m_frameName[0]), sizeof(char) * strLength);
 		}
 		else if (strToken == "<Transform>:") {
 			XMFLOAT3 position, rotation, scale;
@@ -114,10 +144,10 @@ shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3
 			in.read((char*)(&qrotation), sizeof(FLOAT) * 4);
 		}
 		else if (strToken == "<TransformMatrix>:") {
-			in.read((char*)(&gameObject->m_worldMatrix), sizeof(FLOAT) * 16);
+			in.read((char*)(&m_worldMatrix), sizeof(FLOAT) * 16);
 		}
 		else if (strToken == "<Mesh>:") {
-			unique_ptr<MeshFromFile> mesh;
+			unique_ptr<MeshFromFile> mesh = make_unique<MeshFromFile>();
 			mesh->LoadMesh(device, commandList, in);
 			m_mesh = move(mesh);
 		}
@@ -129,20 +159,24 @@ shared_ptr<HierarchyObject> HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3
 			in.read((char*)(&childNum), sizeof(INT));
 			if (childNum) {
 				for (int i = 0; i < childNum; ++i) {
-					gameObject->SetChild(HierarchyObject::LoadFrameHierarchy(device, commandList, in));
+					shared_ptr<HierarchyObject> child = make_shared<HierarchyObject>();
+					child->LoadFrameHierarchy(device, commandList, in);
+					SetChild(child);
 				}
 			}
 		}
-		else if (strToken == "</Frame>:") {
+		else if (strToken == "</Frame>") {
 			break;
 		}
 	}
-	return gameObject;
 }
 
 void HierarchyObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
 {
 	BYTE strLength;
+
+	INT dummy;
+	in.read((char*)(&dummy), sizeof(INT));
 
 	while (1) {
 		in.read((char*)(&strLength), sizeof(BYTE));
@@ -150,9 +184,7 @@ void HierarchyObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const Com
 		in.read((&strToken[0]), sizeof(char) * strLength);
 
 		if (strToken == "<Material>:") {
-			in.read((char*)(&strLength), sizeof(BYTE));
-			strToken.resize(strLength, '\0');
-			in.read((char*)(&strToken), sizeof(char) * strLength);
+			in.read((char*)(&dummy), sizeof(INT));
 		}
 		else if (strToken == "<AlbedoColor>:") {
 			XMFLOAT4 dummy;
@@ -186,7 +218,7 @@ void HierarchyObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const Com
 			FLOAT dummy;
 			in.read((char*)(&dummy), sizeof(FLOAT));
 		}
-		else if (strToken == "</Materials>:") {
+		else if (strToken == "</Materials>") {
 			break;
 		}
 	}
@@ -204,21 +236,6 @@ void HierarchyObject::SetChild(const shared_ptr<HierarchyObject>& child)
 	if (child) {
 		child->m_parent = (shared_ptr<HierarchyObject>)this;
 	}
-}
-
-RotatingObject::RotatingObject() : m_rotationSpeed(100.0f)
-{
-
-}
-
-void RotatingObject::Update(FLOAT timeElapsed)
-{
-	GameObject::Rotate(0.0f, m_rotationSpeed * timeElapsed, 0.0f);
-}
-
-void RotatingObject::SetRotationSpeed(FLOAT rotationSpeed)
-{
-	m_rotationSpeed = rotationSpeed;
 }
 
 HeightMapTerrain::HeightMapTerrain(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,

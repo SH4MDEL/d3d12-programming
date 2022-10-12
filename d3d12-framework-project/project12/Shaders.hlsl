@@ -16,6 +16,7 @@ struct VS_STANDARD_INPUT
 {
 	float3 position : POSITION;
 	float4 color : COLOR;
+	float3 normal : NORMAL;
 };
 
 struct VS_STANDARD_OUTPUT
@@ -31,6 +32,7 @@ VS_STANDARD_OUTPUT VS_STANDARD_MAIN(VS_STANDARD_INPUT input)
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projMatrix);
 	output.color = input.color;
+	output.color = float4(1.0f, 1.0f, 0.0f, 1.0f);
 	return output;
 }
 

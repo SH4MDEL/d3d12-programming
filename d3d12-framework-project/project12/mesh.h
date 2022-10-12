@@ -13,7 +13,7 @@ struct Vertex
 
 struct NormalVertex
 {
-	NormalVertex() {}
+	NormalVertex() : position{ XMFLOAT3{0.f, 0.f, 0.f} }, color{ XMFLOAT4{0.f, 0.f, 0.f, 1.f} }, normal{ XMFLOAT3{0.f, 0.f, 0.f} } {}
 	NormalVertex(const XMFLOAT3& p, const XMFLOAT4& c, const XMFLOAT3& n) : position{ p }, color{ c }, normal{ n } { }
 	~NormalVertex() = default;
 
@@ -85,6 +85,8 @@ public:
 
 	void LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
 private:
+	string									m_meshName;
+
 	UINT									m_nSubMeshes;
 	vector<INT>								m_vSubsetIndices;
 	vector<vector<INT>>						m_vvSubsetIndices;

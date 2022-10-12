@@ -53,7 +53,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 
 	// 플레이어 생성
 	m_player = make_shared<Player>();
-	m_player->LoadGeometry(device, commandlist, TEXT("Gunship.bin"));
+	m_player->LoadGeometry(device, commandlist, TEXT("Apache.bin"));
 	m_player->SetPosition(XMFLOAT3(20.0f, 20.0f, 20.0f));
 	basicShader->SetPlayer(m_player);
 

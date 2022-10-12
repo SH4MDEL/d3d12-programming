@@ -17,7 +17,7 @@ public:
 	void SetMesh(const Mesh& mesh);
 	void SetTexture(const shared_ptr<Texture>& texture);
 
-	void SetPosition(const XMFLOAT3& position);
+	virtual void SetPosition(const XMFLOAT3& position);
 
 	XMFLOAT4X4 GetWorldMatrix() const { return m_worldMatrix; }
 	XMFLOAT3 GetPosition() const;
@@ -48,10 +48,15 @@ public:
 	HierarchyObject();
 	~HierarchyObject() = default;
 
-	shared_ptr<HierarchyObject> LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName);
-	shared_ptr<HierarchyObject> LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
-	void LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+	void UpdateTransform(XMFLOAT4X4* worldMatrixParent);
+	void Update(FLOAT timeElapsed, XMFLOAT4X4* worldMatrixParent);
 
+	virtual void SetPosition(const XMFLOAT3& position);
+
+	void LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName);
+	void LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
+	void LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
 
 	void SetChild(const shared_ptr<HierarchyObject>& child);
 
@@ -60,20 +65,6 @@ private:
 	shared_ptr<HierarchyObject> m_parent;
 	shared_ptr<HierarchyObject>	m_sibling;
 	shared_ptr<HierarchyObject>	m_child;
-};
-
-class RotatingObject : public GameObject
-{
-public:
-	RotatingObject();
-	~RotatingObject() = default;
-
-	virtual void Update(FLOAT timeElapsed);
-
-	void SetRotationSpeed(FLOAT rotationSpeed);
-
-private:
-	FLOAT				m_rotationSpeed;
 };
 
 class HeightMapTerrain : public GameObject
