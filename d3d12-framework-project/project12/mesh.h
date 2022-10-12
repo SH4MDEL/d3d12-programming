@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "texture.h"
 
 struct Vertex
 {
@@ -57,7 +58,7 @@ public:
 	~Mesh() = default;
 
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
-	void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const D3D12_VERTEX_BUFFER_VIEW& instanceBufferView) const;
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const D3D12_VERTEX_BUFFER_VIEW& instanceBufferView) const;
 	void ReleaseUploadBuffer();
 
 protected:
@@ -83,7 +84,9 @@ public:
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
 
 	void LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
+	void SetTexture(shared_ptr<Texture> texture);
 private:
+	vector<shared_ptr<Texture>>				m_textures;
 
 	UINT									m_nSubMeshes;
 	vector<INT>								m_vSubsetIndices;

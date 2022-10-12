@@ -75,6 +75,12 @@ HierarchyObject::HierarchyObject() : GameObject()
 
 }
 
+void HierarchyObject::SetTexture(const shared_ptr<Texture>& texture)
+{
+	if (m_texture) m_texture.reset();
+	m_mesh;
+}
+
 shared_ptr<HierarchyObject> HierarchyObject::LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName)
 {
 	ifstream in{ fileName,ios::binary };

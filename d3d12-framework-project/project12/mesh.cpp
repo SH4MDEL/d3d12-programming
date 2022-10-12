@@ -110,7 +110,21 @@ void Mesh::ReleaseUploadBuffer()
 
 void MeshFromFile::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const
 {
+	m_commandList->IASetPrimitiveTopology(m_primitiveTopology);
+	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
+	if ((m_nSubMeshes > 0) && (m_textures.size() >= m_nSubMeshes))
+	{
+		for (int i = 0; i < m_nSubMeshes; ++i) {
+			m_textures[i]->UpdateShaderVariable(m_commandList);
 
+			m_commandList->IASetIndexBuffer(&(m_subsetIndexBufferViews[i]));
+			m_commandList->DrawIndexedInstanced(m_vSubsetIndices[i], 1, 0, 0, 0);
+		}
+	}
+	else
+	{
+		m_commandList->DrawInstanced(m_nVertices, 1, 0, 0);
+	}
 }
 
 void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
@@ -226,6 +240,11 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 	m_indexBufferView.BufferLocation = m_indexBuffer->GetGPUVirtualAddress();
 	m_indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 	m_indexBufferView.SizeInBytes = sizeof(UINT) * indices.size();
+}
+
+void MeshFromFile::SetTexture(shared_ptr<Texture> texture)
+{
+	m_textures.push_back(texture);
 }
 
 
