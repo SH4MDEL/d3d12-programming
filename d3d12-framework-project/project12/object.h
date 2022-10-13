@@ -17,7 +17,7 @@ public:
 	void SetMesh(const Mesh& mesh);
 	void SetTexture(const shared_ptr<Texture>& texture);
 
-	virtual void SetPosition(const XMFLOAT3& position);
+	void SetPosition(const XMFLOAT3& position);
 
 	XMFLOAT4X4 GetWorldMatrix() const { return m_worldMatrix; }
 	XMFLOAT3 GetPosition() const;
@@ -25,10 +25,12 @@ public:
 	XMFLOAT3 GetUp() const { return m_up; }
 	XMFLOAT3 GetFront() const { return m_front; }
 
+	void UpdateTransform(XMFLOAT4X4* parentMatrix = NULL);
 	void ReleaseUploadBuffer() const;
 
 protected:
-	XMFLOAT4X4				m_worldMatrix;	// 월드 변환
+	XMFLOAT4X4				m_transformMatrix;
+	XMFLOAT4X4				m_worldMatrix;
 
 	XMFLOAT3				m_right;		// 로컬 x축
 	XMFLOAT3				m_up;			// 로컬 y축
@@ -48,11 +50,8 @@ public:
 	HierarchyObject();
 	~HierarchyObject() = default;
 
-	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
-	void UpdateTransform(XMFLOAT4X4* worldMatrixParent);
 	void Update(FLOAT timeElapsed, XMFLOAT4X4* worldMatrixParent);
-
-	virtual void SetPosition(const XMFLOAT3& position);
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 
 	void LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName);
 	void LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);

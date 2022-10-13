@@ -63,11 +63,15 @@ void GameObject::SetPosition(const XMFLOAT3& position)
 	m_worldMatrix._43 = position.z;
 }
 
+void GameObject::UpdateTransform(XMFLOAT4X4* parentMatrix)
+{
+	m_worldMatrix = (parentMatrix) ? Matrix::Mul(m_transformMatrix, *parentMatrix) : m_transformMatrix;
+}
+
 void GameObject::ReleaseUploadBuffer() const
 {
 	if (m_mesh) m_mesh->ReleaseUploadBuffer();
 	if (m_texture) m_texture->ReleaseUploadBuffer();
-
 }
 
 HierarchyObject::HierarchyObject() : GameObject()
@@ -88,25 +92,10 @@ void HierarchyObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandLis
 	if (m_child) m_child->Render(commandList);
 }
 
-void HierarchyObject::UpdateTransform(XMFLOAT4X4* worldMatrixParent)
-{
-	m_worldMatrix = (worldMatrixParent) ? Matrix::Mul(m_worldMatrix, *worldMatrixParent) : m_worldMatrix;
-
-	if (m_sibling) m_sibling->UpdateTransform(worldMatrixParent);
-	if (m_child) m_child->UpdateTransform(&m_worldMatrix);
-}
-
 void HierarchyObject::Update(FLOAT timeElapsed, XMFLOAT4X4* worldMatrixParent)
 {
 	if (m_sibling) m_sibling->Update(timeElapsed, worldMatrixParent);
 	if (m_child) m_child->Update(timeElapsed, &m_worldMatrix);
-}
-
-void HierarchyObject::SetPosition(const XMFLOAT3& position)
-{
-	GameObject::SetPosition(position);
-	if (m_sibling) m_sibling->SetPosition(position);
-	if (m_child) m_child->SetPosition(position);
 }
 
 void HierarchyObject::LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName)
