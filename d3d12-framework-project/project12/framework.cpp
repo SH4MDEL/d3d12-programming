@@ -255,7 +255,7 @@ void GameFramework::CreateRootSignature()
 	rootParameter[2].InitAsDescriptorTable(1, &descriptorRange[0], D3D12_SHADER_VISIBILITY_PIXEL);
 	rootParameter[3].InitAsDescriptorTable(1, &descriptorRange[1], D3D12_SHADER_VISIBILITY_PIXEL);
 	rootParameter[4].InitAsDescriptorTable(1, &descriptorRange[2], D3D12_SHADER_VISIBILITY_PIXEL);
-
+	
 	CD3DX12_STATIC_SAMPLER_DESC samplerDesc[2];
 	samplerDesc[0].Init(								// s0
 		0,								 				// ShaderRegister
@@ -375,7 +375,7 @@ void GameFramework::Render()
 	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle{ m_dsvHeap->GetCPUDescriptorHandleForHeapStart() };
 	m_commandList->OMSetRenderTargets(1, &rtvHandle, TRUE, &dsvHandle);
 
-	// 원하는 색상으로 렌더 타겟을 지우고, 원하는 값으로 깊이 스텐실 뷰를 지운다.
+	// 원하는 색상으로 렌더 타겟을 지우고, 원하는 값으로 깊이 스텐실을 지운다.
 	const FLOAT clearColor[]{ 0.0f, 0.125f, 0.3f, 1.0f };
 	m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, NULL);
 	m_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);

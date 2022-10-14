@@ -3,11 +3,18 @@
 GameObject::GameObject() : m_right{ 1.0f, 0.0f, 0.0f }, m_up{ 0.0f, 1.0f, 0.0f }, m_front{ 0.0f, 0.0f, 1.0f }, m_roll{ 0.0f }, m_pitch{ 0.0f }, m_yaw{ 0.0f }
 {
 	XMStoreFloat4x4(&m_worldMatrix, XMMatrixIdentity());
+	XMStoreFloat4x4(&m_transformMatrix, XMMatrixIdentity());
 }
 
 GameObject::~GameObject()
 {
 	if (m_mesh) m_mesh->ReleaseUploadBuffer();
+}
+
+void GameObject::Update(FLOAT timeElapsed)
+{
+	if (m_sibling) m_sibling->Update(timeElapsed);
+	if (m_child) m_child->Update(timeElapsed);
 }
 
 void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -19,6 +26,9 @@ void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
 	if (m_texture) { m_texture->UpdateShaderVariable(commandList); }
 
 	if (m_mesh) m_mesh->Render(commandList);
+
+	if (m_sibling) m_sibling->Render(commandList);
+	if (m_child) m_child->Render(commandList);
 }
 
 void GameObject::Move(const XMFLOAT3& shift)
@@ -30,13 +40,15 @@ void GameObject::Rotate(FLOAT roll, FLOAT pitch, FLOAT yaw)
 {
 	// 회전
 	XMMATRIX rotate{ XMMatrixRotationRollPitchYaw(XMConvertToRadians(roll), XMConvertToRadians(pitch), XMConvertToRadians(yaw)) };
-	XMMATRIX worldMatrix{ rotate * XMLoadFloat4x4(&m_worldMatrix) };
-	XMStoreFloat4x4(&m_worldMatrix, worldMatrix);
+	XMMATRIX transformMatrix{ rotate * XMLoadFloat4x4(&m_transformMatrix) };
+	XMStoreFloat4x4(&m_transformMatrix, transformMatrix);
 
 	// 로컬 x,y,z축 최신화
 	XMStoreFloat3(&m_right, XMVector3TransformNormal(XMLoadFloat3(&m_right), rotate));
 	XMStoreFloat3(&m_up, XMVector3TransformNormal(XMLoadFloat3(&m_up), rotate));
 	XMStoreFloat3(&m_front, XMVector3TransformNormal(XMLoadFloat3(&m_front), rotate));
+
+	UpdateTransform(nullptr);
 }
 
 void GameObject::SetMesh(const Mesh& mesh)
@@ -58,47 +70,64 @@ XMFLOAT3 GameObject::GetPosition() const
 
 void GameObject::SetPosition(const XMFLOAT3& position)
 {
-	m_worldMatrix._41 = position.x;
-	m_worldMatrix._42 = position.y;
-	m_worldMatrix._43 = position.z;
+	m_transformMatrix._41 = position.x;
+	m_transformMatrix._42 = position.y;
+	m_transformMatrix._43 = position.z;
+
+	UpdateTransform(nullptr);
+}
+
+void GameObject::SetScale(FLOAT x, FLOAT y, FLOAT z)
+{
+	XMMATRIX scale = XMMatrixScaling(x, y, z);
+	m_transformMatrix = Matrix::Mul(scale, m_transformMatrix);
+
+	UpdateTransform(nullptr);
 }
 
 void GameObject::UpdateTransform(XMFLOAT4X4* parentMatrix)
 {
 	m_worldMatrix = (parentMatrix) ? Matrix::Mul(m_transformMatrix, *parentMatrix) : m_transformMatrix;
+
+	if (m_sibling) m_sibling->UpdateTransform(parentMatrix);
+	if (m_child) m_child->UpdateTransform(&m_worldMatrix);
 }
 
 void GameObject::ReleaseUploadBuffer() const
 {
 	if (m_mesh) m_mesh->ReleaseUploadBuffer();
 	if (m_texture) m_texture->ReleaseUploadBuffer();
+
+	if (m_sibling) m_sibling->ReleaseUploadBuffer();
+	if (m_child) m_child->ReleaseUploadBuffer();
 }
 
-HierarchyObject::HierarchyObject() : GameObject()
+void GameObject::SetChild(const shared_ptr<GameObject>& child)
 {
+	if (child) {
+		child->m_parent = (shared_ptr<GameObject>)this;
+	}
+	if (m_child) {
+		if (child) child->m_sibling = m_child->m_sibling;
+		m_child->m_sibling = child;
+	}
+	else {
+		m_child = child;
+	}
 }
 
-void HierarchyObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+shared_ptr<GameObject> GameObject::FindFrame(string frameName)
 {
-	XMFLOAT4X4 worldMatrix;
-	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_worldMatrix)));
-	commandList->SetGraphicsRoot32BitConstants(0, 16, &worldMatrix, 0);
+	shared_ptr<GameObject> frame;
+	if (m_frameName == frameName) return (shared_ptr<GameObject>)this;
 
-	if (m_texture) { m_texture->UpdateShaderVariable(commandList); }
+	if (m_sibling) if (frame = m_sibling->FindFrame(frameName)) return frame;
+	if (m_child) if (frame = m_child->FindFrame(frameName)) return frame;
 
-	if (m_mesh) m_mesh->Render(commandList);
-
-	if (m_sibling) m_sibling->Render(commandList);
-	if (m_child) m_child->Render(commandList);
+	return nullptr;
 }
 
-void HierarchyObject::Update(FLOAT timeElapsed, XMFLOAT4X4* worldMatrixParent)
-{
-	if (m_sibling) m_sibling->Update(timeElapsed, worldMatrixParent);
-	if (m_child) m_child->Update(timeElapsed, &m_worldMatrix);
-}
-
-void HierarchyObject::LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName)
+void GameObject::LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName)
 {
 	ifstream in{ fileName, std::ios::binary };
 	if (!in) return;
@@ -106,7 +135,7 @@ void HierarchyObject::LoadGeometry(const ComPtr<ID3D12Device>& device, const Com
 	LoadFrameHierarchy(device, commandList, in);
 }
 
-void HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
+void GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
 {
 	BYTE strLength;
 	INT frame;
@@ -120,7 +149,7 @@ void HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, con
 			in.read((char*)(&frame), sizeof(INT));
 
 			in.read((char*)(&strLength), sizeof(BYTE));
-			//gameObject->m_frameName.reserve(strLength);
+			m_frameName.resize(strLength);
 			in.read((&m_frameName[0]), sizeof(char) * strLength);
 		}
 		else if (strToken == "<Transform>:") {
@@ -133,7 +162,7 @@ void HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, con
 			in.read((char*)(&qrotation), sizeof(FLOAT) * 4);
 		}
 		else if (strToken == "<TransformMatrix>:") {
-			in.read((char*)(&m_worldMatrix), sizeof(FLOAT) * 16);
+			in.read((char*)(&m_transformMatrix), sizeof(FLOAT) * 16);
 		}
 		else if (strToken == "<Mesh>:") {
 			unique_ptr<MeshFromFile> mesh = make_unique<MeshFromFile>();
@@ -148,7 +177,7 @@ void HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, con
 			in.read((char*)(&childNum), sizeof(INT));
 			if (childNum) {
 				for (int i = 0; i < childNum; ++i) {
-					shared_ptr<HierarchyObject> child = make_shared<HierarchyObject>();
+					shared_ptr<GameObject> child = make_shared<GameObject>();
 					child->LoadFrameHierarchy(device, commandList, in);
 					SetChild(child);
 				}
@@ -160,7 +189,7 @@ void HierarchyObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, con
 	}
 }
 
-void HierarchyObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
+void GameObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
 {
 	BYTE strLength;
 
@@ -213,18 +242,22 @@ void HierarchyObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const Com
 	}
 }
 
-void HierarchyObject::SetChild(const shared_ptr<HierarchyObject>& child)
+Helicoptor::Helicoptor() : GameObject()
 {
-	if (m_child) {
-		if (child) child->m_sibling = m_child->m_sibling;
-		m_child->m_sibling = child;
-	}
-	else {
-		m_child = child;
-	}
-	if (child) {
-		child->m_parent = (shared_ptr<HierarchyObject>)this;
-	}
+}
+
+void Helicoptor::Update(FLOAT timeElapsed)
+{
+	if (m_mainRotorFrame) m_mainRotorFrame->Rotate(0.f, 720.f * timeElapsed, 0.f);
+	if (m_tailRotorFrame) m_tailRotorFrame->Rotate(0.f, 720.f * timeElapsed, 0.f);
+
+	GameObject::Update(timeElapsed);
+}
+
+void Helicoptor::SetRotorFrame()
+{
+	m_mainRotorFrame = FindFrame("rotor");
+	m_tailRotorFrame = FindFrame("black_m_7");
 }
 
 HeightMapTerrain::HeightMapTerrain(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,

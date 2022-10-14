@@ -100,12 +100,12 @@ namespace Matrix
         XMStoreFloat4x4(&result, x * y);
         return result;
     }
-    inline XMFLOAT4X4 Sub(const XMFLOAT4X4& a, const XMFLOAT4X4& b)
+    inline XMFLOAT4X4 Mul(const XMMATRIX& a, const XMFLOAT4X4& b)
     {
         XMFLOAT4X4 result;
-        XMMATRIX x{ XMLoadFloat4x4(&a) };
+        XMMATRIX x{ a };
         XMMATRIX y{ XMLoadFloat4x4(&b) };
-        XMStoreFloat4x4(&result, x - y);
+        XMStoreFloat4x4(&result, x * y);
         return result;
     }
     inline XMFLOAT4X4 Transpose(const XMFLOAT4X4& a)

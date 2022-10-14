@@ -1,15 +1,15 @@
 #include "player.h"
 #include "camera.h"
 
-Player::Player() : HierarchyObject{}, m_velocity{ 0.0f, 0.0f, 0.0f }, m_maxVelocity{ 10.0f }, m_friction{ 0.5f }
+Player::Player() : Helicoptor{}, m_velocity{ 0.0f, 0.0f, 0.0f }, m_maxVelocity{ 10.0f }, m_friction{ 0.5f }
 {
 
 }
 
 void Player::Update(FLOAT timeElapsed)
 {
+	Helicoptor::Update(timeElapsed);
 	Move(m_velocity);
-	ApplyGravity(timeElapsed);
 	// 플레이어가 어떤 지형 위에 있다면
 	if (m_terrain)
 	{
@@ -23,7 +23,6 @@ void Player::Update(FLOAT timeElapsed)
 			m_velocity.y = 0.0f;
 		}
 	}
-	HierarchyObject::Update(timeElapsed, &m_worldMatrix);
 
 	ApplyFriction(timeElapsed);
 }
@@ -49,14 +48,7 @@ void Player::Rotate(FLOAT roll, FLOAT pitch, FLOAT yaw)
 
 void Player::ApplyFriction(FLOAT deltaTime)
 {
-	FLOAT yvalue = m_velocity.y;
 	m_velocity = Vector3::Mul(m_velocity, 1 / m_friction * deltaTime);
-	m_velocity.y = yvalue;
-}
-
-void Player::ApplyGravity(FLOAT deltaTime)
-{
-	m_velocity.y = m_velocity.y + m_gravity * deltaTime;
 }
 
 void Player::AddVelocity(const XMFLOAT3& increase)

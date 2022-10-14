@@ -7,7 +7,7 @@
 
 class Camera;
 
-class Player : public HierarchyObject
+class Player : public Helicoptor
 {
 public:
 	Player();
@@ -28,7 +28,6 @@ public:
 	void SetTerrain(const shared_ptr<HeightMapTerrain>& terrain) { m_terrain = terrain; }
 
 private:
-	const FLOAT						m_gravity = -0.5f;		// 중력
 	XMFLOAT3						m_velocity;		// 속도
 	FLOAT							m_maxVelocity;	// 최대속도
 	FLOAT							m_friction;		// 마찰력

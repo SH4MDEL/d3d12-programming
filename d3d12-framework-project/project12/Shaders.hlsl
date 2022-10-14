@@ -36,6 +36,7 @@ VS_STANDARD_OUTPUT VS_STANDARD_MAIN(VS_STANDARD_INPUT input)
 	return output;
 }
 
+[earlydepthstencil]
 float4 PS_STANDARD_MAIN(VS_STANDARD_OUTPUT input) : SV_TARGET
 {
 	return input.color;
@@ -67,6 +68,7 @@ VS_INSTANCE_OUTPUT VS_INSTANCE_MAIN(VS_INSTANCE_INPUT input)
 	return output;
 }
 
+[earlydepthstencil]
 float4 PS_INSTANCE_MAIN(VS_INSTANCE_OUTPUT input) : SV_TARGET
 {
 	return input.color;
@@ -105,6 +107,7 @@ VS_TERRAIN_OUTPUT VS_TERRAIN_MAIN(VS_TERRAIN_INPUT input)
 	return output;
 }
 
+[earlydepthstencil]
 float4 PS_TERRAIN_MAIN(VS_TERRAIN_OUTPUT input) : SV_TARGET
 {
 	float4 baseTexColor = g_baseTexture.Sample(g_samplerState, input.uv0);
@@ -142,6 +145,7 @@ VS_SKYBOX_OUTPUT VS_SKYBOX_MAIN(VS_SKYBOX_INPUT input)
 	return output;
 }
 
+[earlydepthstencil]
 float4 PS_SKYBOX_MAIN(VS_SKYBOX_OUTPUT input) : SV_TARGET
 {
 	float4 color = g_skyboxTexture.Sample(g_samplerClamp, input.positionL);

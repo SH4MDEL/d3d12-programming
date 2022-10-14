@@ -9,15 +9,17 @@ public:
 	GameObject();
 	~GameObject();
 
-	virtual void Update(FLOAT timeElapsed) { };
+	virtual void Update(FLOAT timeElapsed);
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 	virtual void Move(const XMFLOAT3& shift);
 	virtual void Rotate(FLOAT roll, FLOAT pitch, FLOAT yaw);
+	virtual void UpdateTransform(XMFLOAT4X4* parentMatrix = nullptr);
 
 	void SetMesh(const Mesh& mesh);
 	void SetTexture(const shared_ptr<Texture>& texture);
 
 	void SetPosition(const XMFLOAT3& position);
+	void SetScale(FLOAT x, FLOAT y, FLOAT z);
 
 	XMFLOAT4X4 GetWorldMatrix() const { return m_worldMatrix; }
 	XMFLOAT3 GetPosition() const;
@@ -25,45 +27,48 @@ public:
 	XMFLOAT3 GetUp() const { return m_up; }
 	XMFLOAT3 GetFront() const { return m_front; }
 
-	void UpdateTransform(XMFLOAT4X4* parentMatrix = NULL);
 	void ReleaseUploadBuffer() const;
 
-protected:
-	XMFLOAT4X4				m_transformMatrix;
-	XMFLOAT4X4				m_worldMatrix;
-
-	XMFLOAT3				m_right;		// 로컬 x축
-	XMFLOAT3				m_up;			// 로컬 y축
-	XMFLOAT3				m_front;		// 로컬 z축
-
-	FLOAT					m_roll;			// x축 회전각
-	FLOAT					m_pitch;		// y축 회전각
-	FLOAT					m_yaw;			// z축 회전각
-
-	unique_ptr<Mesh>		m_mesh;			// 메쉬
-	shared_ptr<Texture>		m_texture;		// 텍스처
-};
-
-class HierarchyObject : public GameObject
-{
-public:
-	HierarchyObject();
-	~HierarchyObject() = default;
-
-	void Update(FLOAT timeElapsed, XMFLOAT4X4* worldMatrixParent);
-	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+	void SetChild(const shared_ptr<GameObject>& child);
+	shared_ptr<GameObject> FindFrame(string frameName);
 
 	void LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName);
 	void LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
 	void LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
 
-	void SetChild(const shared_ptr<HierarchyObject>& child);
+protected:
+	XMFLOAT4X4					m_transformMatrix;
+	XMFLOAT4X4					m_worldMatrix;
 
-private:
+	XMFLOAT3					m_right;		// 로컬 x축
+	XMFLOAT3					m_up;			// 로컬 y축
+	XMFLOAT3					m_front;		// 로컬 z축
+
+	FLOAT						m_roll;			// x축 회전각
+	FLOAT						m_pitch;		// y축 회전각
+	FLOAT						m_yaw;			// z축 회전각
+
+	unique_ptr<Mesh>			m_mesh;			// 메쉬
+	shared_ptr<Texture>			m_texture;		// 텍스처
+
 	string						m_frameName;	// 현재 프레임의 이름
-	shared_ptr<HierarchyObject> m_parent;
-	shared_ptr<HierarchyObject>	m_sibling;
-	shared_ptr<HierarchyObject>	m_child;
+	shared_ptr<GameObject>		m_parent;
+	shared_ptr<GameObject>		m_sibling;
+	shared_ptr<GameObject>		m_child;
+};
+
+class Helicoptor : public GameObject
+{
+public:
+	Helicoptor();
+	~Helicoptor() = default;
+
+	virtual void Update(FLOAT timeElapsed);
+	
+	void SetRotorFrame();
+private:
+	shared_ptr<GameObject>	m_mainRotorFrame;
+	shared_ptr<GameObject>	m_tailRotorFrame;
 };
 
 class HeightMapTerrain : public GameObject

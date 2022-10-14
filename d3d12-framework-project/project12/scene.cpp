@@ -39,11 +39,11 @@ void Scene::OnProcessingKeyboardMessage(FLOAT timeElapsed) const
 	}
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
 	{
-		m_player->AddVelocity(Vector3::Mul(m_player->GetUp(), timeElapsed * 1.0f));
+		m_player->AddVelocity(Vector3::Mul(m_player->GetUp(), timeElapsed * 10.0f));
 	}
 	if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
 	{
-		m_player->AddVelocity(Vector3::Mul(m_player->GetUp(), timeElapsed * -1.0f));
+		m_player->AddVelocity(Vector3::Mul(m_player->GetUp(), timeElapsed * -10.0f));
 	}
 }
 
@@ -54,7 +54,9 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	// 플레이어 생성
 	m_player = make_shared<Player>();
 	m_player->LoadGeometry(device, commandlist, TEXT("Apache.bin"));
+	m_player->SetRotorFrame();
 	m_player->SetPosition(XMFLOAT3(20.0f, 20.0f, 20.0f));
+	m_player->SetScale(0.05f, 0.05f, 0.05f);
 	basicShader->SetPlayer(m_player);
 
 	// 카메라 생성
