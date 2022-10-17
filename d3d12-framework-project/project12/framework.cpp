@@ -246,8 +246,8 @@ void GameFramework::CreateRootSignature()
 
 	CD3DX12_ROOT_PARAMETER rootParameter[5];
 
-	// cbGameObject : 월드 변환 행렬(16)
-	rootParameter[0].InitAsConstants(16, 0, 0, D3D12_SHADER_VISIBILITY_ALL);
+	// cbGameObject : 월드 변환 행렬(16) + struct Material(16)
+	rootParameter[0].InitAsConstants(20, 0, 0, D3D12_SHADER_VISIBILITY_ALL);
 
 	// cbCamera : 뷰 변환 행렬(16) + 투영 변환 행렬(16)
 	rootParameter[1].InitAsConstants(32, 1, 0, D3D12_SHADER_VISIBILITY_ALL);

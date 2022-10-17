@@ -63,6 +63,12 @@ void GameObject::SetTexture(const shared_ptr<Texture>& texture)
 	m_texture = texture;
 }
 
+void GameObject::SetMaterial(const string& materialName, const shared_ptr<Material>& material)
+{
+	if (m_materials[materialName]) m_materials[materialName].reset();
+	m_materials.insert({materialName, material});
+}
+
 XMFLOAT3 GameObject::GetPosition() const
 {
 	return XMFLOAT3{ m_worldMatrix._41, m_worldMatrix._42, m_worldMatrix._43 };
@@ -192,9 +198,12 @@ void GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const Co
 void GameObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
 {
 	BYTE strLength;
+	INT materialName, materialCount;
 
-	INT dummy;
-	in.read((char*)(&dummy), sizeof(INT));
+	in.read((char*)(&materialCount), sizeof(INT));
+	for (int i = 0; i < materialCount; ++i) {
+		m_materials.insert({ to_string(i), make_shared<Material>() });
+	}
 
 	while (1) {
 		in.read((char*)(&strLength), sizeof(BYTE));
@@ -202,19 +211,16 @@ void GameObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<I
 		in.read((&strToken[0]), sizeof(char) * strLength);
 
 		if (strToken == "<Material>:") {
-			in.read((char*)(&dummy), sizeof(INT));
+			in.read((char*)(&materialName), sizeof(INT));
 		}
 		else if (strToken == "<AlbedoColor>:") {
-			XMFLOAT4 dummy;
-			in.read((char*)(&dummy), sizeof(XMFLOAT4));
+			in.read((char*)(&m_materials[to_string(materialName)]->m_albedoColor), sizeof(XMFLOAT4));
 		}
 		else if (strToken == "<EmissiveColor>:") {
-			XMFLOAT4 dummy;
-			in.read((char*)(&dummy), sizeof(XMFLOAT4));
+			in.read((char*)(&m_materials[to_string(materialName)]->m_emissiveColor), sizeof(XMFLOAT4));
 		}
 		else if (strToken == "<SpecularColor>:") {
-			XMFLOAT4 dummy;
-			in.read((char*)(&dummy), sizeof(XMFLOAT4));
+			in.read((char*)(&m_materials[to_string(materialName)]->m_specularColor), sizeof(XMFLOAT4));
 		}
 		else if (strToken == "<Glossiness>:") {
 			FLOAT dummy;
@@ -233,6 +239,34 @@ void GameObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<I
 			in.read((char*)(&dummy), sizeof(FLOAT));
 		}
 		else if (strToken == "<GlossyReflection>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<AlbedoMap>:") {
+			XMFLOAT4 dummy;
+			in.read((char*)(&dummy), sizeof(XMFLOAT4));
+		}
+		else if (strToken == "<SpecularMap>:") {
+			XMFLOAT4 dummy;
+			in.read((char*)(&dummy), sizeof(XMFLOAT4));
+		}
+		else if (strToken == "<NormalMap>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<MetallicMap>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<EmissionMap>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<DetailAlbedoMap>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<DetailNormalMap>:") {
 			FLOAT dummy;
 			in.read((char*)(&dummy), sizeof(FLOAT));
 		}

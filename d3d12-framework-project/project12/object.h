@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "mesh.h"
 #include "texture.h"
+#include "material.h"
 
 class GameObject
 {
@@ -17,6 +18,7 @@ public:
 
 	void SetMesh(const Mesh& mesh);
 	void SetTexture(const shared_ptr<Texture>& texture);
+	void SetMaterial(const string& materialName, const shared_ptr<Material>& material);
 
 	void SetPosition(const XMFLOAT3& position);
 	void SetScale(FLOAT x, FLOAT y, FLOAT z);
@@ -37,24 +39,25 @@ public:
 	void LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
 
 protected:
-	XMFLOAT4X4					m_transformMatrix;
-	XMFLOAT4X4					m_worldMatrix;
+	XMFLOAT4X4										m_transformMatrix;
+	XMFLOAT4X4										m_worldMatrix;
 
-	XMFLOAT3					m_right;		// 로컬 x축
-	XMFLOAT3					m_up;			// 로컬 y축
-	XMFLOAT3					m_front;		// 로컬 z축
+	XMFLOAT3										m_right;		// 로컬 x축
+	XMFLOAT3										m_up;			// 로컬 y축
+	XMFLOAT3										m_front;		// 로컬 z축
 
-	FLOAT						m_roll;			// x축 회전각
-	FLOAT						m_pitch;		// y축 회전각
-	FLOAT						m_yaw;			// z축 회전각
+	FLOAT											m_roll;			// x축 회전각
+	FLOAT											m_pitch;		// y축 회전각
+	FLOAT											m_yaw;			// z축 회전각
 
-	unique_ptr<Mesh>			m_mesh;			// 메쉬
-	shared_ptr<Texture>			m_texture;		// 텍스처
+	unique_ptr<Mesh>								m_mesh;			// 메쉬
+	shared_ptr<Texture>								m_texture;		// 텍스처
+	unordered_map<string, shared_ptr<Material>>		m_materials;	// 재질
 
-	string						m_frameName;	// 현재 프레임의 이름
-	shared_ptr<GameObject>		m_parent;
-	shared_ptr<GameObject>		m_sibling;
-	shared_ptr<GameObject>		m_child;
+	string											m_frameName;	// 현재 프레임의 이름
+	shared_ptr<GameObject>							m_parent;
+	shared_ptr<GameObject>							m_sibling;
+	shared_ptr<GameObject>							m_child;
 };
 
 class Helicoptor : public GameObject
@@ -63,8 +66,7 @@ public:
 	Helicoptor();
 	~Helicoptor() = default;
 
-	virtual void Update(FLOAT timeElapsed);
-	
+	void Update(FLOAT timeElapsed) override;
 	void SetRotorFrame();
 private:
 	shared_ptr<GameObject>	m_mainRotorFrame;

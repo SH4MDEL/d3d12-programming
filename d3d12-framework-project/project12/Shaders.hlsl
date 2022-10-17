@@ -1,6 +1,17 @@
+#define MAX_MATERIAL 128
+
+struct MATERIAL
+{
+	float4					diffuse;
+	float4					emissive;
+	float4					specular; //a = power
+	float4					ambient;
+};
+
 cbuffer cbGameObject : register(b0)
 {
 	matrix worldMatrix : packoffset(c0);
+	MATERIAL material : packoffset(c4);
 };
 
 cbuffer cbCamera : register(b1)
@@ -15,7 +26,6 @@ cbuffer cbCamera : register(b1)
 struct VS_STANDARD_INPUT
 {
 	float3 position : POSITION;
-	float4 color : COLOR;
 	float3 normal : NORMAL;
 };
 
@@ -31,14 +41,14 @@ VS_STANDARD_OUTPUT VS_STANDARD_MAIN(VS_STANDARD_INPUT input)
 	output.position = mul(float4(input.position, 1.0f), worldMatrix);
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projMatrix);
-	output.color = input.color;
-	output.color = float4(1.0f, 1.0f, 0.0f, 1.0f);
+	output.color = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	return output;
 }
 
 [earlydepthstencil]
 float4 PS_STANDARD_MAIN(VS_STANDARD_OUTPUT input) : SV_TARGET
 {
+	input.color = 
 	return input.color;
 }
 

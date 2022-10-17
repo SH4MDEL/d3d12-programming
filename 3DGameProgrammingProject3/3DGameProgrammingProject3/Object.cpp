@@ -486,12 +486,13 @@ MATERIALSLOADINFO *CGameObject::LoadMaterialsInfoFromFile(ID3D12Device *pd3dDevi
 	MATERIALSLOADINFO *pMaterialsInfo = new MATERIALSLOADINFO;
 
 	pMaterialsInfo->m_nMaterials = ::ReadIntegerFromFile(pInFile);
+	cout << "materials : " << pMaterialsInfo->m_nMaterials << endl;
 	pMaterialsInfo->m_pMaterials = new MATERIALLOADINFO[pMaterialsInfo->m_nMaterials];
 
 	for ( ; ; )
 	{
 		::ReadStringFromFile(pInFile, pstrToken);
-
+		cout << nMaterial << pstrToken << endl;
 		if (!strcmp(pstrToken, "<Material>:"))
 		{
 			nMaterial = ::ReadIntegerFromFile(pInFile);

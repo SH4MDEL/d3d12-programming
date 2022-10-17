@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "texture.h"
+#include "material.h"
 
 struct Vertex
 {
@@ -13,14 +14,24 @@ struct Vertex
 
 struct NormalVertex
 {
-	NormalVertex() : position{ XMFLOAT3{0.f, 0.f, 0.f} }, color{ XMFLOAT4{0.f, 0.f, 0.f, 1.f} }, normal{ XMFLOAT3{0.f, 0.f, 0.f} } {}
-	NormalVertex(const XMFLOAT3& p, const XMFLOAT4& c, const XMFLOAT3& n) : position{ p }, color{ c }, normal{ n } { }
+	NormalVertex() : position{ XMFLOAT3{0.f, 0.f, 0.f} }, normal{ XMFLOAT3{0.f, 0.f, 0.f} } {}
+	NormalVertex(const XMFLOAT3& p, const XMFLOAT3& n) : position{ p }, normal{ n } { }
 	~NormalVertex() = default;
 
 	XMFLOAT3 position;
-	XMFLOAT4 color;
 	XMFLOAT3 normal;
 };
+
+//struct NormalVertex
+//{
+//	NormalVertex() : position{ XMFLOAT3{0.f, 0.f, 0.f} }, color{ XMFLOAT4{0.f, 0.f, 0.f, 1.f} }, normal{ XMFLOAT3{0.f, 0.f, 0.f} } {}
+//	NormalVertex(const XMFLOAT3& p, const XMFLOAT4& c, const XMFLOAT3& n) : position{ p }, color{ c }, normal{ n } { }
+//	~NormalVertex() = default;
+//
+//	XMFLOAT3 position;
+//	XMFLOAT4 color;
+//	XMFLOAT3 normal;
+//};
 
 struct TerrainVertex
 {
@@ -59,6 +70,7 @@ public:
 
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const D3D12_VERTEX_BUFFER_VIEW& instanceBufferView) const;
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const unordered_map<string, shared_ptr<Material>>& materials) const {};
 	void ReleaseUploadBuffer();
 
 protected:
@@ -82,14 +94,15 @@ public:
 	~MeshFromFile() = default;
 
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const unordered_map<string, shared_ptr<Material>>& materials) const;
 
 	void LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
 private:
 	string									m_meshName;
 
 	UINT									m_nSubMeshes;
-	vector<INT>								m_vSubsetIndices;
-	vector<vector<INT>>						m_vvSubsetIndices;
+	vector<UINT>							m_vSubsetIndices;
+	vector<vector<UINT>>					m_vvSubsetIndices;
 
 	vector<ComPtr<ID3D12Resource>>			m_subsetIndexBuffers;
 	vector<ComPtr<ID3D12Resource>>			m_subsetIndexUploadBuffers;
