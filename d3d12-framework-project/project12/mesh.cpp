@@ -115,6 +115,8 @@ void MeshFromFile::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList
 	if ((m_nSubMeshes > 0))
 	{
 		for (int i = 0; i < m_nSubMeshes; ++i) {
+			m_materials.at(i)->UpdateShaderVariable(m_commandList);
+
 			m_commandList->IASetIndexBuffer(&m_subsetIndexBufferViews[i]);
 			m_commandList->DrawIndexedInstanced(m_vSubsetIndices[i], 1, 0, 0, 0);
 		}
@@ -240,6 +242,87 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 	//m_indexBufferView.BufferLocation = m_indexBuffer->GetGPUVirtualAddress();
 	//m_indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 	//m_indexBufferView.SizeInBytes = sizeof(UINT) * indices.size();
+}
+
+void MeshFromFile::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
+{
+	BYTE strLength;
+	INT materialName, materialCount;
+
+	in.read((char*)(&materialCount), sizeof(INT));
+	for (int i = 0; i < materialCount; ++i) {
+		m_materials.insert({ i, make_shared<Material>() });
+	}
+
+	while (1) {
+		in.read((char*)(&strLength), sizeof(BYTE));
+		string strToken(strLength, '\0');
+		in.read((&strToken[0]), sizeof(char) * strLength);
+
+		if (strToken == "<Material>:") {
+			in.read((char*)(&materialName), sizeof(INT));
+		}
+		else if (strToken == "<AlbedoColor>:") {
+			in.read((char*)(&m_materials[materialName]->m_albedoColor), sizeof(XMFLOAT4));
+		}
+		else if (strToken == "<EmissiveColor>:") {
+			in.read((char*)(&m_materials[materialName]->m_emissiveColor), sizeof(XMFLOAT4));
+		}
+		else if (strToken == "<SpecularColor>:") {
+			in.read((char*)(&m_materials[materialName]->m_specularColor), sizeof(XMFLOAT4));
+		}
+		else if (strToken == "<Glossiness>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<Smoothness>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<Metallic>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<SpecularHighlight>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<GlossyReflection>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<AlbedoMap>:") {
+			XMFLOAT4 dummy;
+			in.read((char*)(&dummy), sizeof(XMFLOAT4));
+		}
+		else if (strToken == "<SpecularMap>:") {
+			XMFLOAT4 dummy;
+			in.read((char*)(&dummy), sizeof(XMFLOAT4));
+		}
+		else if (strToken == "<NormalMap>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<MetallicMap>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<EmissionMap>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<DetailAlbedoMap>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "<DetailNormalMap>:") {
+			FLOAT dummy;
+			in.read((char*)(&dummy), sizeof(FLOAT));
+		}
+		else if (strToken == "</Materials>") {
+			break;
+		}
+	}
 }
 
 HeightMapImage::HeightMapImage(const wstring& fileName, INT width, INT length, XMFLOAT3 scale) :

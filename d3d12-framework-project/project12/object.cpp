@@ -63,12 +63,6 @@ void GameObject::SetTexture(const shared_ptr<Texture>& texture)
 	m_texture = texture;
 }
 
-void GameObject::SetMaterial(const string& materialName, const shared_ptr<Material>& material)
-{
-	if (m_materials[materialName]) m_materials[materialName].reset();
-	m_materials.insert({materialName, material});
-}
-
 XMFLOAT3 GameObject::GetPosition() const
 {
 	return XMFLOAT3{ m_worldMatrix._41, m_worldMatrix._42, m_worldMatrix._43 };
@@ -146,6 +140,7 @@ void GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const Co
 	BYTE strLength;
 	INT frame;
 
+	unique_ptr<MeshFromFile> mesh = make_unique<MeshFromFile>();
 	while (1) {
 		in.read((char*)(&strLength), sizeof(BYTE));
 		string strToken(strLength, '\0');
@@ -171,12 +166,10 @@ void GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const Co
 			in.read((char*)(&m_transformMatrix), sizeof(FLOAT) * 16);
 		}
 		else if (strToken == "<Mesh>:") {
-			unique_ptr<MeshFromFile> mesh = make_unique<MeshFromFile>();
 			mesh->LoadMesh(device, commandList, in);
-			m_mesh = move(mesh);
 		}
 		else if (strToken == "<Materials>:") {
-			LoadMaterial(device, commandList, in);
+			mesh->LoadMaterial(device, commandList, in);
 		}
 		else if (strToken == "<Children>:") {
 			INT childNum = 0;
@@ -193,90 +186,7 @@ void GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const Co
 			break;
 		}
 	}
-}
-
-void GameObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in)
-{
-	BYTE strLength;
-	INT materialName, materialCount;
-
-	in.read((char*)(&materialCount), sizeof(INT));
-	for (int i = 0; i < materialCount; ++i) {
-		m_materials.insert({ to_string(i), make_shared<Material>() });
-	}
-
-	while (1) {
-		in.read((char*)(&strLength), sizeof(BYTE));
-		string strToken(strLength, '\0');
-		in.read((&strToken[0]), sizeof(char) * strLength);
-
-		if (strToken == "<Material>:") {
-			in.read((char*)(&materialName), sizeof(INT));
-		}
-		else if (strToken == "<AlbedoColor>:") {
-			in.read((char*)(&m_materials[to_string(materialName)]->m_albedoColor), sizeof(XMFLOAT4));
-			//cout << m_materials[to_string(materialName)]->m_albedoColor.x << ", " <<
-			//	m_materials[to_string(materialName)]->m_albedoColor.y << ", " <<
-			//	m_materials[to_string(materialName)]->m_albedoColor.z << endl;
-		}
-		else if (strToken == "<EmissiveColor>:") {
-			in.read((char*)(&m_materials[to_string(materialName)]->m_emissiveColor), sizeof(XMFLOAT4));
-		}
-		else if (strToken == "<SpecularColor>:") {
-			in.read((char*)(&m_materials[to_string(materialName)]->m_specularColor), sizeof(XMFLOAT4));
-		}
-		else if (strToken == "<Glossiness>:") {
-			FLOAT dummy;
-			in.read((char*)(&dummy), sizeof(FLOAT));
-		}
-		else if (strToken == "<Smoothness>:") {
-			FLOAT dummy;
-			in.read((char*)(&dummy), sizeof(FLOAT));
-		}
-		else if (strToken == "<Metallic>:") {
-			FLOAT dummy;
-			in.read((char*)(&dummy), sizeof(FLOAT));
-		}
-		else if (strToken == "<SpecularHighlight>:") {
-			FLOAT dummy;
-			in.read((char*)(&dummy), sizeof(FLOAT));
-		}
-		else if (strToken == "<GlossyReflection>:") {
-			FLOAT dummy;
-			in.read((char*)(&dummy), sizeof(FLOAT));
-		}
-		else if (strToken == "<AlbedoMap>:") {
-			XMFLOAT4 dummy;
-			in.read((char*)(&dummy), sizeof(XMFLOAT4));
-		}
-		else if (strToken == "<SpecularMap>:") {
-			XMFLOAT4 dummy;
-			in.read((char*)(&dummy), sizeof(XMFLOAT4));
-		}
-		else if (strToken == "<NormalMap>:") {
-			FLOAT dummy;
-			in.read((char*)(&dummy), sizeof(FLOAT));
-		}
-		else if (strToken == "<MetallicMap>:") {
-			FLOAT dummy;
-			in.read((char*)(&dummy), sizeof(FLOAT));
-		}
-		else if (strToken == "<EmissionMap>:") {
-			FLOAT dummy;
-			in.read((char*)(&dummy), sizeof(FLOAT));
-		}
-		else if (strToken == "<DetailAlbedoMap>:") {
-			FLOAT dummy;
-			in.read((char*)(&dummy), sizeof(FLOAT));
-		}
-		else if (strToken == "<DetailNormalMap>:") {
-			FLOAT dummy;
-			in.read((char*)(&dummy), sizeof(FLOAT));
-		}
-		else if (strToken == "</Materials>") {
-			break;
-		}
-	}
+	m_mesh = move(mesh);
 }
 
 Helicoptor::Helicoptor() : GameObject()

@@ -18,7 +18,6 @@ public:
 
 	void SetMesh(const Mesh& mesh);
 	void SetTexture(const shared_ptr<Texture>& texture);
-	void SetMaterial(const string& materialName, const shared_ptr<Material>& material);
 
 	void SetPosition(const XMFLOAT3& position);
 	void SetScale(FLOAT x, FLOAT y, FLOAT z);
@@ -36,7 +35,6 @@ public:
 
 	void LoadGeometry(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName);
 	void LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
-	void LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
 
 protected:
 	XMFLOAT4X4										m_transformMatrix;
@@ -52,7 +50,6 @@ protected:
 
 	unique_ptr<Mesh>								m_mesh;			// 메쉬
 	shared_ptr<Texture>								m_texture;		// 텍스처
-	unordered_map<string, shared_ptr<Material>>		m_materials;	// 재질
 
 	string											m_frameName;	// 현재 프레임의 이름
 	shared_ptr<GameObject>							m_parent;
