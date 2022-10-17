@@ -215,6 +215,9 @@ void GameObject::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<I
 		}
 		else if (strToken == "<AlbedoColor>:") {
 			in.read((char*)(&m_materials[to_string(materialName)]->m_albedoColor), sizeof(XMFLOAT4));
+			//cout << m_materials[to_string(materialName)]->m_albedoColor.x << ", " <<
+			//	m_materials[to_string(materialName)]->m_albedoColor.y << ", " <<
+			//	m_materials[to_string(materialName)]->m_albedoColor.z << endl;
 		}
 		else if (strToken == "<EmissiveColor>:") {
 			in.read((char*)(&m_materials[to_string(materialName)]->m_emissiveColor), sizeof(XMFLOAT4));

@@ -9,17 +9,34 @@ Camera::Camera() :
 	XMStoreFloat4x4(&m_projMatrix, XMMatrixIdentity());
 }
 
+void Camera::CreateShaderVariable(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList)
+{
+	DX::ThrowIfFailed(device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(sizeof(CameraInfo)),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&m_cameraBuffer)));
+
+	// 카메라 버퍼 포인터
+	m_cameraBuffer->Map(0, nullptr, reinterpret_cast<void**>(&m_cameraBufferPointer));
+}
+
 void Camera::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
 	XMStoreFloat4x4(&m_viewMatrix, XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&Vector3::Add(m_eye, m_look)), XMLoadFloat3(&m_up)));
 
-	XMFLOAT4X4 transViewMatrix;
-	XMStoreFloat4x4(&transViewMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_viewMatrix)));
-	commandList->SetGraphicsRoot32BitConstants(1, 16, &transViewMatrix, 0);
+	XMFLOAT4X4 viewMatrix;
+	XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_viewMatrix)));
+	::memcpy(&m_cameraBufferPointer->viewMatrix, &viewMatrix, sizeof(XMFLOAT4X4));
 
-	XMFLOAT4X4 transProjMatrix;
-	XMStoreFloat4x4(&transProjMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_projMatrix)));
-	commandList->SetGraphicsRoot32BitConstants(1, 16, &transProjMatrix, 16);
+	XMFLOAT4X4 projMatrix;
+	XMStoreFloat4x4(&projMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_projMatrix)));
+	::memcpy(&m_cameraBufferPointer->projMatrix, &projMatrix, sizeof(XMFLOAT4X4));
+
+	D3D12_GPU_VIRTUAL_ADDRESS virtualAddress = m_cameraBuffer->GetGPUVirtualAddress();
+	commandList->SetGraphicsRootConstantBufferView(1, virtualAddress);
 }
 
 void Camera::UpdateLocalAxis()

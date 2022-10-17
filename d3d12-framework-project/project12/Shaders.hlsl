@@ -48,7 +48,11 @@ VS_STANDARD_OUTPUT VS_STANDARD_MAIN(VS_STANDARD_INPUT input)
 [earlydepthstencil]
 float4 PS_STANDARD_MAIN(VS_STANDARD_OUTPUT input) : SV_TARGET
 {
-	input.color = 
+	input.color = material.diffuse + material.emissive + material.specular + material.ambient;
+	//input.color = add(input.color, diffuse);
+	//input.color = add(input.color, emissive);
+	//input.color = add(input.color, specular);
+	//input.color = add(input.color, ambient);
 	return input.color;
 }
 

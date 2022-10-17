@@ -5,12 +5,19 @@
 #define MAX_ROLL +20
 #define MIN_ROLL -10
 
+struct CameraInfo
+{
+	XMFLOAT4X4			viewMatrix;	// 뷰변환 행렬
+	XMFLOAT4X4			projMatrix;	// 투영변환 행렬
+};
+
 class Camera
 {
 public:
 	Camera();
 	~Camera() = default;
 
+	void CreateShaderVariable(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList);
 	void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList);
 	void UpdateLocalAxis();
 	virtual void Update(FLOAT timeElapsed) { };
@@ -38,24 +45,27 @@ public:
 	void SetPlayer(const shared_ptr<Player>& player);
 
 protected:
-	XMFLOAT4X4			m_viewMatrix;	// 뷰변환 행렬
-	XMFLOAT4X4			m_projMatrix;	// 투영변환 행렬
+	XMFLOAT4X4				m_viewMatrix;	// 뷰변환 행렬
+	XMFLOAT4X4				m_projMatrix;	// 투영변환 행렬
 
-	XMFLOAT3			m_eye;			// 카메라 위치
-	XMFLOAT3			m_look;			// 카메라가 바라보는 방향
-	XMFLOAT3			m_up;			// 카메라 Up벡터
+	ComPtr<ID3D12Resource>	m_cameraBuffer;
+	CameraInfo*				m_cameraBufferPointer;
 
-	XMFLOAT3			m_u;			// 로컬 x축
-	XMFLOAT3			m_v;			// 로컬 y축
-	XMFLOAT3			m_n;			// 로컬 z축
+	XMFLOAT3				m_eye;			// 카메라 위치
+	XMFLOAT3				m_look;			// 카메라가 바라보는 방향
+	XMFLOAT3				m_up;			// 카메라 Up벡터
 
-	FLOAT				m_roll;			// x축 회전각
-	FLOAT				m_pitch;		// y축 회전각
-	FLOAT				m_yaw;			// z축 회전각
+	XMFLOAT3				m_u;			// 로컬 x축
+	XMFLOAT3				m_v;			// 로컬 y축
+	XMFLOAT3				m_n;			// 로컬 z축
 
-	FLOAT				m_delay;		// 움직임 딜레이 (0.0 ~ 1.0)
+	FLOAT					m_roll;			// x축 회전각
+	FLOAT					m_pitch;		// y축 회전각
+	FLOAT					m_yaw;			// z축 회전각
 
-	shared_ptr<Player>	m_player;		// 플레이어
+	FLOAT					m_delay;		// 움직임 딜레이 (0.0 ~ 1.0)
+
+	shared_ptr<Player>		m_player;		// 플레이어
 };
 
 class ThirdPersonCamera : public Camera

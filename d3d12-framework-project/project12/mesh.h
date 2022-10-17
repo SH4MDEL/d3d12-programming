@@ -70,7 +70,6 @@ public:
 
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const D3D12_VERTEX_BUFFER_VIEW& instanceBufferView) const;
-	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const unordered_map<string, shared_ptr<Material>>& materials) const {};
 	void ReleaseUploadBuffer();
 
 protected:
@@ -94,7 +93,6 @@ public:
 	~MeshFromFile() = default;
 
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
-	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const unordered_map<string, shared_ptr<Material>>& materials) const;
 
 	void LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
 private:

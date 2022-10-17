@@ -61,6 +61,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 
 	// 朝五虞 持失
 	m_camera = make_shared<ThirdPersonCamera>();
+	m_camera->CreateShaderVariable(device, commandlist);
 	m_camera->SetEye(XMFLOAT3{ 0.0f, 0.0f, 0.0f });
 	m_camera->SetAt(XMFLOAT3{ 0.0f, 0.0f, 1.0f });
 	m_camera->SetUp(XMFLOAT3{ 0.0f, 1.0f, 0.0f });
