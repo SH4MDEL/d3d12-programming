@@ -89,6 +89,20 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	terrainShader->SetTerrain(terrain);
 	m_player->SetTerrain(terrain);
 
+	// 물 지형 생성
+	vector<Vertex> vertices;
+	vertices.emplace_back(XMFLOAT3{ -10.f, +0.0f, +10.f }, XMFLOAT2{ 0.0f, 1.0f});
+	vertices.emplace_back(XMFLOAT3{ +10.f, +0.0f, +10.f }, XMFLOAT2{ 1.0f, 1.0f});
+	vertices.emplace_back(XMFLOAT3{ +10.f, +0.0f, -10.f }, XMFLOAT2{ 1.0f, 0.0f});
+	vertices.emplace_back(XMFLOAT3{ -10.f, +0.0f, -10.f }, XMFLOAT2{ 0.0f, 0.0f});
+
+	vector<UINT> indices;
+	indices.push_back(0); indices.push_back(1); indices.push_back(2);
+	indices.push_back(1); indices.push_back(2); indices.push_back(3);
+
+	Mesh plane{ device, commandlist, vertices, indices };
+
+
 	// 스카이박스 생성
 	unique_ptr<SkyboxShader> skyboxShader = make_unique<SkyboxShader>(device, rootsignature);
 	shared_ptr<Skybox> skybox{ make_shared<Skybox>(device, commandlist, 20.0f, 20.0f, 20.0f) };
