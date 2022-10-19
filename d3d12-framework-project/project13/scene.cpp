@@ -124,7 +124,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 void Scene::Update(FLOAT timeElapsed)
 {
 	m_camera->Update(timeElapsed);
-	//if (m_shader["SKYBOX"]) for (auto& skybox : m_shader["SKYBOX"]->GetGameObjects()) skybox->SetPosition(m_camera->GetEye());
+	if (m_shader["SKYBOX"]) for (auto& skybox : m_shader["SKYBOX"]->GetGameObjects()) skybox->SetPosition(m_camera->GetEye());
 	for (const auto& shader : m_shader)
 		shader.second->Update(timeElapsed);
 }

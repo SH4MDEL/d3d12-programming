@@ -159,7 +159,6 @@ VS_SKYBOX_OUTPUT VS_SKYBOX_MAIN(VS_SKYBOX_INPUT input)
 float4 PS_SKYBOX_MAIN(VS_SKYBOX_OUTPUT input) : SV_TARGET
 {
 	float4 color = g_skyboxTexture.Sample(g_samplerClamp, input.positionL);
-
 	return color;
 }
 
@@ -192,7 +191,6 @@ VS_BLENDING_OUTPUT VS_BLENDING_MAIN(VS_BLENDING_INPUT input)
 	return output;
 }
 
-[earlydepthstencil]
 float4 PS_BLENDING_MAIN(VS_BLENDING_OUTPUT input) : SV_TARGET
 {
 	return g_riverTexture.Sample(g_samplerState, input.uv);
