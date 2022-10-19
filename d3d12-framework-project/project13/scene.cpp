@@ -89,20 +89,6 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	terrainShader->SetTerrain(terrain);
 	m_player->SetTerrain(terrain);
 
-	// 물 지형 생성
-	vector<Vertex> vertices;
-	vertices.emplace_back(XMFLOAT3{ -10.f, +0.0f, +10.f }, XMFLOAT2{ 0.0f, 1.0f});
-	vertices.emplace_back(XMFLOAT3{ +10.f, +0.0f, +10.f }, XMFLOAT2{ 1.0f, 1.0f});
-	vertices.emplace_back(XMFLOAT3{ +10.f, +0.0f, -10.f }, XMFLOAT2{ 1.0f, 0.0f});
-	vertices.emplace_back(XMFLOAT3{ -10.f, +0.0f, -10.f }, XMFLOAT2{ 0.0f, 0.0f});
-
-	vector<UINT> indices;
-	indices.push_back(0); indices.push_back(1); indices.push_back(2);
-	indices.push_back(1); indices.push_back(2); indices.push_back(3);
-
-	Mesh plane{ device, commandlist, vertices, indices };
-
-
 	// 스카이박스 생성
 	unique_ptr<SkyboxShader> skyboxShader = make_unique<SkyboxShader>(device, rootsignature);
 	shared_ptr<Skybox> skybox{ make_shared<Skybox>(device, commandlist, 20.0f, 20.0f, 20.0f) };
@@ -115,16 +101,30 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	skybox->SetTexture(skyboxTexture);
 	skyboxShader->GetGameObjects().push_back(skybox);
 
+	// 물 지형 생성
+	TextureRectMesh plane{ device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, 20.f, 0.f, 20.f };
+
+	unique_ptr<BlendingShader> blendingShader{ make_unique<BlendingShader>(device, rootsignature) };
+	shared_ptr<GameObject> river{ make_shared<GameObject>() };
+	river->SetMesh(plane);
+	shared_ptr<Texture> riverTexture{ make_shared<Texture>() };
+	riverTexture->LoadTextureFile(device, commandlist, TEXT("Water.dds"), 5);
+	riverTexture->CreateSrvDescriptorHeap(device);
+	riverTexture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
+	river->SetTexture(riverTexture);
+	blendingShader->GetGameObjects().push_back(river);
+
 	// 셰이더 설정
 	m_shader.insert(make_pair("BASIC", move(basicShader)));
 	m_shader.insert(make_pair("TERRAIN", move(terrainShader)));
 	m_shader.insert(make_pair("SKYBOX", move(skyboxShader)));
+	m_shader.insert(make_pair("BLENDING", move(blendingShader)));
 }
 
 void Scene::Update(FLOAT timeElapsed)
 {
 	m_camera->Update(timeElapsed);
-	if (m_shader["SKYBOX"]) for (auto& skybox : m_shader["SKYBOX"]->GetGameObjects()) skybox->SetPosition(m_camera->GetEye());
+	//if (m_shader["SKYBOX"]) for (auto& skybox : m_shader["SKYBOX"]->GetGameObjects()) skybox->SetPosition(m_camera->GetEye());
 	for (const auto& shader : m_shader)
 		shader.second->Update(timeElapsed);
 }

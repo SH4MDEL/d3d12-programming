@@ -239,12 +239,13 @@ void GameFramework::CreateDepthStencilView()
 
 void GameFramework::CreateRootSignature()
 {
-	CD3DX12_DESCRIPTOR_RANGE descriptorRange[3];
+	CD3DX12_DESCRIPTOR_RANGE descriptorRange[4];
 	descriptorRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);	// t0
 	descriptorRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);	// t1
 	descriptorRange[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);	// t2
+	descriptorRange[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);	// t3
 
-	CD3DX12_ROOT_PARAMETER rootParameter[5];
+	CD3DX12_ROOT_PARAMETER rootParameter[6];
 
 	// cbGameObject : 월드 변환 행렬(16) + struct Material(16)
 	rootParameter[0].InitAsConstants(32, 0, 0, D3D12_SHADER_VISIBILITY_ALL);
@@ -255,6 +256,7 @@ void GameFramework::CreateRootSignature()
 	rootParameter[2].InitAsDescriptorTable(1, &descriptorRange[0], D3D12_SHADER_VISIBILITY_PIXEL);
 	rootParameter[3].InitAsDescriptorTable(1, &descriptorRange[1], D3D12_SHADER_VISIBILITY_PIXEL);
 	rootParameter[4].InitAsDescriptorTable(1, &descriptorRange[2], D3D12_SHADER_VISIBILITY_PIXEL);
+	rootParameter[5].InitAsDescriptorTable(1, &descriptorRange[3], D3D12_SHADER_VISIBILITY_PIXEL);
 	
 	CD3DX12_STATIC_SAMPLER_DESC samplerDesc[2];
 	samplerDesc[0].Init(								// s0
@@ -315,8 +317,7 @@ void GameFramework::BuildObjects()
 
 	// 디폴트 버퍼로의 복사가 완료됐으므로 업로드 버퍼를 해제한다.
 	for (const auto& shader : m_scene->GetShaders())
-		for (const auto& obj : shader.second->GetGameObjects())
-			obj->ReleaseUploadBuffer();
+		shader.second->ReleaseUploadBuffer();
 
 	m_timer.Tick();
 }

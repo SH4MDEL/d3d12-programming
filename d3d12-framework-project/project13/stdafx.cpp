@@ -57,5 +57,5 @@ ComPtr<ID3D12Resource> CreateBufferResource(const ComPtr<ID3D12Device>& device, 
 		}
 		}
 	}
-	return resourceBuffer;
+	return nullptr;
 }

@@ -114,7 +114,7 @@ void MeshFromFile::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList
 	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
 	if ((m_nSubMeshes > 0))
 	{
-		for (int i = 0; i < m_nSubMeshes; ++i) {
+		for (UINT i = 0; i < m_nSubMeshes; ++i) {
 			m_materials.at(i)->UpdateShaderVariable(m_commandList);
 
 			m_commandList->IASetIndexBuffer(&m_subsetIndexBufferViews[i]);
@@ -124,6 +124,15 @@ void MeshFromFile::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList
 	else
 	{
 		m_commandList->DrawInstanced(m_nVertices, 1, 0, 0);
+	}
+}
+
+void MeshFromFile::ReleaseUploadBuffer()
+{
+	if (m_vertexUploadBuffer) m_vertexUploadBuffer.Reset();
+	if (m_indexUploadBuffer) m_indexUploadBuffer.Reset();
+	for (auto& subsetUploadBuffer : m_subsetIndexUploadBuffers) {
+		subsetUploadBuffer.Reset();
 	}
 }
 
@@ -164,11 +173,10 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 			}
 		}
 		else if (strToken == "<Colors>:") {
-			INT dummy;
-			XMFLOAT4 f4dummy;
-			in.read((char*)(&dummy), sizeof(INT));
-			for (int i = 0; i < dummy; ++i) {
-				in.read((char*)(&f4dummy), sizeof(XMFLOAT4));
+			XMFLOAT4 dummy;
+			in.read((char*)(&colorNum), sizeof(INT));
+			for (int i = 0; i < colorNum; ++i) {
+				in.read((char*)(&dummy), sizeof(XMFLOAT4));
 			}
 		}
 		else if (strToken == "<Normals>:") {
@@ -195,7 +203,7 @@ void MeshFromFile::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3
 				m_subsetIndexUploadBuffers.resize(m_nSubMeshes);
 				m_subsetIndexBufferViews.resize(m_nSubMeshes);
 
-				for (int i = 0; i < m_nSubMeshes; ++i) {
+				for (UINT i = 0; i < m_nSubMeshes; ++i) {
 					in.read((char*)(&strLength), sizeof(BYTE));
 					string strToken(strLength, '\0');
 					in.read((&strToken[0]), sizeof(char) * strLength);
@@ -509,10 +517,10 @@ TextureRectMesh::TextureRectMesh(const ComPtr<ID3D12Device>& device, const ComPt
 		}
 		else
 		{
-			vertices.emplace_back(XMFLOAT3(+fx, fy, +fz), XMFLOAT2(1.0f, 0.0f));
 			vertices.emplace_back(XMFLOAT3(+fx, fy, -fz), XMFLOAT2(1.0f, 1.0f));
 			vertices.emplace_back(XMFLOAT3(-fx, fy, -fz), XMFLOAT2(0.0f, 1.0f));
-			vertices.emplace_back(XMFLOAT3(-fx, fy, -fz), XMFLOAT2(0.0f, 1.0f));
+			vertices.emplace_back(XMFLOAT3(-fx, fy, +fz), XMFLOAT2(0.0f, 0.0f));
+			vertices.emplace_back(XMFLOAT3(+fx, fy, -fz), XMFLOAT2(1.0f, 1.0f));
 			vertices.emplace_back(XMFLOAT3(-fx, fy, +fz), XMFLOAT2(0.0f, 0.0f));
 			vertices.emplace_back(XMFLOAT3(+fx, fy, +fz), XMFLOAT2(1.0f, 0.0f));
 		}
@@ -538,7 +546,7 @@ TextureRectMesh::TextureRectMesh(const ComPtr<ID3D12Device>& device, const ComPt
 			vertices.emplace_back(XMFLOAT3(-fx, +fy, fz), XMFLOAT2(1.0f, 0.0f));
 		}
 	}
-	
+
 	m_nVertices = vertices.size();
 	m_vertexBuffer = CreateBufferResource(device, commandList, vertices.data(),
 		sizeof(TextureVertex) * vertices.size(), D3D12_HEAP_TYPE_DEFAULT,

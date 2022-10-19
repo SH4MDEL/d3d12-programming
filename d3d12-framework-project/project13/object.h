@@ -28,7 +28,7 @@ public:
 	XMFLOAT3 GetUp() const { return m_up; }
 	XMFLOAT3 GetFront() const { return m_front; }
 
-	void ReleaseUploadBuffer() const;
+	virtual void ReleaseUploadBuffer() const;
 
 	void SetChild(const shared_ptr<GameObject>& child);
 	shared_ptr<GameObject> FindFrame(string frameName);
@@ -89,6 +89,8 @@ public:
 	INT GetWidth() const { return m_width; }
 	INT GetLength() const { return m_length; }
 	XMFLOAT3 GetScale() const { return m_scale; }
+
+	void ReleaseUploadBuffer() const override;
 
 private:
 	unique_ptr<HeightMapImage>		m_heightMapImage;	// 높이맵 이미지

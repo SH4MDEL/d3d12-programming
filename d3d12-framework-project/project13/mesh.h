@@ -70,7 +70,7 @@ public:
 
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const D3D12_VERTEX_BUFFER_VIEW& instanceBufferView) const;
-	void ReleaseUploadBuffer();
+	virtual void ReleaseUploadBuffer();
 
 protected:
 	UINT						m_nVertices;
@@ -93,6 +93,8 @@ public:
 	~MeshFromFile() = default;
 
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
+
+	void ReleaseUploadBuffer() override;
 
 	void LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
 	void LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);

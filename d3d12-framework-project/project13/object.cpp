@@ -297,6 +297,14 @@ XMFLOAT3 HeightMapTerrain::GetNormal(FLOAT x, FLOAT z) const
 	return Vector3::Normalize(Vector3::Add(Vector3::Mul(bot, 1.0f - fz), Vector3::Mul(top, fz)));
 }
 
+void HeightMapTerrain::ReleaseUploadBuffer() const
+{
+	if (m_texture) m_texture->ReleaseUploadBuffer();
+	for (auto& block : m_blocks) {
+		block->ReleaseUploadBuffer();
+	}
+}
+
 
 Skybox::Skybox(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
 	FLOAT width, FLOAT length, FLOAT depth) : GameObject()

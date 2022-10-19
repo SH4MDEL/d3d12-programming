@@ -49,10 +49,6 @@ VS_STANDARD_OUTPUT VS_STANDARD_MAIN(VS_STANDARD_INPUT input)
 float4 PS_STANDARD_MAIN(VS_STANDARD_OUTPUT input) : SV_TARGET
 {
 	input.color = material.diffuse + material.emissive + material.specular + material.ambient;
-	//input.color = add(input.color, diffuse);
-	//input.color = add(input.color, emissive);
-	//input.color = add(input.color, specular);
-	//input.color = add(input.color, ambient);
 	return input.color;
 }
 
@@ -165,4 +161,39 @@ float4 PS_SKYBOX_MAIN(VS_SKYBOX_OUTPUT input) : SV_TARGET
 	float4 color = g_skyboxTexture.Sample(g_samplerClamp, input.positionL);
 
 	return color;
+}
+
+/*
+ *  BLENDING_SHADER
+ */
+Texture2D g_riverTexture : register(t3);
+
+struct VS_BLENDING_INPUT
+{
+	float3 position : POSITION;
+	float2 uv : TEXCOORD;
+};
+
+struct VS_BLENDING_OUTPUT
+{
+	float4 position : POSITION;
+	float2 uv : TEXCOORD;
+};
+
+VS_BLENDING_OUTPUT VS_BLENDING_MAIN(VS_BLENDING_INPUT input)
+{
+	VS_BLENDING_OUTPUT output;
+
+	output.position = mul(float4(input.position, 1.0f), worldMatrix);
+	output.position = mul(output.position, viewMatrix);
+	output.position = mul(output.position, projMatrix);
+	output.uv = input.uv;
+
+	return output;
+}
+
+[earlydepthstencil]
+float4 PS_BLENDING_MAIN(VS_BLENDING_OUTPUT input) : SV_TARGET
+{
+	return g_riverTexture.Sample(g_samplerState, input.uv);
 }

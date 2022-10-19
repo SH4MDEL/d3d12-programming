@@ -115,7 +115,6 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	XMStoreFloat4x4(&projMatrix, XMMatrixPerspectiveFovLH(0.25f * XM_PI, aspectRatio, 0.1f, 1000.0f));
 	m_camera->SetProjMatrix(projMatrix);
 
-
 	// ºŒ¿Ã¥ı º≥¡§
 	m_shader.insert(make_pair("INSTANCING", move(instancingShader)));
 	m_shader.insert(make_pair("PLAYER", move(playerShader)));

@@ -14,6 +14,8 @@ public:
 	virtual void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 	virtual void ReleaseShaderVariable();
 
+	virtual void ReleaseUploadBuffer() const;
+
 	virtual void Update(FLOAT timeElapsed);
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 
@@ -40,6 +42,8 @@ class TerrainShader : public Shader
 public:
 	TerrainShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 	~TerrainShader() = default;
+
+	void ReleaseUploadBuffer() const override;
 
 	virtual void CreatePipelineState(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 
@@ -86,4 +90,11 @@ class SkyboxShader : public Shader
 public:
 	SkyboxShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 	~SkyboxShader() = default;
+};
+
+class BlendingShader : public Shader
+{
+public:
+	BlendingShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~BlendingShader() = default;
 };
