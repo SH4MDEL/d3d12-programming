@@ -89,7 +89,7 @@ protected:
 class MeshFromFile : public Mesh
 {
 public:
-	MeshFromFile() = default;
+	MeshFromFile();
 	~MeshFromFile() = default;
 
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const;
@@ -98,19 +98,20 @@ public:
 
 	void LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
 	void LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, ifstream& in);
+	void SetMaterials(const shared_ptr<vector<Material>> materials) { m_materials = materials; }
 
 private:
-	string											m_meshName;
+	string								m_meshName;
 
-	UINT											m_nSubMeshes;
-	vector<UINT>									m_vSubsetIndices;
-	vector<vector<UINT>>							m_vvSubsetIndices;
+	UINT								m_nSubMeshes;
+	vector<UINT>						m_vSubsetIndices;
+	vector<vector<UINT>>				m_vvSubsetIndices;
 
-	vector<ComPtr<ID3D12Resource>>					m_subsetIndexBuffers;
-	vector<ComPtr<ID3D12Resource>>					m_subsetIndexUploadBuffers;
-	vector<D3D12_INDEX_BUFFER_VIEW>					m_subsetIndexBufferViews;
+	vector<ComPtr<ID3D12Resource>>		m_subsetIndexBuffers;
+	vector<ComPtr<ID3D12Resource>>		m_subsetIndexUploadBuffers;
+	vector<D3D12_INDEX_BUFFER_VIEW>		m_subsetIndexBufferViews;
 
-	unordered_map<INT, shared_ptr<Material>>		m_materials;
+	shared_ptr<vector<Material>>		m_materials;
 };
 
 class HeightMapImage

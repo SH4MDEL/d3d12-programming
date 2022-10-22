@@ -21,11 +21,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LabProject08-2(Detail Textu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LabProject08-2-0(Alpha Texture)", "LabProject08-2-0\LabProject08-2-0.vcxproj", "{ED578147-B939-4BBC-A58B-7C9BBAFF7AE3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LabProject08-0-1", "LabProject08-0-1\LabProject08-0-1\LabProject08-0-1.vcxproj", "{1A58FA83-0E02-4760-9A18-E3DF7FD3299A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LabProject08-0-1(Model Texturing)", "LabProject08-0-1\LabProject08-0-1\LabProject08-0-1.vcxproj", "{1A58FA83-0E02-4760-9A18-E3DF7FD3299A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LabProject08-9-1", "LabProject08-9-1\LabProject08-9-1\LabProject08-9-1.vcxproj", "{271F7E2D-1075-402A-86D4-68BD00EF217C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LabProject08-9-1(Multi Render Target)", "LabProject08-9-1\LabProject08-9-1\LabProject08-9-1.vcxproj", "{271F7E2D-1075-402A-86D4-68BD00EF217C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LabProject08-7-3(Billboard, Sprite)", "LabProject08-7-3\LabProject08-7-3\LabProject08-7-3.vcxproj", "{336EF7DC-EEB0-40E0-90C4-D283B95B4460}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LabProject08-1-3", "LabProject08-1-3\LabProject08-1-3\LabProject08-1-3.vcxproj", "{B88AEEEA-5B01-4254-B13B-29294EE75F55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -131,6 +133,14 @@ Global
 		{336EF7DC-EEB0-40E0-90C4-D283B95B4460}.Release|x64.Build.0 = Release|x64
 		{336EF7DC-EEB0-40E0-90C4-D283B95B4460}.Release|x86.ActiveCfg = Release|Win32
 		{336EF7DC-EEB0-40E0-90C4-D283B95B4460}.Release|x86.Build.0 = Release|Win32
+		{B88AEEEA-5B01-4254-B13B-29294EE75F55}.Debug|x64.ActiveCfg = Debug|x64
+		{B88AEEEA-5B01-4254-B13B-29294EE75F55}.Debug|x64.Build.0 = Debug|x64
+		{B88AEEEA-5B01-4254-B13B-29294EE75F55}.Debug|x86.ActiveCfg = Debug|Win32
+		{B88AEEEA-5B01-4254-B13B-29294EE75F55}.Debug|x86.Build.0 = Debug|Win32
+		{B88AEEEA-5B01-4254-B13B-29294EE75F55}.Release|x64.ActiveCfg = Release|x64
+		{B88AEEEA-5B01-4254-B13B-29294EE75F55}.Release|x64.Build.0 = Release|x64
+		{B88AEEEA-5B01-4254-B13B-29294EE75F55}.Release|x86.ActiveCfg = Release|Win32
+		{B88AEEEA-5B01-4254-B13B-29294EE75F55}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

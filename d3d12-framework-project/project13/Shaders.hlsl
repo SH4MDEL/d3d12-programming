@@ -175,7 +175,7 @@ struct VS_BLENDING_INPUT
 
 struct VS_BLENDING_OUTPUT
 {
-	float4 position : POSITION;
+	float4 position : SV_POSITION;
 	float2 uv : TEXCOORD;
 };
 
@@ -193,5 +193,7 @@ VS_BLENDING_OUTPUT VS_BLENDING_MAIN(VS_BLENDING_INPUT input)
 
 float4 PS_BLENDING_MAIN(VS_BLENDING_OUTPUT input) : SV_TARGET
 {
-	return g_riverTexture.Sample(g_samplerState, input.uv);
+	float4 color = g_riverTexture.Sample(g_samplerState, input.uv);
+	color.a = material.diffuse.a;
+	return color;
 }

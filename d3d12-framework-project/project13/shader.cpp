@@ -46,7 +46,9 @@ Shader::~Shader()
 
 void Shader::Update(FLOAT timeElapsed)
 {
-	if (m_player) m_player->Update(timeElapsed);
+	if (m_player) {
+		m_player->Update(timeElapsed);
+	}
 
 	for (const auto& elm : m_gameObjects)
 		if (elm) elm->Update(timeElapsed);
@@ -319,10 +321,10 @@ BlendingShader::BlendingShader(const ComPtr<ID3D12Device>& device, const ComPtr<
 	psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	psoDesc.BlendState.AlphaToCoverageEnable = true;
-	psoDesc.BlendState.IndependentBlendEnable = false;
-	psoDesc.BlendState.RenderTarget[0].BlendEnable = true;
-	psoDesc.BlendState.RenderTarget[0].LogicOpEnable = false;
+	psoDesc.BlendState.AlphaToCoverageEnable = TRUE;
+	psoDesc.BlendState.IndependentBlendEnable = FALSE;
+	psoDesc.BlendState.RenderTarget[0].BlendEnable = TRUE;
+	psoDesc.BlendState.RenderTarget[0].LogicOpEnable = FALSE;
 	psoDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	psoDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 	psoDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;

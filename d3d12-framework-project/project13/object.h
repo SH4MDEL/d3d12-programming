@@ -18,6 +18,7 @@ public:
 
 	void SetMesh(const Mesh& mesh);
 	void SetTexture(const shared_ptr<Texture>& texture);
+	void SetMaterial(const shared_ptr<Material>& material);
 
 	void SetPosition(const XMFLOAT3& position);
 	void SetScale(FLOAT x, FLOAT y, FLOAT z);
@@ -50,6 +51,7 @@ protected:
 
 	unique_ptr<Mesh>								m_mesh;			// 메쉬
 	shared_ptr<Texture>								m_texture;		// 텍스처
+	shared_ptr<Material>							m_material;		// 재질
 
 	string											m_frameName;	// 현재 프레임의 이름
 	shared_ptr<GameObject>							m_parent;

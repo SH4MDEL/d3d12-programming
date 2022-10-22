@@ -108,6 +108,11 @@ void Mesh::ReleaseUploadBuffer()
 	if (m_indexUploadBuffer) m_indexUploadBuffer.Reset();
 }
 
+MeshFromFile::MeshFromFile()
+{
+	m_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+}
+
 void MeshFromFile::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const
 {
 	m_commandList->IASetPrimitiveTopology(m_primitiveTopology);
@@ -115,7 +120,7 @@ void MeshFromFile::Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList
 	if ((m_nSubMeshes > 0))
 	{
 		for (UINT i = 0; i < m_nSubMeshes; ++i) {
-			m_materials.at(i)->UpdateShaderVariable(m_commandList);
+			m_materials->at(i).UpdateShaderVariable(m_commandList);
 
 			m_commandList->IASetIndexBuffer(&m_subsetIndexBufferViews[i]);
 			m_commandList->DrawIndexedInstanced(m_vSubsetIndices[i], 1, 0, 0, 0);
@@ -256,11 +261,13 @@ void MeshFromFile::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr
 {
 	BYTE strLength;
 	INT materialName, materialCount;
+	m_materials = make_shared<vector<Material>>();
 
 	in.read((char*)(&materialCount), sizeof(INT));
-	for (int i = 0; i < materialCount; ++i) {
-		m_materials.insert({ i, make_shared<Material>() });
-	}
+	//for (int i = 0; i < materialCount; ++i) {
+	//	m_materials.insert({ i, make_shared<Material>() });
+	//}
+	m_materials->resize(materialCount);
 
 	while (1) {
 		in.read((char*)(&strLength), sizeof(BYTE));
@@ -271,13 +278,13 @@ void MeshFromFile::LoadMaterial(const ComPtr<ID3D12Device>& device, const ComPtr
 			in.read((char*)(&materialName), sizeof(INT));
 		}
 		else if (strToken == "<AlbedoColor>:") {
-			in.read((char*)(&m_materials[materialName]->m_albedoColor), sizeof(XMFLOAT4));
+			in.read((char*)(&m_materials->at(materialName).m_albedoColor), sizeof(XMFLOAT4));
 		}
 		else if (strToken == "<EmissiveColor>:") {
-			in.read((char*)(&m_materials[materialName]->m_emissiveColor), sizeof(XMFLOAT4));
+			in.read((char*)(&m_materials->at(materialName).m_emissiveColor), sizeof(XMFLOAT4));
 		}
 		else if (strToken == "<SpecularColor>:") {
-			in.read((char*)(&m_materials[materialName]->m_specularColor), sizeof(XMFLOAT4));
+			in.read((char*)(&m_materials->at(materialName).m_specularColor), sizeof(XMFLOAT4));
 		}
 		else if (strToken == "<Glossiness>:") {
 			FLOAT dummy;

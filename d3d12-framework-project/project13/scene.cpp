@@ -102,15 +102,21 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	skyboxShader->GetGameObjects().push_back(skybox);
 
 	// 물 지형 생성
-	TextureRectMesh plane{ device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, 20.f, 0.f, 20.f };
-
-	unique_ptr<BlendingShader> blendingShader{ make_unique<BlendingShader>(device, rootsignature) };
-	shared_ptr<GameObject> river{ make_shared<GameObject>() };
-	river->SetMesh(plane);
-	shared_ptr<Texture> riverTexture{ make_shared<Texture>() };
+	unique_ptr<BlendingShader> blendingShader = make_unique<BlendingShader>(device, rootsignature);
+	shared_ptr<GameObject> river = make_shared<GameObject>();
+	TextureRectMesh riverMesh{ device, commandlist, XMFLOAT3{0.f, 0.f, 0.f}, 20.f, 0.f, 20.f };
+	river->SetMesh(riverMesh);
+	shared_ptr<Texture> riverTexture{
+		make_shared<Texture>()
+	};
 	riverTexture->LoadTextureFile(device, commandlist, TEXT("Water.dds"), 5);
 	riverTexture->CreateSrvDescriptorHeap(device);
 	riverTexture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
+	auto riverMaterial = make_shared<Material>();
+	riverMaterial->m_albedoColor.w = 0.51f;
+	river->SetScale(13.f, 0.f, 13.f);
+	river->SetMaterial(riverMaterial);
+	river->SetPosition(XMFLOAT3{ 125.0f, 70.0f, 125.0f });
 	river->SetTexture(riverTexture);
 	blendingShader->GetGameObjects().push_back(river);
 
@@ -132,6 +138,10 @@ void Scene::Update(FLOAT timeElapsed)
 void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
 	if (m_camera) m_camera->UpdateShaderVariable(commandList);
-	for (const auto& shader : m_shader)
-		shader.second->Render(commandList);
+	for (const auto& shader : m_shader) {
+		if (shader.first != "BLENDING") {
+			shader.second->Render(commandList);
+		}
+	}
+	m_shader.at("BLENDING")->Render(commandList);
 }

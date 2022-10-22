@@ -24,6 +24,7 @@ void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
 	commandList->SetGraphicsRoot32BitConstants(0, 16, &worldMatrix, 0);
 
 	if (m_texture) { m_texture->UpdateShaderVariable(commandList); }
+	if (m_material) { m_material->UpdateShaderVariable(commandList); }
 
 	if (m_mesh) m_mesh->Render(commandList);
 
@@ -61,6 +62,12 @@ void GameObject::SetTexture(const shared_ptr<Texture>& texture)
 {
 	if (m_texture) m_texture.reset();
 	m_texture = texture;
+}
+
+void GameObject::SetMaterial(const shared_ptr<Material>& material)
+{
+	if (m_material) m_material.reset();
+	m_material = material;
 }
 
 XMFLOAT3 GameObject::GetPosition() const

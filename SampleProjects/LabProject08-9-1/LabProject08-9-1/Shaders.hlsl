@@ -268,14 +268,14 @@ float4 PSScreenRectSamplingTextured(VS_TEXTURED_OUTPUT input): SV_Target
 		{
 			float fDepth = gtxtDepthTexture.Load(uint3((uint)input.position.x, (uint)input.position.y, 0));
 			cColor = fDepth;
-//			cColor = GetColorFromDepth(fDepth);
+			cColor = GetColorFromDepth(fDepth);
 			break;
 		}
 		case 90: //'Z'
 		{
 			float fzDepth = gtxtzDepthTexture.Load(uint3((uint)input.position.x, (uint)input.position.y, 0));
 			cColor = fzDepth;
-//			cColor = GetColorFromDepth(fDepth);
+			cColor = GetColorFromDepth(fDepth);
 			break;
 		}
 	}
