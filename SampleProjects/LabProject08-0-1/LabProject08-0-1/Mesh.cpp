@@ -295,7 +295,7 @@ void CStandardMesh::LoadMeshFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 		nReads = (UINT)::fread(&nStrLength, sizeof(BYTE), 1, pInFile);
 		nReads = (UINT)::fread(pstrToken, sizeof(char), nStrLength, pInFile);
 		pstrToken[nStrLength] = '\0';
-
+		std::cout << pstrToken << std::endl;
 		if (!strcmp(pstrToken, "<Bounds>:"))
 		{
 			nReads = (UINT)::fread(&m_xmf3AABBCenter, sizeof(XMFLOAT3), 1, pInFile);

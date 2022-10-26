@@ -135,6 +135,7 @@ int CTexture::LoadTextureFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
 	UINT nReads = (UINT)::fread(&nStrLength, sizeof(BYTE), 1, pInFile);
 	nReads = (UINT)::fread(pstrTextureName, sizeof(char), nStrLength, pInFile);
 	pstrTextureName[nStrLength] = '\0';
+	std::cout << pstrTextureName << std::endl;
 
 	bool bDuplicated = false;
 	bool bLoaded = false;
@@ -606,7 +607,6 @@ void CGameObject::LoadMaterialsFromFile(ID3D12Device *pd3dDevice, ID3D12Graphics
 		nReads = (UINT)::fread(&nStrLength, sizeof(BYTE), 1, pInFile);
 		nReads = (UINT)::fread(pstrToken, sizeof(char), nStrLength, pInFile); 
 		pstrToken[nStrLength] = '\0';
-		printf("%s\n", pstrToken);
 
 		if (!strcmp(pstrToken, "<Material>:"))
 		{
