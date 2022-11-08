@@ -24,4 +24,5 @@ private:
 	ComPtr<ID3D12DescriptorHeap>				m_srvDescriptorHeap;
 	vector<pair<ComPtr<ID3D12Resource>, UINT>>	m_textures;
 	vector<ComPtr<ID3D12Resource>>				m_textureUploadHeap;
+
 };

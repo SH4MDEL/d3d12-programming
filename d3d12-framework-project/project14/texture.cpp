@@ -114,8 +114,12 @@ bool Texture::LoadTextureFileHierarchy(const ComPtr<ID3D12Device>& device, const
 		wstring strPath = L"Model/Textures/" + wstrToken + L".dds";
 		if (strToken[0] != '@') {
 			LoadTextureFile(device, commandList, strPath, rootParameterIndex);
-			return true;
 		}
+		else {
+			strPath.erase(find(strPath.begin(), strPath.end(), '@'));
+			LoadTextureFile(device, commandList, strPath, rootParameterIndex);
+		}
+		return true;
 	}
 	return false;
 }
