@@ -55,7 +55,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	m_player = make_shared<Player>();
 	m_player->LoadGeometry(device, commandlist, TEXT("Model/Gunship.bin"));
 	m_player->SetRotorFrame();
-	m_player->SetPosition(XMFLOAT3(20.0f, 20.0f, 20.0f));
+	m_player->SetPosition(XMFLOAT3(100.0f, 100.0f, 65.0f));
 	m_player->SetScale(0.2f, 0.2f, 0.2f);
 	playerShader->SetPlayer(m_player);
 

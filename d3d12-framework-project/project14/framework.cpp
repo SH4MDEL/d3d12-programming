@@ -353,6 +353,9 @@ void GameFramework::FrameAdvance()
 
 void GameFramework::Update(FLOAT timeElapsed)
 {
+	wstring title{ TEXT("project14 (") + to_wstring((int)(m_timer.GetFPS())) + TEXT("FPS)") };
+	SetWindowText(m_hWnd, title.c_str());
+
 	if (m_scene) m_scene->Update(timeElapsed);
 }
 

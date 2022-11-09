@@ -108,7 +108,6 @@ bool Texture::LoadTextureFileHierarchy(const ComPtr<ID3D12Device>& device, const
 	in.read((&strToken[0]), sizeof(char) * strLength);
 
 	if (strToken != "null") {
-		cout << strToken << endl;
 		wstring wstrToken = L"";
 		wstrToken.assign(strToken.begin(), strToken.end());
 		wstring strPath = L"Model/Textures/" + wstrToken + L".dds";
