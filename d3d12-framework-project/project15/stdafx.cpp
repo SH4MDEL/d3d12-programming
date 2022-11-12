@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+mt19937		g_randomEngine{ random_device{}() };
+
 ComPtr<ID3D12Resource> CreateBufferResource(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
 	const void* data, UINT byte, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceState, ComPtr<ID3D12Resource>& uploadBuffer)
 {
@@ -58,4 +60,10 @@ ComPtr<ID3D12Resource> CreateBufferResource(const ComPtr<ID3D12Device>& device, 
 		}
 	}
 	return nullptr;
+}
+
+int GetRandomNumber(int min, int max)
+{
+	uniform_int_distribution<int> dis{ min, max };
+	return dis(g_randomEngine);
 }

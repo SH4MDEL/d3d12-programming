@@ -23,6 +23,7 @@ void Player::Update(FLOAT timeElapsed)
 			m_velocity.y = 0.0f;
 		}
 	}
+
 	ApplyFriction(timeElapsed);
 }
 

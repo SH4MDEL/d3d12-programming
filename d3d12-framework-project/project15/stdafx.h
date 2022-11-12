@@ -16,7 +16,7 @@
 #include <unordered_map>
 #include <vector>
 #include <stdlib.h>
-#include <time.h>
+#include <random>
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
@@ -50,6 +50,7 @@ namespace DX
             throw std::exception{};
         }
     }
+
 }
 
 namespace Vector3
@@ -128,3 +129,5 @@ namespace Matrix
 
 ComPtr<ID3D12Resource> CreateBufferResource(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
     const void* data, UINT byte, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceState, ComPtr<ID3D12Resource>& uploadBuffer);
+
+int GetRandomNumber(int min, int max);

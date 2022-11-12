@@ -271,6 +271,7 @@ float4 PS_BLENDING_MAIN(VS_BLENDING_OUTPUT input) : SV_TARGET
 /*
  *  BILLBOARD_SHADER
  */
+
 struct VS_BILLBOARD_INPUT
 {
 	float3 position : POSITION;

@@ -694,7 +694,7 @@ BillBoardMesh::BillBoardMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID
 		sizeof(TextureVertex), D3D12_HEAP_TYPE_DEFAULT, 
 		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_vertexUploadBuffer);
 
-	//m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
-	//m_vertexBufferView.SizeInBytes = sizeof(TextureVertex);
-	//m_vertexBufferView.StrideInBytes = sizeof(TextureVertex);
+	m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
+	m_vertexBufferView.SizeInBytes = sizeof(TextureVertex);
+	m_vertexBufferView.StrideInBytes = sizeof(TextureVertex);
 }
