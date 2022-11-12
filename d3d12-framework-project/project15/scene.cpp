@@ -123,64 +123,65 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	// ∫Ù∫∏µÂ ª˝º∫
 	unique_ptr<BillBoardShader> billboardShader = make_unique<BillBoardShader>(device, rootsignature);
 	auto flower1Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 8.f, 16.f });
-	//auto flower2Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 8.f, 16.f });
-	//auto grass1Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 8.f, 8.f });
-	//auto grass2Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 8.f, 8.f });
-	//auto flower1Texture { make_shared<Texture>() };
-	//flower1Texture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Flower01.dds"), 2);
-	//flower1Texture->CreateSrvDescriptorHeap(device);
-	//flower1Texture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
-	//auto flower2Texture{ make_shared<Texture>() };
-	//flower2Texture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Flower02.dds"), 2);
-	//flower2Texture->CreateSrvDescriptorHeap(device);
-	//flower2Texture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
-	//auto grass1Texture{ make_shared<Texture>() };
-	//grass1Texture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Grass01.dds"), 2);
-	//grass1Texture->CreateSrvDescriptorHeap(device);
-	//grass1Texture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
-	//auto grass2Texture{ make_shared<Texture>() };
-	//grass1Texture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Grass02.dds"), 2);
-	//grass1Texture->CreateSrvDescriptorHeap(device);
-	//grass1Texture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
-	//XMFLOAT3 terrainPosition = terrain->GetPosition();
-	//for (int z = 2; z <= 254; ++z) {
-	//	FLOAT nz = ((terrainPosition.z + (terrain->GetWidth() / 257 * z)) * terrain->GetScale().z);
-	//	for (int x = 2; x <= 254; ++x) {
-	//		FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 257 * x)) * terrain->GetScale().x);
-	//		FLOAT ny = terrain->GetHeight(nx, nz) * terrain->GetScale().y;
-	//		if (ny > 70.0f) {
-	//			int rannum = rand() % 4;
-	//			if (rannum == 0) {
-	//				auto flower1 = make_shared<GameObject>();
-	//				flower1->SetMesh(flower1Mesh);
-	//				flower1->SetPosition(XMFLOAT3{ nx, ny, nz });
-	//				flower1->SetTexture(flower1Texture);
-	//				billboardShader->GetGameObjects().push_back(flower1);
-	//			}
-	//			if (rannum == 1) {
-	//				auto flower2 = make_shared<GameObject>();
-	//				flower2->SetMesh(flower1Mesh);
-	//				flower2->SetPosition(XMFLOAT3{ nx, ny, nz });
-	//				flower2->SetTexture(flower1Texture);
-	//				billboardShader->GetGameObjects().push_back(flower2);
-	//			}
-	//			if (rannum == 2) {
-	//				auto grass1 = make_shared<GameObject>();
-	//				grass1->SetMesh(grass1Mesh);
-	//				grass1->SetPosition(XMFLOAT3{ nx, ny, nz });
-	//				grass1->SetTexture(grass1Texture);
-	//				billboardShader->GetGameObjects().push_back(grass1);
-	//			}
-	//			if (rannum == 3) {
-	//				auto grass2 = make_shared<GameObject>();
-	//				grass2->SetMesh(grass2Mesh);
-	//				grass2->SetPosition(XMFLOAT3{ nx, ny, nz });
-	//				grass2->SetTexture(grass2Texture);
-	//				billboardShader->GetGameObjects().push_back(grass2);
-	//			}
-	//		}
-	//	}
-	//}
+	auto flower2Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 8.f, 16.f });
+	auto grass1Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 8.f, 8.f });
+	auto grass2Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 8.f, 8.f });
+	auto flower1Texture { make_shared<Texture>() };
+	flower1Texture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Flower01.dds"), 2);
+	flower1Texture->CreateSrvDescriptorHeap(device);
+	flower1Texture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
+	auto flower2Texture{ make_shared<Texture>() };
+	flower2Texture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Flower02.dds"), 2);
+	flower2Texture->CreateSrvDescriptorHeap(device);
+	flower2Texture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
+	auto grass1Texture{ make_shared<Texture>() };
+	grass1Texture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Grass01.dds"), 2);
+	grass1Texture->CreateSrvDescriptorHeap(device);
+	grass1Texture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
+	auto grass2Texture{ make_shared<Texture>() };
+	grass1Texture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Grass02.dds"), 2);
+	grass1Texture->CreateSrvDescriptorHeap(device);
+	grass1Texture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
+	XMFLOAT3 terrainPosition = terrain->GetPosition();
+	for (int z = 2; z <= 254; ++z) {
+		FLOAT nz = ((terrainPosition.z + (terrain->GetWidth() / 257 * z)) * terrain->GetScale().z);
+		for (int x = 2; x <= 254; ++x) {
+			FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 257 * x)) * terrain->GetScale().x);
+			FLOAT ny = terrain->GetHeight(nx, nz);
+			if (ny > 0.0f) {
+				srand(time(nullptr));
+				int rannum = rand() % 4;
+				if (rannum == 0) {
+					auto flower1 = make_shared<GameObject>();
+					flower1->SetMesh(flower1Mesh);
+					flower1->SetPosition(XMFLOAT3{ nx, ny, nz });
+					flower1->SetTexture(flower1Texture);
+					billboardShader->GetGameObjects().push_back(flower1);
+				}
+				if (rannum == 1) {
+					auto flower2 = make_shared<GameObject>();
+					flower2->SetMesh(flower1Mesh);
+					flower2->SetPosition(XMFLOAT3{ nx, ny, nz });
+					flower2->SetTexture(flower1Texture);
+					billboardShader->GetGameObjects().push_back(flower2);
+				}
+				if (rannum == 2) {
+					auto grass1 = make_shared<GameObject>();
+					grass1->SetMesh(grass1Mesh);
+					grass1->SetPosition(XMFLOAT3{ nx, ny, nz });
+					grass1->SetTexture(grass1Texture);
+					billboardShader->GetGameObjects().push_back(grass1);
+				}
+				if (rannum == 3) {
+					auto grass2 = make_shared<GameObject>();
+					grass2->SetMesh(grass2Mesh);
+					grass2->SetPosition(XMFLOAT3{ nx, ny, nz });
+					grass2->SetTexture(grass2Texture);
+					billboardShader->GetGameObjects().push_back(grass2);
+				}
+			}
+		}
+	}
 
 	// ºŒ¿Ã¥ı º≥¡§
 	m_shader.insert(make_pair("PLYAER", move(playerShader)));

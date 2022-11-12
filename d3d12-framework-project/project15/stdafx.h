@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <vector>
 #include <stdlib.h>
+#include <time.h>
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
