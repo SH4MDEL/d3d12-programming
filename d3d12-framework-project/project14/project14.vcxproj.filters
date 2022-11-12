@@ -119,6 +119,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders.hlsl" />
+    <FxCompile Include="Resource\Shader\Shaders.hlsl" />
   </ItemGroup>
 </Project>

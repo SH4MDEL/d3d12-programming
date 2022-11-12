@@ -11,8 +11,8 @@ Shader::Shader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignat
 	UINT compileFlags = 0;
 #endif
 
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_STANDARD_MAIN", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_STANDARD_MAIN", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_STANDARD_MAIN", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_STANDARD_MAIN", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
 
 	m_inputLayout =
 	{
@@ -109,8 +109,8 @@ void TerrainShader::CreatePipelineState(const ComPtr<ID3D12Device>& device, cons
 	UINT compileFlags = 0;
 #endif
 
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_TERRAIN_MAIN", "vs_5_1", compileFlags, 0, &vertexShader, nullptr));
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_TERRAIN_MAIN", "ps_5_1", compileFlags, 0, &pixelShader, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_TERRAIN_MAIN", "vs_5_1", compileFlags, 0, &vertexShader, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_TERRAIN_MAIN", "ps_5_1", compileFlags, 0, &pixelShader, nullptr));
 
 	// 정점 셰이더 레이아웃 설정
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[]
@@ -167,8 +167,8 @@ InstancingShader::InstancingShader(const ComPtr<ID3D12Device>& device, const Com
 	UINT compileFlags = 0;
 #endif
 
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_INSTANCE_MAIN", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_INSTANCE_MAIN", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_INSTANCE_MAIN", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_INSTANCE_MAIN", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
 	
 	m_inputLayout =
 	{
@@ -259,8 +259,8 @@ TextureHierarchyShader::TextureHierarchyShader(const ComPtr<ID3D12Device>& devic
 #else
 	UINT compileFlags = 0;
 #endif
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_TEXTUREHIERARCHY_MAIN", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_TEXTUREHIERARCHY_MAIN", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_TEXTUREHIERARCHY_MAIN", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_TEXTUREHIERARCHY_MAIN", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
 
 	m_inputLayout =
 	{
@@ -301,8 +301,8 @@ SkyboxShader::SkyboxShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D
 	UINT compileFlags = 0;
 #endif
 
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_SKYBOX_MAIN", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_SKYBOX_MAIN", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_SKYBOX_MAIN", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_SKYBOX_MAIN", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
 
 	m_inputLayout =
 	{
@@ -342,8 +342,8 @@ BlendingShader::BlendingShader(const ComPtr<ID3D12Device>& device, const ComPtr<
 	UINT compileFlags = 0;
 #endif
 
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_BLENDING_MAIN", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
-	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_BLENDING_MAIN", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_BLENDING_MAIN", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_BLENDING_MAIN", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
 
 	m_inputLayout =
 	{

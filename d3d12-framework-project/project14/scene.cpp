@@ -75,13 +75,13 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	// 지형 생성
 	unique_ptr<TerrainShader> terrainShader{ make_unique<TerrainShader>(device, rootsignature) };
 	shared_ptr<HeightMapTerrain> terrain{
-		make_shared<HeightMapTerrain>(device, commandlist, TEXT("heightMap.raw"), 257, 257, 257, 257, XMFLOAT3{ 1.0f, 0.1f, 1.0f })
+		make_shared<HeightMapTerrain>(device, commandlist, TEXT("Resource/HeightMap/HeightMap.raw"), 257, 257, 257, 257, XMFLOAT3{ 1.0f, 0.1f, 1.0f })
 	};
 	shared_ptr<Texture> terrainTexture{
 		make_shared<Texture>()
 	};
-	terrainTexture->LoadTextureFile(device, commandlist, TEXT("Base_Texture.dds"), 2); // BaseTexture
-	terrainTexture->LoadTextureFile(device, commandlist, TEXT("Detail_Texture.dds"), 3); // DetailTexture
+	terrainTexture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Base_Texture.dds"), 2); // BaseTexture
+	terrainTexture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Detail_Texture.dds"), 3); // DetailTexture
 	terrainTexture->CreateSrvDescriptorHeap(device);
 	terrainTexture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
 	terrain->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f });
@@ -95,7 +95,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	shared_ptr<Texture> skyboxTexture{
 		make_shared<Texture>()
 	};
-	skyboxTexture->LoadTextureFile(device, commandlist, TEXT("SkyBox.dds"), 4);
+	skyboxTexture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/SkyBox.dds"), 4);
 	skyboxTexture->CreateSrvDescriptorHeap(device);
 	skyboxTexture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURECUBE);
 	skybox->SetTexture(skyboxTexture);
@@ -109,7 +109,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	shared_ptr<Texture> riverTexture{
 		make_shared<Texture>()
 	};
-	riverTexture->LoadTextureFile(device, commandlist, TEXT("Water.dds"), 5);
+	riverTexture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Water.dds"), 5);
 	riverTexture->CreateSrvDescriptorHeap(device);
 	riverTexture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
 	auto riverMaterial = make_shared<Material>();
