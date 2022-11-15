@@ -53,10 +53,10 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 
 	// 플레이어 생성
 	m_player = make_shared<Player>();
-	m_player->LoadGeometry(device, commandlist, TEXT("Model/Gunship.bin"));
+	m_player->LoadGeometry(device, commandlist, TEXT("Model/SuperCobra.bin"));
 	m_player->SetRotorFrame();
 	m_player->SetPosition(XMFLOAT3(100.0f, 100.0f, 65.0f));
-	m_player->SetScale(0.2f, 0.2f, 0.2f);
+	m_player->SetScale(0.3f, 0.3f, 0.3f);
 	playerShader->SetPlayer(m_player);
 
 	// 카메라 생성
@@ -121,11 +121,14 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	blendingShader->GetGameObjects().push_back(river);
 
 	// 빌보드 생성
-	unique_ptr<BillBoardShader> billboardShader = make_unique<BillBoardShader>(device, rootsignature);
-	auto flower1Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 1.f, 1.5f });
-	auto flower2Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 1.f, 1.5f });
-	auto grass1Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 1.f, 1.5f });
-	auto grass2Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 1.f, 1.5f });
+	vector<shared_ptr<GameObject>> vflower1;
+	vector<shared_ptr<GameObject>> vflower2;
+	vector<shared_ptr<GameObject>> vgrass1;
+	vector<shared_ptr<GameObject>> vgrass2;
+	auto flower1Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 1.f, 1.f });
+	auto flower2Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 1.f, 1.f });
+	auto grass1Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 1.f, 1.f });
+	auto grass2Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 1.f, 1.f });
 	auto flower1Texture { make_shared<Texture>() };
 	flower1Texture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Flower01.dds"), 2);
 	flower1Texture->CreateSrvDescriptorHeap(device);
@@ -143,66 +146,81 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	grass2Texture->CreateSrvDescriptorHeap(device);
 	grass2Texture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
 	XMFLOAT3 terrainPosition = terrain->GetPosition();
-	for (int z = 2; z <= 25; ++z) {
-		FLOAT nz = ((terrainPosition.z + (terrain->GetLength() / 257 * z)));
-		for (int x = 2; x <= 25; ++x) {
-			FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 257 * x)));
-			FLOAT ny = terrain->GetHeight(nx, nz);
-			if (ny > 0.f) {
+	XMFLOAT3 terrainScale = terrain->GetScale();
+	FLOAT terrainHeight = terrain->GetHeight(terrainPosition.x, terrainPosition.z);
+	for (int z = 2; z <= 256; ++z) {
+		FLOAT nz = ((terrainPosition.z + (terrain->GetLength() / 256 * z)));
+		for (int x = 2; x <= 256; ++x) {
+			FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 256 * x)));
+			FLOAT ny = terrain->GetHeight(nx, nz) / terrainScale.y + 0.4f;
+			if (ny > 70.f) {
 				int value = GetRandomNumber(1, 4);
 				if (value == 1) {
 					auto flower1 = make_shared<GameObject>();
-					flower1->SetMesh(flower1Mesh);
-					flower1->SetPosition(XMFLOAT3{ 100.0f + x, 100.0f, 65.0f + z });
-					flower1->SetTexture(flower1Texture);
-					billboardShader->GetGameObjects().push_back(flower1);
+					flower1->SetPosition(XMFLOAT3{ nx, ny, nz });
+					vflower1.push_back(flower1);
 				}
 				if (value == 2) {
 					auto flower2 = make_shared<GameObject>();
-					flower2->SetMesh(flower2Mesh);
-					flower2->SetPosition(XMFLOAT3{ 100.0f + x, 100.0f, 65.0f + z });
-					flower2->SetTexture(flower2Texture);
-					billboardShader->GetGameObjects().push_back(flower2);
+					flower2->SetPosition(XMFLOAT3{ nx, ny, nz });
+					vflower2.push_back(flower2);
 				}
 				if (value == 3) {
 					auto grass1 = make_shared<GameObject>();
-					grass1->SetMesh(grass1Mesh);
-					grass1->SetPosition(XMFLOAT3{ 100.0f + x, 100.0f, 65.0f + z });
-					grass1->SetTexture(grass1Texture);
-					billboardShader->GetGameObjects().push_back(grass1);
+					grass1->SetPosition(XMFLOAT3{ nx, ny, nz });
+					vgrass1.push_back(grass1);
 				}
 				if (value == 4) {
 					auto grass2 = make_shared<GameObject>();
-					grass2->SetMesh(grass2Mesh);
-					grass2->SetPosition(XMFLOAT3{ 100.0f + x, 100.0f, 65.0f + z });
-					grass2->SetTexture(grass2Texture);
-					billboardShader->GetGameObjects().push_back(grass2);
+					grass2->SetPosition(XMFLOAT3{ nx, ny, nz });
+					vgrass2.push_back(grass2);
 				}
 			}
 		}
 	}
+	unique_ptr<BillBoardShader> flower1Shader = make_unique<BillBoardShader>(device, rootsignature, vflower1.size());
+	unique_ptr<BillBoardShader> flower2Shader = make_unique<BillBoardShader>(device, rootsignature, vflower2.size());
+	unique_ptr<BillBoardShader> grass1Shader = make_unique<BillBoardShader>(device, rootsignature, vgrass1.size());
+	unique_ptr<BillBoardShader> grass2Shader = make_unique<BillBoardShader>(device, rootsignature, vgrass2.size());
+	for (const auto& obj : vflower1) flower1Shader->GetGameObjects().push_back(obj);
+	for (const auto& obj : vflower2) flower2Shader->GetGameObjects().push_back(obj);
+	for (const auto& obj : vgrass1) grass1Shader->GetGameObjects().push_back(obj);
+	for (const auto& obj : vgrass2) grass2Shader->GetGameObjects().push_back(obj);
+	flower1Shader->SetMesh(flower1Mesh);
+	flower2Shader->SetMesh(flower2Mesh);
+	grass1Shader->SetMesh(grass1Mesh);
+	grass2Shader->SetMesh(grass2Mesh);
+	flower1Shader->SetTexture(flower1Texture);
+	flower2Shader->SetTexture(flower2Texture);
+	grass1Shader->SetTexture(grass1Texture);
+	grass2Shader->SetTexture(grass2Texture);
 
 	// 셰이더 설정
 	m_shader.insert(make_pair("PLYAER", move(playerShader)));
 	m_shader.insert(make_pair("TERRAIN", move(terrainShader)));
 	m_shader.insert(make_pair("SKYBOX", move(skyboxShader)));
+	m_blending.insert(make_pair("FLOWER1", move(flower1Shader)));
+	m_blending.insert(make_pair("FLOWER2", move(flower2Shader)));
+	m_blending.insert(make_pair("GRASS1", move(grass1Shader)));
+	m_blending.insert(make_pair("GRASS2", move(grass2Shader)));
 	m_blending.insert(make_pair("BLENDING", move(blendingShader)));
-	m_blending.insert(make_pair("BILLBOARD", move(billboardShader)));
 }
 
 void Scene::Update(FLOAT timeElapsed)
 {
 	m_camera->Update(timeElapsed);
 	if (m_shader["SKYBOX"]) for (auto& skybox : m_shader["SKYBOX"]->GetGameObjects()) skybox->SetPosition(m_camera->GetEye());
-	for (const auto& shader : m_shader)
-		shader.second->Update(timeElapsed);
+	for (const auto& shader : m_shader) shader.second->Update(timeElapsed);
+	for (const auto& shader : m_blending) shader.second->Update(timeElapsed);
 }
 
 void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
 	if (m_camera) m_camera->UpdateShaderVariable(commandList);
 	for (const auto& shader : m_shader) shader.second->Render(commandList);
-	for (const auto& shader : m_blending) shader.second->Render(commandList);
-	//m_blending.at("BLENDING")->Render(commandList);
-	//m_blending.at("BILLBOARD")->Render(commandList);
+	m_blending.at("BLENDING")->Render(commandList);
+	m_blending.at("FLOWER1")->Render(commandList);
+	m_blending.at("FLOWER2")->Render(commandList);
+	m_blending.at("GRASS1")->Render(commandList);
+	m_blending.at("GRASS2")->Render(commandList);
 }

@@ -65,6 +65,7 @@ struct InstancingData
 class InstancingShader : public Shader 
 {
 public:
+	InstancingShader() {};
 	InstancingShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature, const Mesh& mesh, UINT count);
 	~InstancingShader() = default;
 
@@ -106,9 +107,36 @@ public:
 	~BlendingShader() = default;
 };
 
+struct BillBoardInstancingData
+{
+	XMFLOAT3 position;
+};
+
 class BillBoardShader : public Shader
 {
 public:
-	BillBoardShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	BillBoardShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature, UINT count);
 	~BillBoardShader() = default;
+
+	virtual void Update(FLOAT timeElapsed);
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+
+	virtual void CreateShaderVariable(const ComPtr<ID3D12Device>& device);
+	virtual void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override;
+	virtual void ReleaseShaderVariable();
+
+	void SetMesh(const shared_ptr<Mesh>& mesh) { m_mesh = mesh; }
+	void SetTexture(const shared_ptr<Texture>& texture) { m_texture = texture; }
+	void SetMaterial(const shared_ptr<Material>& material) { m_material = material; }
+
+protected:
+	shared_ptr<Mesh>					m_mesh;
+	shared_ptr<Texture>					m_texture;		// 텍스처
+	shared_ptr<Material>				m_material;		// 재질
+
+	ComPtr<ID3D12Resource>				m_instancingBuffer;
+	BillBoardInstancingData*			m_instancingBufferPointer;
+	D3D12_VERTEX_BUFFER_VIEW			m_instancingBufferView;
+
+	UINT								m_instancingCount;
 };

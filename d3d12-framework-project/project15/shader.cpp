@@ -385,7 +385,8 @@ BlendingShader::BlendingShader(const ComPtr<ID3D12Device>& device, const ComPtr<
 	DX::ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
 }
 
-BillBoardShader::BillBoardShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature)
+BillBoardShader::BillBoardShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature, UINT count) :
+	m_instancingCount(count)
 {
 	ComPtr<ID3DBlob> mvsByteCode;
 	ComPtr<ID3DBlob> mgsByteCode;
@@ -404,7 +405,8 @@ BillBoardShader::BillBoardShader(const ComPtr<ID3D12Device>& device, const ComPt
 	m_inputLayout =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "SIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "SIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "WPOSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 }
 	};
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
@@ -440,4 +442,56 @@ BillBoardShader::BillBoardShader(const ComPtr<ID3D12Device>& device, const ComPt
 	psoDesc.SampleDesc.Count = 1;
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 	DX::ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
+
+	CreateShaderVariable(device);
+}
+
+void BillBoardShader::Update(FLOAT timeElapsed)
+{
+	for (const auto& elm : m_gameObjects)
+		if (elm) elm->Update(timeElapsed);
+}
+
+void BillBoardShader::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+{
+	BillBoardShader::UpdateShaderVariable(commandList);
+
+	if (m_texture) { m_texture->UpdateShaderVariable(commandList); }
+	if (m_material) { m_material->UpdateShaderVariable(commandList); }
+
+	int i = 0;
+	for (const auto& elm : m_gameObjects) {
+		m_instancingBufferPointer[i++].position = elm->GetPosition();
+	}
+
+	m_mesh->Render(commandList, m_instancingBufferView);
+}
+
+void BillBoardShader::CreateShaderVariable(const ComPtr<ID3D12Device>& device)
+{
+	DX::ThrowIfFailed(device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(sizeof(BillBoardInstancingData) * m_instancingCount),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		NULL,
+		IID_PPV_ARGS(&m_instancingBuffer)));
+
+	// 인스턴스 버퍼 포인터
+	m_instancingBuffer->Map(0, NULL, reinterpret_cast<void**>(&m_instancingBufferPointer));
+
+	// 인스턴스 버퍼 뷰 생성
+	m_instancingBufferView.BufferLocation = m_instancingBuffer->GetGPUVirtualAddress();
+	m_instancingBufferView.StrideInBytes = sizeof(BillBoardInstancingData);
+	m_instancingBufferView.SizeInBytes = sizeof(BillBoardInstancingData) * m_instancingCount;
+}
+
+void BillBoardShader::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+{
+	commandList->SetPipelineState(m_pipelineState.Get());
+}
+
+void BillBoardShader::ReleaseShaderVariable()
+{
+	if (m_instancingBuffer) m_instancingBuffer->Unmap(0, nullptr);
 }

@@ -162,6 +162,7 @@ void GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const Co
 			in.read((char*)(&strLength), sizeof(BYTE));
 			m_frameName.resize(strLength);
 			in.read((&m_frameName[0]), sizeof(char) * strLength);
+			cout << m_frameName << endl;
 		}
 		else if (strToken == "<Transform>:") {
 			XMFLOAT3 position, rotation, scale;
@@ -216,7 +217,7 @@ Helicoptor::Helicoptor() : GameObject()
 
 void Helicoptor::Update(FLOAT timeElapsed)
 {
-	if (m_mainRotorFrame) m_mainRotorFrame->Rotate(0.f, 720.f * timeElapsed, 0.f);
+	if (m_mainRotorFrame) m_mainRotorFrame->Rotate(0.f, 1080.f * timeElapsed, 0.f);
 	if (m_tailRotorFrame) m_tailRotorFrame->Rotate(720.f * timeElapsed, 0.f, 0.f);
 
 	GameObject::Update(timeElapsed);
@@ -224,8 +225,9 @@ void Helicoptor::Update(FLOAT timeElapsed)
 
 void Helicoptor::SetRotorFrame()
 {
-	m_mainRotorFrame = FindFrame("Rotor");
-	m_tailRotorFrame = FindFrame("Back_Rotor");
+	m_mainRotorFrame = FindFrame("MainRotor");
+	m_tailRotorFrame = FindFrame("TailRotor");
+	// Nacelles_Missiles
 }
 
 HeightMapTerrain::HeightMapTerrain(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,

@@ -276,6 +276,7 @@ struct VS_BILLBOARD_INPUT
 {
 	float3 position : POSITION;
 	float2 size : SIZE;
+	float3 wposition : WPOSITION;
 };
 
 struct VS_BILLBOARD_OUTPUT
@@ -294,7 +295,7 @@ struct GS_BILLBOARD_OUTPUT
 VS_BILLBOARD_OUTPUT VS_BILLBOARD_MAIN(VS_BILLBOARD_INPUT input)
 {
 	VS_BILLBOARD_OUTPUT output;
-	output.position = mul(float4(input.position, 1.0f), worldMatrix);
+	output.position = float4(input.wposition, 1.0f);
 	output.size = input.size;
 	return output;
 }
@@ -325,6 +326,7 @@ void GS_BILLBOARD_MAIN(point VS_BILLBOARD_OUTPUT input[1], uint primID : SV_Prim
 	}
 }
 
+[earlydepthstencil]
 float4 PS_BILLBOARD_MAIN(GS_BILLBOARD_OUTPUT input) : SV_TARGET
 {
 	float4 color = g_baseTexture.Sample(g_samplerWrap, input.uv);
