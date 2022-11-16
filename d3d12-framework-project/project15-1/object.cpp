@@ -8,7 +8,7 @@ GameObject::GameObject() : m_right{ 1.0f, 0.0f, 0.0f }, m_up{ 0.0f, 1.0f, 0.0f }
 
 GameObject::~GameObject()
 {
-	//if (m_mesh) m_mesh->ReleaseUploadBuffer();
+	if (m_mesh) m_mesh->ReleaseUploadBuffer();
 }
 
 void GameObject::Update(FLOAT timeElapsed)
@@ -114,7 +114,8 @@ void GameObject::ReleaseUploadBuffer() const
 void GameObject::SetChild(const shared_ptr<GameObject>& child)
 {
 	if (child) {
-		child->m_parent = (shared_ptr<GameObject>)this;
+		// https://welikecse.tistory.com/13
+		//child->m_parent = (shared_ptr<GameObject>)this;
 	}
 	if (m_child) {
 		if (child) child->m_sibling = m_child->m_sibling;
@@ -228,7 +229,7 @@ void Helicoptor::SetRotorFrame()
 	// Nacelles_Missiles
 }
 
-Enemy::Enemy() : m_status(DEATH) {}
+Enemy::Enemy() : m_status(LIVE) {}
 
 void Enemy::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
@@ -248,39 +249,6 @@ void Enemy::SetRotorFrame()
 	m_mainRotorFrame = FindFrame("MainRotor");
 	m_tailRotorFrame = FindFrame("TailRotor");
 }
-
-EnemyManager::EnemyManager(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandlist) : m_regenTimer(0.f)
-{
-	for (int i = 0; i < 1; ++i) {
-		m_enemys.push_back(make_shared<Enemy>());
-		m_enemys.back()->LoadGeometry(device, commandlist, TEXT("Model/Mi24.bin"));
-		m_enemys.back()->SetRotorFrame();
-	}
-}
-
-void EnemyManager::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
-{
-	for (const auto enemy : m_enemys) enemy->Render(commandList);
-}
-
-void EnemyManager::Update(FLOAT timeElapsed)
-{
-	m_regenTimer += timeElapsed;
-	if (m_regenTime >= m_regenTime) {
-		for (const auto enemy : m_enemys) {
-			if (enemy->GetStatus() == Enemy::DEATH) {
-				enemy->SetStatus(Enemy::LIVE);
-				enemy->SetPosition(GetPosition());
-				m_regenTimer = 0.f;
-				break;
-			}
-		}
-	}
-	for (const auto enemy : m_enemys) {
-		enemy->Update(timeElapsed);
-	}
-}
-
 
 HeightMapTerrain::HeightMapTerrain(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
 	const wstring& fileName, INT width, INT length, INT blockWidth, INT blockLength, XMFLOAT3 scale)

@@ -101,22 +101,6 @@ private:
 	INT		m_status;
 };
 
-class EnemyManager : public GameObject
-{
-public:
-	EnemyManager(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandlist);
-	~EnemyManager() = default;
-
-	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override;
-	virtual void Update(FLOAT timeElapsed) override;
-
-private:
-	const FLOAT					m_regenTime = 5.f;
-	const INT					m_maxRegen = 20;
-	vector<shared_ptr<Enemy>>	m_enemys;
-	FLOAT						m_regenTimer;
-};
-
 class HeightMapTerrain : public GameObject
 {
 public:

@@ -73,9 +73,14 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	m_camera->SetProjMatrix(projMatrix);
 
 	// 利 积己
-	auto enemyPoint1 = make_shared<EnemyManager>(device, commandlist);
-	enemyPoint1->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f });
-	hierarchyShader->GetGameObjects().push_back(enemyPoint1);
+	for (int i = 0; i < 10; ++i) {
+		shared_ptr<Enemy> enemy = make_shared<Enemy>();
+		enemy->LoadGeometry(device, commandlist, TEXT("Model/Mi24.bin"));
+		enemy->SetRotorFrame();
+		enemy->SetPosition(XMFLOAT3(50.0f + i * 10.f, 110.0f, 65.0f));
+		enemy->SetScale(0.3f, 0.3f, 0.3f);
+		hierarchyShader->GetGameObjects().push_back(enemy);
+	}
 
 	// 瘤屈 积己
 	unique_ptr<TerrainShader> terrainShader{ make_unique<TerrainShader>(device, rootsignature) };
