@@ -19,6 +19,11 @@ void Scene::OnProcessingMouseMessage(HWND hWnd, UINT width, UINT height, FLOAT d
 	SetCursorPos(prevPosition.x, prevPosition.y);
 }
 
+void Scene::OnProcessingMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) const
+{
+	if (m_player) m_player->LaunchMissile();
+}
+
 void Scene::OnProcessingKeyboardMessage(FLOAT timeElapsed) const
 {
 	if (GetAsyncKeyState('W') & 0x8000)
@@ -237,6 +242,8 @@ void Scene::Update(FLOAT timeElapsed)
 	for (const auto& shader : m_blending) shader.second->Update(timeElapsed);
 
 	CheckPlayerByObjectCollisions();
+	CheckMissileByObjectCollisions();
+	CheckTerrainBorderLimit();
 }
 
 void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -252,11 +259,44 @@ void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 
 void Scene::CheckPlayerByObjectCollisions()
 {
-	cout << m_player->GetBoundingBox().Center.x << ", " <<
-		m_player->GetBoundingBox().Center.y << ", " << m_player->GetBoundingBox().Center.z << endl;
-	for (auto enemy : m_shader["HIERARCHY"]->GetGameObjects()) {
-		if (enemy->GetBoundingBox().Intersects(m_player->GetBoundingBox())) {
-			dynamic_pointer_cast<Enemy>(enemy)->SetStatus(Enemy::DEATH);
+	for (auto enemyManager : m_shader["HIERARCHY"]->GetGameObjects()) {
+		for (auto enemy : static_pointer_cast<EnemyManager>(enemyManager)->GetEnemys()) {
+			if (enemy->GetBoundingBox().Intersects(m_player->GetBoundingBox())) {
+				static_pointer_cast<Enemy>(enemy)->SetStatus(Enemy::DEATH);
+			}
 		}
 	}
 }
+
+void Scene::CheckMissileByObjectCollisions()
+{
+	if (m_player->GetMissileState() == Player::SHOTTING) {
+		for (auto enemyManager : m_shader["HIERARCHY"]->GetGameObjects()) {
+			for (auto enemy : static_pointer_cast<EnemyManager>(enemyManager)->GetEnemys()) {
+				if (enemy->GetBoundingBox().Intersects(m_player->GetMissile()->GetBoundingBox())) {
+					static_pointer_cast<Enemy>(enemy)->SetStatus(Enemy::DEATH);
+					m_player->SetMissileState(Player::READY);
+				}
+			}
+		}
+	}
+}
+
+void Scene::CheckTerrainBorderLimit()
+{
+	XMFLOAT3 pos = m_player->GetPosition();
+	if (pos.x >= 255.f) m_player->SetPosition(XMFLOAT3{ 255.f, pos.y, pos.z });
+	if (pos.x <= 0.f) m_player->SetPosition(XMFLOAT3{ 0.f, pos.y, pos.z });
+	if (pos.z >= 255.f) m_player->SetPosition(XMFLOAT3{ pos.x, pos.y, 255.f });
+	if (pos.z <= 0.f) m_player->SetPosition(XMFLOAT3{ pos.x, pos.y, 0.f });
+	for (auto enemyManager : m_shader["HIERARCHY"]->GetGameObjects()) {
+		for (auto enemy : static_pointer_cast<EnemyManager>(enemyManager)->GetEnemys()) {
+			XMFLOAT3 pos = enemy->GetPosition();
+			if (pos.x >= 255.f || pos.x <= 0.f || pos.z >= 255.f || pos.z <= 0.f) {
+				static_pointer_cast<Enemy>(enemy)->SetStatus(Enemy::DEATH);
+			}
+		}
+	}
+}
+
+

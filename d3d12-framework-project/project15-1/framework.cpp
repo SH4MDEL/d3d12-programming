@@ -37,6 +37,11 @@ void GameFramework::OnProcessingMouseMessage() const
 	if (m_scene) m_scene->OnProcessingMouseMessage(m_hWnd, m_width, m_height, m_timer.GetDeltaTime());
 }
 
+void GameFramework::OnProcessingMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) const
+{
+	if (m_scene) m_scene->OnProcessingMouseMessage(hWnd, message, wParam, lParam);
+}
+
 void GameFramework::OnProcessingKeyboardMessage() const
 {
 	if (m_scene) m_scene->OnProcessingKeyboardMessage(m_timer.GetDeltaTime());

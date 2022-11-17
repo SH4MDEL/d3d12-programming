@@ -77,6 +77,11 @@ XMFLOAT3 GameObject::GetPosition() const
 	return XMFLOAT3{ m_worldMatrix._41, m_worldMatrix._42, m_worldMatrix._43 };
 }
 
+void GameObject::SetWorldMatrix(const XMFLOAT4X4& worldMatrix)
+{
+	m_worldMatrix = worldMatrix;
+}
+
 void GameObject::SetPosition(const XMFLOAT3& position)
 {
 	m_transformMatrix._41 = position.x;
@@ -163,6 +168,7 @@ void GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const Co
 			in.read((char*)(&strLength), sizeof(BYTE));
 			m_frameName.resize(strLength);
 			in.read((&m_frameName[0]), sizeof(char) * strLength);
+			//cout << m_frameName << endl;
 		}
 		else if (strToken == "<Transform>:") {
 			XMFLOAT3 position, rotation, scale;
@@ -225,10 +231,10 @@ void Helicoptor::SetRotorFrame()
 {
 	m_mainRotorFrame = FindFrame("MainRotor");
 	m_tailRotorFrame = FindFrame("TailRotor");
-	// Nacelles_Missiles
+	m_missileFrame = FindFrame("Canon");
 }
 
-Enemy::Enemy() : m_status(DEATH), m_targetPosition() {}
+Enemy::Enemy() : m_status(LIVE) {}
 
 void Enemy::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
@@ -276,6 +282,8 @@ void EnemyManager::InitEnemy(const ComPtr<ID3D12Device>& device, const ComPtr<ID
 		m_enemys.back()->LoadGeometry(device, commandlist, TEXT("Model/Mi24.bin"));
 		m_enemys.back()->SetRotorFrame();
 		m_enemys.back()->SetPosition(GetPosition());
+		m_enemys.back()->GetMesh()->SetBoundingBox(GetPosition(), XMFLOAT3(1.f, 1.f, 1.f));
+		m_enemys.back()->SetBoundingBox(m_enemys.back()->GetMesh()->GetBoundingBox());
 		m_enemys.back()->SetScale(0.2f, 0.2f, 0.2f);
 	}
 }
@@ -306,7 +314,6 @@ void EnemyManager::Update(FLOAT timeElapsed)
 		enemy->Update(timeElapsed);
 	}
 }
-
 
 HeightMapTerrain::HeightMapTerrain(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
 	const wstring& fileName, INT width, INT length, INT blockWidth, INT blockLength, XMFLOAT3 scale)

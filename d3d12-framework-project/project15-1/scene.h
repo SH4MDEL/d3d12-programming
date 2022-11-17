@@ -15,6 +15,7 @@ public:
 
 	void BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandlist, const ComPtr<ID3D12RootSignature>& rootsignature, FLOAT	aspectRatio);
 	void OnProcessingMouseMessage(HWND hWnd, UINT width, UINT height, FLOAT deltaTime) const;
+	void OnProcessingMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) const;
 	void OnProcessingKeyboardMessage(FLOAT timeElapsed) const;
 	void Update(FLOAT timeElapsed);
 	void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
@@ -25,6 +26,8 @@ public:
 	shared_ptr<Camera> GetCamera() const { return m_camera; }
 
 	void CheckPlayerByObjectCollisions();
+	void CheckMissileByObjectCollisions();
+	void CheckTerrainBorderLimit();
 
 private:
 	unordered_map<string, unique_ptr<Shader>>	m_shader;

@@ -14,6 +14,7 @@ public:
 	void OnCreate(HINSTANCE hInstance, HWND hWnd);
 	void OnDestroy();
 	void OnProcessingMouseMessage() const;
+	void OnProcessingMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) const;
 	void OnProcessingKeyboardMessage() const;
 	void StartPipeline();
 

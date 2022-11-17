@@ -20,6 +20,7 @@ public:
 	void SetTexture(const shared_ptr<Texture>& texture);
 	void SetMaterial(const shared_ptr<Material>& material);
 
+	void SetWorldMatrix(const XMFLOAT4X4& worldMatrix);
 	void SetPosition(const XMFLOAT3& position);
 	void SetScale(FLOAT x, FLOAT y, FLOAT z);
 
@@ -78,6 +79,7 @@ public:
 protected:
 	shared_ptr<GameObject>	m_mainRotorFrame;
 	shared_ptr<GameObject>	m_tailRotorFrame;
+	shared_ptr<GameObject>	m_missileFrame;
 };
 
 class Enemy : public Helicoptor
@@ -118,6 +120,7 @@ public:
 	void InitEnemy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandlist);
 	void SetTarget(const shared_ptr<GameObject>& target) { m_target = target; }
 	void SetTerrain(const shared_ptr< HeightMapTerrain>& terrain) { m_terrain = terrain; }
+	vector<shared_ptr<Enemy>> GetEnemys() { return m_enemys; }
 
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override;
 	virtual void Update(FLOAT timeElapsed) override;

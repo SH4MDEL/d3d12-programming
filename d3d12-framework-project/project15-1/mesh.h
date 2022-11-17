@@ -75,6 +75,7 @@ public:
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList, const D3D12_VERTEX_BUFFER_VIEW& instanceBufferView) const;
 	virtual void ReleaseUploadBuffer();
 
+	void SetBoundingBox(XMFLOAT3 center, XMFLOAT3 extents) { m_boundingBox.Center = center; m_boundingBox.Extents = extents; }
 	BoundingOrientedBox GetBoundingBox() { return m_boundingBox; }
 
 protected:
