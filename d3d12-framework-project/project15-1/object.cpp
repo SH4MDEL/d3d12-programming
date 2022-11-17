@@ -115,7 +115,7 @@ void GameObject::SetChild(const shared_ptr<GameObject>& child)
 {
 	if (child) {
 		// https://welikecse.tistory.com/13
-		//child->m_parent = (shared_ptr<GameObject>)this;
+		child->m_parent = shared_from_this();
 	}
 	if (m_child) {
 		if (child) child->m_sibling = m_child->m_sibling;
@@ -129,7 +129,7 @@ void GameObject::SetChild(const shared_ptr<GameObject>& child)
 shared_ptr<GameObject> GameObject::FindFrame(string frameName)
 {
 	shared_ptr<GameObject> frame;
-	if (m_frameName == frameName) return (shared_ptr<GameObject>)this;
+	if (m_frameName == frameName) return shared_from_this();
 
 	if (m_sibling) if (frame = m_sibling->FindFrame(frameName)) return frame;
 	if (m_child) if (frame = m_child->FindFrame(frameName)) return frame;
@@ -163,7 +163,6 @@ void GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const Co
 			in.read((char*)(&strLength), sizeof(BYTE));
 			m_frameName.resize(strLength);
 			in.read((&m_frameName[0]), sizeof(char) * strLength);
-			cout << m_frameName << endl;
 		}
 		else if (strToken == "<Transform>:") {
 			XMFLOAT3 position, rotation, scale;
@@ -229,7 +228,7 @@ void Helicoptor::SetRotorFrame()
 	// Nacelles_Missiles
 }
 
-Enemy::Enemy() : m_status(LIVE) {}
+Enemy::Enemy() : m_status(DEATH), m_targetPosition() {}
 
 void Enemy::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
@@ -238,16 +237,32 @@ void Enemy::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 
 void Enemy::Update(FLOAT timeElapsed)
 {
-	// ÇÃ·¹ÀÌ¾î µû¶ó°¡°í ¹Ù´Ú ¸ø ¶Õ°Ô
 	if (m_status == LIVE) {
+		XMFLOAT3 movePosition = Vector3::Sub(m_targetPosition, GetPosition());
+		movePosition = Vector3::Normalize(movePosition);
+		XMFLOAT3 look = GetLook();
+
+		XMFLOAT3 crossProduct = Vector3::Cross(look, movePosition);
+		if (look.z < 0) { crossProduct.x *= -1.0f; }
+
+		Rotate(crossProduct.x * 10.f, crossProduct.y * 10.f, 0.0f);
+
+		Move(Vector3::Mul(look, 10.0f * timeElapsed));
+
+		// ¹Ù´Ú ¸ø ¶Õ°Ô º¸Á¤
+		XMFLOAT3 pos = GetPosition();
+		if ((m_terrainHeight + 0.05f) / 0.1f > pos.y) {
+			SetPosition(XMFLOAT3{ pos.x, (m_terrainHeight + 0.05f) / 0.1f, pos.z });
+		}
+
 		Helicoptor::Update(timeElapsed);
 	}
 }
 
 void Enemy::SetRotorFrame()
 {
-	m_mainRotorFrame = FindFrame("MainRotor");
-	m_tailRotorFrame = FindFrame("TailRotor");
+	m_mainRotorFrame = FindFrame("Top_Rotor");
+	m_tailRotorFrame = FindFrame("Tail_Rotor");
 }
 
 EnemyManager::EnemyManager() : m_regenTimer(0.f)
@@ -256,10 +271,12 @@ EnemyManager::EnemyManager() : m_regenTimer(0.f)
 
 void EnemyManager::InitEnemy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandlist)
 {
-	for (int i = 0; i < 1; ++i) {
+	for (int i = 0; i < 10; ++i) {
 		m_enemys.push_back(make_shared<Enemy>());
 		m_enemys.back()->LoadGeometry(device, commandlist, TEXT("Model/Mi24.bin"));
 		m_enemys.back()->SetRotorFrame();
+		m_enemys.back()->SetPosition(GetPosition());
+		m_enemys.back()->SetScale(0.2f, 0.2f, 0.2f);
 	}
 }
 
@@ -271,7 +288,7 @@ void EnemyManager::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) 
 void EnemyManager::Update(FLOAT timeElapsed)
 {
 	m_regenTimer += timeElapsed;
-	if (m_regenTime >= m_regenTime) {
+	if (m_regenTimer >= m_regenTime) {
 		for (const auto enemy : m_enemys) {
 			if (enemy->GetStatus() == Enemy::DEATH) {
 				enemy->SetStatus(Enemy::LIVE);
@@ -281,7 +298,11 @@ void EnemyManager::Update(FLOAT timeElapsed)
 			}
 		}
 	}
+	XMFLOAT3 targetPosition = m_target->GetPosition();
 	for (const auto enemy : m_enemys) {
+		XMFLOAT3 position = enemy->GetPosition();
+		enemy->SetTargetPosition(targetPosition);
+		enemy->SetTerrainHeight(m_terrain->GetHeight(position.x, position.z));
 		enemy->Update(timeElapsed);
 	}
 }

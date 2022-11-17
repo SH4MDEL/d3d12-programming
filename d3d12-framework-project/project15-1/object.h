@@ -4,7 +4,7 @@
 #include "texture.h"
 #include "material.h"
 
-class GameObject
+class GameObject : public enable_shared_from_this<GameObject>
 {
 public:
 	GameObject();
@@ -28,6 +28,7 @@ public:
 	XMFLOAT3 GetRight() const { return m_right; }
 	XMFLOAT3 GetUp() const { return m_up; }
 	XMFLOAT3 GetFront() const { return m_front; }
+	XMFLOAT3 GetLook() const { return Vector3::Normalize(XMFLOAT3(m_worldMatrix._31, m_worldMatrix._32, m_worldMatrix._33)); }
 
 	virtual void ReleaseUploadBuffer() const;
 
@@ -39,6 +40,7 @@ public:
 
 	void UpdateBoundingBox();
 	void SetBoundingBox(const BoundingOrientedBox& boundingBox);
+	BoundingOrientedBox& GetBoundingBox() { return m_boundingBox; }
 
 protected:
 	XMFLOAT4X4					m_transformMatrix;
@@ -61,7 +63,7 @@ protected:
 	shared_ptr<GameObject>		m_sibling;
 	shared_ptr<GameObject>		m_child;
 
-	BoundingOrientedBox			m_boundingBox;	
+	BoundingOrientedBox			m_boundingBox = BoundingOrientedBox();
 };
 
 class Helicoptor : public GameObject
@@ -97,9 +99,15 @@ public:
 
 	INT GetStatus() { return m_status; }
 	void SetStatus(INT status) { m_status = status; }
+	void SetTargetPosition(XMFLOAT3 position) { m_targetPosition = position; }
+	void SetTerrainHeight(FLOAT height) { m_terrainHeight = height; }
 private:
-	INT		m_status;
+	INT			m_status;
+	XMFLOAT3	m_targetPosition;
+	FLOAT		m_terrainHeight;
 };
+
+class HeightMapTerrain;
 
 class EnemyManager : public GameObject
 {
@@ -108,15 +116,20 @@ public:
 	~EnemyManager() = default;
 
 	void InitEnemy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandlist);
+	void SetTarget(const shared_ptr<GameObject>& target) { m_target = target; }
+	void SetTerrain(const shared_ptr< HeightMapTerrain>& terrain) { m_terrain = terrain; }
 
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override;
 	virtual void Update(FLOAT timeElapsed) override;
 
 private:
-	const FLOAT					m_regenTime = 5.f;
-	const INT					m_maxRegen = 20;
-	vector<shared_ptr<Enemy>>	m_enemys;
-	FLOAT						m_regenTimer;
+	const FLOAT						m_regenTime = 5.f;
+	const INT						m_maxRegen = 20;
+	vector<shared_ptr<Enemy>>		m_enemys;
+	FLOAT							m_regenTimer;
+
+	shared_ptr<GameObject>			m_target;
+	shared_ptr<HeightMapTerrain>	m_terrain;
 };
 
 class HeightMapTerrain : public GameObject

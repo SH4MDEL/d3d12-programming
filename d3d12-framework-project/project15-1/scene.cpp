@@ -74,18 +74,23 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 
 	// 利 积己
 	auto enemyPoint1 = make_shared<EnemyManager>();
+	//enemyPoint1->SetPosition(XMFLOAT3{ 50.0f, 100.0f, 170.0f });
+	enemyPoint1->SetPosition(XMFLOAT3{ 100.0f, 100.0f, 65.0f });
 	enemyPoint1->InitEnemy(device, commandlist);
-	enemyPoint1->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f });
+	enemyPoint1->SetTarget(m_player);
 	hierarchyShader->GetGameObjects().push_back(enemyPoint1);
 
-	for (int i = 0; i < 10; ++i) {
-		shared_ptr<Enemy> enemy = make_shared<Enemy>();
-		enemy->LoadGeometry(device, commandlist, TEXT("Model/Mi24.bin"));
-		enemy->SetRotorFrame();
-		enemy->SetPosition(XMFLOAT3(50.0f + i * 10.f, 110.0f, 65.0f));
-		enemy->SetScale(0.3f, 0.3f, 0.3f);
-		hierarchyShader->GetGameObjects().push_back(enemy);
-	}
+	auto enemyPoint2 = make_shared<EnemyManager>();
+	enemyPoint2->SetPosition(XMFLOAT3{ 220.0f, 110.0f, 150.0f });
+	enemyPoint2->InitEnemy(device, commandlist);
+	enemyPoint2->SetTarget(m_player);
+	hierarchyShader->GetGameObjects().push_back(enemyPoint2);
+
+	auto enemyPoint3 = make_shared<EnemyManager>();
+	enemyPoint3->SetPosition(XMFLOAT3{ 180.0f, 110.0f, 230.0f });
+	enemyPoint3->InitEnemy(device, commandlist);
+	enemyPoint3->SetTarget(m_player);
+	hierarchyShader->GetGameObjects().push_back(enemyPoint3);
 
 	// 瘤屈 积己
 	unique_ptr<TerrainShader> terrainShader{ make_unique<TerrainShader>(device, rootsignature) };
@@ -103,6 +108,9 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	terrain->SetTexture(terrainTexture);
 	terrainShader->SetTerrain(terrain);
 	m_player->SetTerrain(terrain);
+	enemyPoint1->SetTerrain(terrain);
+	enemyPoint2->SetTerrain(terrain);
+	enemyPoint3->SetTerrain(terrain);
 
 	// 胶墨捞冠胶 积己
 	unique_ptr<SkyboxShader> skyboxShader = make_unique<SkyboxShader>(device, rootsignature);
@@ -227,6 +235,8 @@ void Scene::Update(FLOAT timeElapsed)
 	if (m_shader["SKYBOX"]) for (auto& skybox : m_shader["SKYBOX"]->GetGameObjects()) skybox->SetPosition(m_camera->GetEye());
 	for (const auto& shader : m_shader) shader.second->Update(timeElapsed);
 	for (const auto& shader : m_blending) shader.second->Update(timeElapsed);
+
+	CheckPlayerByObjectCollisions();
 }
 
 void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -238,4 +248,15 @@ void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 	m_blending.at("FLOWER2")->Render(commandList);
 	m_blending.at("GRASS1")->Render(commandList);
 	m_blending.at("GRASS2")->Render(commandList);
+}
+
+void Scene::CheckPlayerByObjectCollisions()
+{
+	cout << m_player->GetBoundingBox().Center.x << ", " <<
+		m_player->GetBoundingBox().Center.y << ", " << m_player->GetBoundingBox().Center.z << endl;
+	for (auto enemy : m_shader["HIERARCHY"]->GetGameObjects()) {
+		if (enemy->GetBoundingBox().Intersects(m_player->GetBoundingBox())) {
+			dynamic_pointer_cast<Enemy>(enemy)->SetStatus(Enemy::DEATH);
+		}
+	}
 }
