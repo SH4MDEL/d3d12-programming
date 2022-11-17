@@ -250,6 +250,43 @@ void Enemy::SetRotorFrame()
 	m_tailRotorFrame = FindFrame("TailRotor");
 }
 
+EnemyManager::EnemyManager() : m_regenTimer(0.f)
+{
+}
+
+void EnemyManager::InitEnemy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandlist)
+{
+	for (int i = 0; i < 1; ++i) {
+		m_enemys.push_back(make_shared<Enemy>());
+		m_enemys.back()->LoadGeometry(device, commandlist, TEXT("Model/Mi24.bin"));
+		m_enemys.back()->SetRotorFrame();
+	}
+}
+
+void EnemyManager::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+{
+	for (const auto enemy : m_enemys) enemy->Render(commandList);
+}
+
+void EnemyManager::Update(FLOAT timeElapsed)
+{
+	m_regenTimer += timeElapsed;
+	if (m_regenTime >= m_regenTime) {
+		for (const auto enemy : m_enemys) {
+			if (enemy->GetStatus() == Enemy::DEATH) {
+				enemy->SetStatus(Enemy::LIVE);
+				enemy->SetPosition(GetPosition());
+				m_regenTimer = 0.f;
+				break;
+			}
+		}
+	}
+	for (const auto enemy : m_enemys) {
+		enemy->Update(timeElapsed);
+	}
+}
+
+
 HeightMapTerrain::HeightMapTerrain(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
 	const wstring& fileName, INT width, INT length, INT blockWidth, INT blockLength, XMFLOAT3 scale)
 	: m_width{ width }, m_length{ length }, m_scale{ scale }
