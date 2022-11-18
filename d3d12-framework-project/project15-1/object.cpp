@@ -231,7 +231,7 @@ void Helicoptor::SetRotorFrame()
 {
 	m_mainRotorFrame = FindFrame("MainRotor");
 	m_tailRotorFrame = FindFrame("TailRotor");
-	m_missileFrame = FindFrame("Canon");
+	m_missileFrame = FindFrame("Radar");
 }
 
 Enemy::Enemy() : m_status(LIVE) {}
@@ -277,7 +277,7 @@ EnemyManager::EnemyManager() : m_regenTimer(0.f)
 
 void EnemyManager::InitEnemy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandlist)
 {
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 5; ++i) {
 		m_enemys.push_back(make_shared<Enemy>());
 		m_enemys.back()->LoadGeometry(device, commandlist, TEXT("Model/Mi24.bin"));
 		m_enemys.back()->SetRotorFrame();
@@ -422,5 +422,45 @@ Skybox::Skybox(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCo
 
 void Skybox::Update(FLOAT timeElapsed)
 {
+}
 
+Sprite::Sprite(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, INT rows, INT cols) :
+	m_rows(rows), m_cols(cols), m_row(0.f), m_col(0.f), m_drawed(true), m_spriteTimer(0.f)
+{
+
+}
+
+void Sprite::Update(FLOAT timeElapsed)
+{
+
+	CalculateRowColumn(timeElapsed);
+	GameObject::Update(timeElapsed);
+}
+
+void Sprite::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+{
+	FLOAT nowRow = 1.f / (FLOAT)m_rows * (FLOAT)m_row;
+	FLOAT nowCol = 1.f / (FLOAT)m_cols * (FLOAT)m_col;
+	commandList->SetGraphicsRoot32BitConstants(0, 1, &nowCol, 34);
+	commandList->SetGraphicsRoot32BitConstants(0, 1, &nowRow, 35);
+
+	GameObject::Render(commandList);
+}
+
+void Sprite::CalculateRowColumn(FLOAT timeElapsed)
+{
+	m_spriteTimer += timeElapsed;
+	if (m_drawed) {
+		if (m_spriteTimer >= m_spriteTime) {
+			m_spriteTimer += m_spriteTime;
+			if (++m_col == m_cols) { m_row++; m_col = 0; }
+			if (m_row == m_rows) m_row = 0;
+		}
+	}
+}
+
+void Sprite::SetDraw()
+{
+	m_drawed = true;
+	m_spriteTimer = 0.f;
 }

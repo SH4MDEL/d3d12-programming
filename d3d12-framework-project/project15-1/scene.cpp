@@ -141,7 +141,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	riverTexture->CreateSrvDescriptorHeap(device);
 	riverTexture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
 	auto riverMaterial = make_shared<Material>();
-	riverMaterial->m_albedoColor.w = 0.51f;
+	riverMaterial->m_albedoColor.w = 0.6f;
 	river->SetScale(13.f, 0.f, 13.f);
 	river->SetMaterial(riverMaterial);
 	river->SetPosition(XMFLOAT3{ 125.0f, 70.0f, 125.0f });

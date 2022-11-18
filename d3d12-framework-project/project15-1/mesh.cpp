@@ -477,7 +477,6 @@ HeightMapGridMesh::HeightMapGridMesh(const ComPtr<ID3D12Device>& device, const C
 	for (int i = 0, z = zStart; z < (zStart + length); ++z) {
 		for (int x = xStart; x < (xStart + width); ++x, ++i)
 		{
-			//정점의 높이와 색상을 높이 맵으로부터 구한다.
 			XMFLOAT3 anormal = Vector3::Add(heightMapImage->GetNormal(x, z), heightMapImage->GetNormal(x + 1, z));
 			anormal = Vector3::Add(heightMapImage->GetNormal(x + 1, z + 1), heightMapImage->GetNormal(x, z + 1));
 			Vector3::Normalize(anormal);

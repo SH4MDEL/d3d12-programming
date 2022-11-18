@@ -31,7 +31,7 @@ public:
 	enum MissileStatus {
 		READY,
 		SHOTTING,
-		RELOAD
+		BLOWING
 	};
 
 	void LaunchMissile();

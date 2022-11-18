@@ -26,6 +26,7 @@ void Player::Update(FLOAT timeElapsed)
 		m_missileTimer += timeElapsed;
 
 		m_missileFrame->SetWorldMatrix(m_missileWorld);
+
 		m_missileFrame->Move(Vector3::Mul(m_missileVector, 30.0f * timeElapsed));
 		m_missileWorld = m_missileFrame->GetWorldMatrix();
 		

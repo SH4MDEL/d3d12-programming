@@ -174,3 +174,24 @@ public:
 
 	virtual void Update(FLOAT timeElapsed);
 };
+
+class Sprite : public GameObject
+{
+public:
+	Sprite(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, INT rows, INT cols);
+	~Sprite() = default;
+
+	virtual void Update(FLOAT timeElapsed) override;
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override;
+
+	void CalculateRowColumn(FLOAT timeElapsed);
+	void SetDraw();
+private:
+	const FLOAT		m_spriteTime = 0.2f;
+	FLOAT			m_spriteTimer;
+	INT				m_rows;
+	INT				m_cols;
+	INT				m_row;
+	INT				m_col;
+	BOOL			m_drawed;
+};
