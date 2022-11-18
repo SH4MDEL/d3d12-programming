@@ -79,8 +79,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 
 	// Àû »ý¼º
 	auto enemyPoint1 = make_shared<EnemyManager>();
-	//enemyPoint1->SetPosition(XMFLOAT3{ 50.0f, 100.0f, 170.0f });
-	enemyPoint1->SetPosition(XMFLOAT3{ 100.0f, 100.0f, 65.0f });
+	enemyPoint1->SetPosition(XMFLOAT3{ 50.0f, 100.0f, 170.0f });
 	enemyPoint1->InitEnemy(device, commandlist);
 	enemyPoint1->SetTarget(m_player);
 	hierarchyShader->GetGameObjects().push_back(enemyPoint1);
