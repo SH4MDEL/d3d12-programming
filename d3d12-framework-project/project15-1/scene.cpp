@@ -78,23 +78,23 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	m_camera->SetProjMatrix(projMatrix);
 
 	// 利 积己
-	auto enemyPoint1 = make_shared<EnemyManager>();
-	enemyPoint1->SetPosition(XMFLOAT3{ 50.0f, 100.0f, 170.0f });
-	enemyPoint1->InitEnemy(device, commandlist);
-	enemyPoint1->SetTarget(m_player);
-	hierarchyShader->GetGameObjects().push_back(enemyPoint1);
+	//auto enemyPoint1 = make_shared<EnemyManager>();
+	//enemyPoint1->SetPosition(XMFLOAT3{ 50.0f, 100.0f, 170.0f });
+	//enemyPoint1->InitEnemy(device, commandlist);
+	//enemyPoint1->SetTarget(m_player);
+	//hierarchyShader->GetGameObjects().push_back(enemyPoint1);
 
-	auto enemyPoint2 = make_shared<EnemyManager>();
-	enemyPoint2->SetPosition(XMFLOAT3{ 220.0f, 110.0f, 150.0f });
-	enemyPoint2->InitEnemy(device, commandlist);
-	enemyPoint2->SetTarget(m_player);
-	hierarchyShader->GetGameObjects().push_back(enemyPoint2);
+	//auto enemyPoint2 = make_shared<EnemyManager>();
+	//enemyPoint2->SetPosition(XMFLOAT3{ 220.0f, 110.0f, 150.0f });
+	//enemyPoint2->InitEnemy(device, commandlist);
+	//enemyPoint2->SetTarget(m_player);
+	//hierarchyShader->GetGameObjects().push_back(enemyPoint2);
 
-	auto enemyPoint3 = make_shared<EnemyManager>();
-	enemyPoint3->SetPosition(XMFLOAT3{ 180.0f, 110.0f, 230.0f });
-	enemyPoint3->InitEnemy(device, commandlist);
-	enemyPoint3->SetTarget(m_player);
-	hierarchyShader->GetGameObjects().push_back(enemyPoint3);
+	//auto enemyPoint3 = make_shared<EnemyManager>();
+	//enemyPoint3->SetPosition(XMFLOAT3{ 180.0f, 110.0f, 230.0f });
+	//enemyPoint3->InitEnemy(device, commandlist);
+	//enemyPoint3->SetTarget(m_player);
+	//hierarchyShader->GetGameObjects().push_back(enemyPoint3);
 
 	// 瘤屈 积己
 	unique_ptr<TerrainShader> terrainShader{ make_unique<TerrainShader>(device, rootsignature) };
@@ -112,9 +112,9 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	terrain->SetTexture(terrainTexture);
 	terrainShader->SetTerrain(terrain);
 	m_player->SetTerrain(terrain);
-	enemyPoint1->SetTerrain(terrain);
-	enemyPoint2->SetTerrain(terrain);
-	enemyPoint3->SetTerrain(terrain);
+	//enemyPoint1->SetTerrain(terrain);
+	//enemyPoint2->SetTerrain(terrain);
+	//enemyPoint3->SetTerrain(terrain);
 
 	// 胶墨捞冠胶 积己
 	unique_ptr<SkyboxShader> skyboxShader = make_unique<SkyboxShader>(device, rootsignature);
@@ -175,10 +175,10 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	XMFLOAT3 terrainPosition = terrain->GetPosition();
 	XMFLOAT3 terrainScale = terrain->GetScale();
 	FLOAT terrainHeight = terrain->GetHeight(terrainPosition.x, terrainPosition.z);
-	for (int z = 2; z <= 256; ++z) {
-		FLOAT nz = ((terrainPosition.z + (terrain->GetLength() / 256 * z)));
-		for (int x = 2; x <= 256; ++x) {
-			FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 256 * x)));
+	for (int z = 2; z <= 64; ++z) {
+		FLOAT nz = ((terrainPosition.z + (terrain->GetLength() / 64 * z)));
+		for (int x = 2; x <= 64; ++x) {
+			FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 64 * x)));
 			FLOAT ny = terrain->GetHeight(nx, nz) / terrainScale.y + 0.4f;
 			if (ny > 70.f) {
 				int value = GetRandomNumber(1, 4);
