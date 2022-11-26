@@ -560,12 +560,14 @@ void CGameFramework::FrameAdvance()
 		m_pPlayer->Render(m_pd3dCommandList, m_pCamera);
 
 		m_pPostProcessingShader->OnPostRenderTarget(m_pd3dCommandList);
+		// 여기서 현재 드로우 정보를 저장하나?
 	}
 	else
 	{
 		m_pd3dCommandList->OMSetRenderTargets(1, &m_pd3dSwapChainBackBufferRTVCPUHandles[m_nSwapChainBufferIndex], TRUE, NULL);
 
 		m_pPostProcessingShader->Render(m_pd3dCommandList, m_pCamera, &m_nDrawOptions);
+		// 여기서 저장된 정보를 그리는 것으로 보임.
 	}
 
 	::SynchronizeResourceTransition(m_pd3dCommandList, m_ppd3dSwapChainBackBuffers[m_nSwapChainBufferIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);

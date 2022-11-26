@@ -403,7 +403,7 @@ float4 PSScreenRectSamplingTextured(VS_SCREEN_RECT_TEXTURED_OUTPUT input) : SV_T
 		case 69: //'E'
 		{
 			cColor = LaplacianEdge(input.position);
-//			cColor = Outline(input);
+			//cColor = Outline(input);
 			break;
 		}
 	}
