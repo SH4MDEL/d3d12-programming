@@ -697,3 +697,57 @@ BillBoardMesh::BillBoardMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID
 	m_vertexBufferView.SizeInBytes = sizeof(TextureVertex);
 	m_vertexBufferView.StrideInBytes = sizeof(TextureVertex);
 }
+
+ParticleMesh::ParticleMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList)
+{
+	m_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+
+	vector<ParticleVertex> vertices;
+
+	for (int i = 0; i < MAX_PARTICLE_COUNT; ++i) {
+		vertices.emplace_back(XMFLOAT3{ 0.f, 0.f, 0.f }, 
+			XMFLOAT3{GetRandomFloat(-1.f, 1.f), GetRandomFloat(-1.f, 1.f) , GetRandomFloat(-1.f, 1.f) }, 
+			0.f, 2.f);
+	}
+
+	m_nVertices = (UINT)vertices.size();
+	m_vertexBuffer = CreateBufferResource(device, commandList, vertices.data(),
+		sizeof(ParticleVertex) * vertices.size(), D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_vertexUploadBuffer);
+
+	m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
+	m_vertexBufferView.StrideInBytes = sizeof(ParticleVertex);
+	m_vertexBufferView.SizeInBytes = sizeof(ParticleVertex) * vertices.size();
+
+	CreateStreamOutputBuffer(device, commandList);
+}
+
+void ParticleMesh::CreateStreamOutputBuffer(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList)
+{
+	ComPtr<ID3D12Resource> streamOutputUploadBuffer;
+	m_streamOutputBuffer = CreateBufferResource(device, commandList, nullptr,
+		sizeof(ParticleVertex) * MAX_PARTICLE_COUNT, D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_STATE_STREAM_OUT, streamOutputUploadBuffer);
+
+	m_drawBuffer = CreateBufferResource(device, commandList, nullptr,
+		sizeof(ParticleVertex) * MAX_PARTICLE_COUNT, D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, streamOutputUploadBuffer);
+
+	m_filledSizeBuffer = CreateBufferResource(device, commandList, nullptr,
+		sizeof(ParticleVertex) * MAX_PARTICLE_COUNT, D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_STATE_STREAM_OUT, streamOutputUploadBuffer);
+
+	m_filledSizeUploadBuffer = CreateBufferResource(device, commandList, nullptr,
+		sizeof(ParticleVertex) * MAX_PARTICLE_COUNT, D3D12_HEAP_TYPE_UPLOAD,
+		D3D12_RESOURCE_STATE_GENERIC_READ, streamOutputUploadBuffer);
+	m_filledSizeUploadBuffer->Map(0, NULL, reinterpret_cast<void**>(&m_filledSizeUploadBufferSize));
+
+	m_filledSizeReadbackBuffer = CreateBufferResource(device, commandList, nullptr,
+		sizeof(UINT64), D3D12_HEAP_TYPE_READBACK, D3D12_RESOURCE_STATE_COPY_DEST, streamOutputUploadBuffer);
+	m_filledSizeUploadBuffer->Map(0, NULL, reinterpret_cast<void**>(&m_filledSizeReadbackBufferSize));
+
+	m_streamOutputBufferView.BufferLocation = m_streamOutputBuffer->GetGPUVirtualAddress();
+	m_streamOutputBufferView.SizeInBytes = sizeof(ParticleVertex) * MAX_PARTICLE_COUNT;
+	m_streamOutputBufferView.BufferFilledSizeLocation = m_filledSizeBuffer->GetGPUVirtualAddress();
+
+}

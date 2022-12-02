@@ -64,6 +64,21 @@ struct TextureHierarchyVertex
 	XMFLOAT2 uv0;
 };
 
+struct ParticleVertex
+{
+	ParticleVertex() : position{ XMFLOAT3{0.f, 0.f, 0.f} }, velocity{ XMFLOAT3{0.f, 0.f, 0.f} },
+		age{ 0.f }, lifeTime{ 0.f } {}
+	ParticleVertex(const XMFLOAT3& p, const XMFLOAT3& v, const FLOAT& a, const FLOAT& l) : 
+		position{ p }, velocity{ v }, age{ a }, lifeTime{ l } { }
+	~ParticleVertex() = default;
+
+	XMFLOAT3 position;
+	XMFLOAT3 velocity;
+	FLOAT age;
+	FLOAT lifeTime;
+
+};
+
 class Mesh
 {
 public:
@@ -188,4 +203,30 @@ public:
 	BillBoardMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
 		XMFLOAT3 position, XMFLOAT2 size);
 	~BillBoardMesh() = default;
+};
+
+
+#define MAX_PARTICLE_COUNT 1000
+class ParticleMesh : public Mesh
+{
+public:
+	ParticleMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList);
+	~ParticleMesh() = default;
+
+	void CreateStreamOutputBuffer(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList);
+	//virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const override;
+
+private:
+	ComPtr<ID3D12Resource>				m_streamOutputBuffer;
+	D3D12_STREAM_OUTPUT_BUFFER_VIEW		m_streamOutputBufferView;
+
+	ComPtr<ID3D12Resource>				m_drawBuffer;
+
+	ComPtr<ID3D12Resource>				m_filledSizeBuffer;
+	ComPtr<ID3D12Resource>				m_filledSizeUploadBuffer;
+	ComPtr<ID3D12Resource>				m_filledSizeReadbackBuffer;
+
+	UINT*								m_filledSizeUploadBufferSize;
+	UINT*								m_filledSizeReadbackBufferSize;
+
 };

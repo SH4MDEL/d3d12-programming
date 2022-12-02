@@ -19,7 +19,6 @@ public:
 	void OnProcessingKeyboardMessage(FLOAT timeElapsed) const;
 	void Update(FLOAT timeElapsed);
 	void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
-	void PostProcessing(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 
 	unique_ptr<Shader>& GetShader(const string& key) { return m_shader[key]; }
 	unordered_map<string, unique_ptr<Shader>>& GetShaders() { return m_shader; }

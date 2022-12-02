@@ -181,7 +181,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 			FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 64 * x)));
 			FLOAT ny = terrain->GetHeight(nx, nz) / terrainScale.y + 0.4f;
 			if (ny > 70.f) {
-				int value = GetRandomNumber(1, 4);
+				int value = GetRandomInt(1, 4);
 				if (value == 1) {
 					auto flower1 = make_shared<GameObject>();
 					flower1->SetPosition(XMFLOAT3{ nx, ny, nz });
@@ -254,11 +254,6 @@ void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 	m_blending.at("FLOWER2")->Render(commandList);
 	m_blending.at("GRASS1")->Render(commandList);
 	m_blending.at("GRASS2")->Render(commandList);
-}
-
-void Scene::PostProcessing(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
-{
-	
 }
 
 void Scene::CheckPlayerByObjectCollisions()

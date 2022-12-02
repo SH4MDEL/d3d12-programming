@@ -313,7 +313,9 @@ void GameFramework::CreateRootSignature()
 	);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-	rootSignatureDesc.Init(_countof(rootParameter), rootParameter, _countof(samplerDesc), samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	rootSignatureDesc.Init(_countof(rootParameter), rootParameter, _countof(samplerDesc), samplerDesc, 
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | 
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT);
 
 	ComPtr<ID3DBlob> signature, error;
 	DX::ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
@@ -408,7 +410,6 @@ void GameFramework::Render()
 	// Scene을 Render한다.
 	if (m_scene) {
 		m_scene->Render(m_commandList);
-		m_scene->PostProcessing(m_commandList);
 	}
 
 	// 자원 용도와 관련된 상태 전이를 Direct3D에 통지한다.

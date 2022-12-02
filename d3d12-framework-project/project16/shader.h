@@ -141,9 +141,9 @@ protected:
 	UINT								m_instancingCount;
 };
 
-class LaplacianEdgeShader : public Shader
+class ParticleShader : public Shader
 {
 public:
-	LaplacianEdgeShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
-	~LaplacianEdgeShader() = default;
+	ParticleShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~ParticleShader() = default;
 };
