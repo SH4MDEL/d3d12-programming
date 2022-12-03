@@ -57,7 +57,7 @@ ComPtr<ID3D12Resource> CreateBufferResource(const ComPtr<ID3D12Device>& device, 
 			resourceBuffer->Unmap(0, NULL);
 		}
 
-		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resourceBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, resourceState));
+		//commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resourceBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, resourceState));
 		return resourceBuffer;
 	}
 	case D3D12_HEAP_TYPE_READBACK:

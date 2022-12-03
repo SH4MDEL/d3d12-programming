@@ -206,7 +206,7 @@ public:
 };
 
 
-#define MAX_PARTICLE_COUNT 1000
+#define MAX_PARTICLE_COUNT 100
 class ParticleMesh : public Mesh
 {
 public:

@@ -20,8 +20,8 @@ public:
 	void Update(FLOAT timeElapsed);
 	void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 
-	unique_ptr<Shader>& GetShader(const string& key) { return m_shader[key]; }
-	unordered_map<string, unique_ptr<Shader>>& GetShaders() { return m_shader; }
+	shared_ptr<Shader>& GetShader(const string& key) { return m_shader[key]; }
+	unordered_map<string, shared_ptr<Shader>>& GetShaders() { return m_shader; }
 	shared_ptr<Player> GetPlayer() const { return m_player; }
 	shared_ptr<Camera> GetCamera() const { return m_camera; }
 
@@ -30,8 +30,8 @@ public:
 	void CheckTerrainBorderLimit();
 
 private:
-	unordered_map<string, unique_ptr<Shader>>	m_shader;
-	unordered_map<string, unique_ptr<Shader>>	m_blending;
+	unordered_map<string, shared_ptr<Shader>>	m_shader;
+	unordered_map<string, shared_ptr<Shader>>	m_blending;
 	shared_ptr<Player>							m_player;
 	shared_ptr<Camera>							m_camera;
 };

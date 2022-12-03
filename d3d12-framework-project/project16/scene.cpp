@@ -54,7 +54,7 @@ void Scene::OnProcessingKeyboardMessage(FLOAT timeElapsed) const
 
 void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandlist, const ComPtr<ID3D12RootSignature>& rootsignature, FLOAT aspectRatio)
 {
-	unique_ptr<TextureHierarchyShader> hierarchyShader{ make_unique<TextureHierarchyShader>(device, rootsignature) };
+	auto hierarchyShader{ make_shared<TextureHierarchyShader>(device, rootsignature) };
 
 	// 플레이어 생성
 	m_player = make_shared<Player>();
@@ -82,6 +82,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	auto enemyPoint1 = make_shared<EnemyManager>();
 	enemyPoint1->SetPosition(XMFLOAT3{ 50.0f, 100.0f, 170.0f });
 	enemyPoint1->SetParticleShader(particleShader);
+	enemyPoint1->SetShader(hierarchyShader);
 	enemyPoint1->InitEnemy(device, commandlist);
 	enemyPoint1->SetTarget(m_player);
 	hierarchyShader->GetGameObjects().push_back(enemyPoint1);
@@ -89,6 +90,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	auto enemyPoint2 = make_shared<EnemyManager>();
 	enemyPoint2->SetPosition(XMFLOAT3{ 220.0f, 110.0f, 150.0f });
 	enemyPoint2->SetParticleShader(particleShader);
+	enemyPoint2->SetShader(hierarchyShader);
 	enemyPoint2->InitEnemy(device, commandlist);
 	enemyPoint2->SetTarget(m_player);
 	hierarchyShader->GetGameObjects().push_back(enemyPoint2);
@@ -96,12 +98,13 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	auto enemyPoint3 = make_shared<EnemyManager>();
 	enemyPoint3->SetPosition(XMFLOAT3{ 180.0f, 110.0f, 230.0f });
 	enemyPoint3->SetParticleShader(particleShader);
+	enemyPoint3->SetShader(hierarchyShader);
 	enemyPoint3->InitEnemy(device, commandlist);
 	enemyPoint3->SetTarget(m_player);
 	hierarchyShader->GetGameObjects().push_back(enemyPoint3);
 
 	// 지형 생성
-	unique_ptr<TerrainShader> terrainShader{ make_unique<TerrainShader>(device, rootsignature) };
+	auto terrainShader{ make_shared<TerrainShader>(device, rootsignature) };
 	shared_ptr<HeightMapTerrain> terrain{
 		make_shared<HeightMapTerrain>(device, commandlist, TEXT("Resource/HeightMap/HeightMap.raw"), 257, 257, 257, 257, XMFLOAT3{ 1.0f, 0.1f, 1.0f })
 	};
@@ -121,7 +124,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	enemyPoint3->SetTerrain(terrain);
 
 	// 스카이박스 생성
-	unique_ptr<SkyboxShader> skyboxShader = make_unique<SkyboxShader>(device, rootsignature);
+	auto skyboxShader = make_shared<SkyboxShader>(device, rootsignature);
 	shared_ptr<Skybox> skybox{ make_shared<Skybox>(device, commandlist, 20.0f, 20.0f, 20.0f) };
 	shared_ptr<Texture> skyboxTexture{
 		make_shared<Texture>()
@@ -133,7 +136,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	skyboxShader->GetGameObjects().push_back(skybox);
 
 	// 물 지형 생성
-	unique_ptr<BlendingShader> blendingShader = make_unique<BlendingShader>(device, rootsignature);
+	auto blendingShader = make_shared<BlendingShader>(device, rootsignature);
 	shared_ptr<GameObject> river = make_shared<GameObject>();
 	shared_ptr<TextureRectMesh> riverMesh = make_shared<TextureRectMesh>(device, commandlist, XMFLOAT3{0.f, 0.f, 0.f}, 20.f, 0.f, 20.f);
 	river->SetMesh(riverMesh);
@@ -209,10 +212,10 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 			}
 		}
 	}
-	unique_ptr<BillBoardShader> flower1Shader = make_unique<BillBoardShader>(device, rootsignature, vflower1.size());
-	unique_ptr<BillBoardShader> flower2Shader = make_unique<BillBoardShader>(device, rootsignature, vflower2.size());
-	unique_ptr<BillBoardShader> grass1Shader = make_unique<BillBoardShader>(device, rootsignature, vgrass1.size());
-	unique_ptr<BillBoardShader> grass2Shader = make_unique<BillBoardShader>(device, rootsignature, vgrass2.size());
+	auto flower1Shader = make_shared<BillBoardShader>(device, rootsignature, (UINT)vflower1.size());
+	auto flower2Shader = make_shared<BillBoardShader>(device, rootsignature, (UINT)vflower2.size());
+	auto grass1Shader = make_shared<BillBoardShader>(device, rootsignature, (UINT)vgrass1.size());
+	auto grass2Shader = make_shared<BillBoardShader>(device, rootsignature, (UINT)vgrass2.size());
 	for (const auto& obj : vflower1) flower1Shader->GetGameObjects().push_back(obj);
 	for (const auto& obj : vflower2) flower2Shader->GetGameObjects().push_back(obj);
 	for (const auto& obj : vgrass1) grass1Shader->GetGameObjects().push_back(obj);
@@ -246,7 +249,7 @@ void Scene::Update(FLOAT timeElapsed)
 
 	CheckPlayerByObjectCollisions();
 	CheckMissileByObjectCollisions();
-	CheckTerrainBorderLimit();
+	//CheckTerrainBorderLimit();
 }
 
 void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -258,14 +261,15 @@ void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 	m_blending.at("FLOWER2")->Render(commandList);
 	m_blending.at("GRASS1")->Render(commandList);
 	m_blending.at("GRASS2")->Render(commandList);
+	m_shader.at("HIERARCHY")->Render(commandList);
 }
 
 void Scene::CheckPlayerByObjectCollisions()
 {
 	for (auto enemyManager : m_shader["HIERARCHY"]->GetGameObjects()) {
 		for (auto enemy : static_pointer_cast<EnemyManager>(enemyManager)->GetEnemys()) {
-			if (enemy->GetBoundingBox().Intersects(m_player->GetBoundingBox())) {
-				static_pointer_cast<Enemy>(enemy)->SetStatus(Enemy::DEATH);
+			if (enemy->GetStatus() == Enemy::LIVE && enemy->GetBoundingBox().Intersects(m_player->GetBoundingBox())) {
+				static_pointer_cast<Enemy>(enemy)->SetStatus(Enemy::BLOWING);
 			}
 		}
 	}
@@ -276,8 +280,8 @@ void Scene::CheckMissileByObjectCollisions()
 	if (m_player->GetMissileState() == Player::SHOTTING) {
 		for (auto enemyManager : m_shader["HIERARCHY"]->GetGameObjects()) {
 			for (auto enemy : static_pointer_cast<EnemyManager>(enemyManager)->GetEnemys()) {
-				if (enemy->GetBoundingBox().Intersects(m_player->GetMissile()->GetBoundingBox())) {
-					static_pointer_cast<Enemy>(enemy)->SetStatus(Enemy::DEATH);
+				if (enemy->GetStatus() == Enemy::LIVE && enemy->GetBoundingBox().Intersects(m_player->GetMissile()->GetBoundingBox())) {
+					static_pointer_cast<Enemy>(enemy)->SetStatus(Enemy::BLOWING);
 					m_player->SetMissileState(Player::READY);
 				}
 			}
@@ -295,8 +299,9 @@ void Scene::CheckTerrainBorderLimit()
 	for (auto enemyManager : m_shader["HIERARCHY"]->GetGameObjects()) {
 		for (auto enemy : static_pointer_cast<EnemyManager>(enemyManager)->GetEnemys()) {
 			XMFLOAT3 pos = enemy->GetPosition();
-			if (pos.x >= 255.f || pos.x <= 0.f || pos.z >= 255.f || pos.z <= 0.f) {
-				static_pointer_cast<Enemy>(enemy)->SetStatus(Enemy::DEATH);
+			if (enemy->GetStatus() == Enemy::LIVE && 
+				(pos.x >= 255.f || pos.x <= 0.f || pos.z >= 255.f || pos.z <= 0.f)) {
+				static_pointer_cast<Enemy>(enemy)->SetStatus(Enemy::BLOWING);
 			}
 		}
 	}

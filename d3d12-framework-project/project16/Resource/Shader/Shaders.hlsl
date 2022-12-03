@@ -10,8 +10,9 @@ cbuffer cbGameObject : register(b0)
 {
 	matrix worldMatrix : packoffset(c0);
 	MATERIAL material : packoffset(c4);
-	uint textureMask : packoffset(c8);
-	float g_timeElapsed : packoffset(c9);
+	uint textureMask : packoffset(c8.x);
+	//float g_timeElapsed : packoffset(c8.y);
+	float g_age : packoffset(c8.y);
 };
 
 cbuffer cbCamera : register(b1)
@@ -351,6 +352,8 @@ struct GS_PARTICLE_OUTPUT
 {
 	float4 position : SV_POSITION;
 	float2 uv : TEXCOORD;
+	float age : AGE;
+	float lifeTime : LIFETIME;
 };
 
 
@@ -364,10 +367,10 @@ void GS_PARTICLE_STREAMOUTPUT(point VS_PARTICLE_INPUT input[1], inout PointStrea
 {
 	VS_PARTICLE_INPUT particle = input[0];
 
-	particle.position.x += particle.velocity.x * g_timeElapsed;
-	particle.position.y += particle.velocity.y * g_timeElapsed;
-	particle.position.z += particle.velocity.z * g_timeElapsed;
-
+	particle.position.x = particle.velocity.x * g_age;
+	particle.position.y = particle.velocity.y * g_age;
+	particle.position.z = particle.velocity.z * g_age;
+	
 	output.Append(particle);
 }
 
@@ -381,8 +384,8 @@ void GS_PARTICLE_DRAW(point VS_PARTICLE_INPUT input[1], inout TriangleStream<GS_
 	look = normalize(look);
 	float3 right = cross(up, look);
 
-	float halfW = 0.1f;
-	float halfH = 0.1f;
+	float halfW = 0.2f;
+	float halfH = 0.2f;
 
 	float4 vertices[4] =
 	{
@@ -407,11 +410,13 @@ void GS_PARTICLE_DRAW(point VS_PARTICLE_INPUT input[1], inout TriangleStream<GS_
 		output.position = mul(vertices[i], viewMatrix);
 		output.position = mul(output.position, projMatrix);
 		output.uv = uv[i];
+		output.age = input[0].age;
+		output.lifeTime = input[0].lifeTime;
 		outputStream.Append(output);
 	}
 }
 
 float4 PS_PARTICLE_MAIN(GS_PARTICLE_OUTPUT input) : SV_TARGET
 {
-	return float4(1.0f, 1.0f, 1.0f, 0.5f);
+	return float4(1.0f, 0.4f, 0.4f, 0.5f);
 }

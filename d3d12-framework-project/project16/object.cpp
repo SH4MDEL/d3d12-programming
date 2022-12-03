@@ -169,7 +169,6 @@ void GameObject::LoadFrameHierarchy(const ComPtr<ID3D12Device>& device, const Co
 			in.read((char*)(&strLength), sizeof(BYTE));
 			m_frameName.resize(strLength);
 			in.read((&m_frameName[0]), sizeof(char) * strLength);
-			//cout << m_frameName << endl;
 		}
 		else if (strToken == "<Transform>:") {
 			XMFLOAT3 position, rotation, scale;
@@ -235,7 +234,7 @@ void Helicoptor::SetRotorFrame()
 	m_missileFrame = FindFrame("Radar");
 }
 
-Enemy::Enemy() : m_status(LIVE)
+Enemy::Enemy() : m_status(DEATH), m_blowingAge(0.f)
 {
 }
 
@@ -247,9 +246,16 @@ void Enemy::InitParticle(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 
 void Enemy::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
+	if (m_shader) commandList->SetPipelineState(m_shader->GetPipelineState().Get());
+
 	if (m_status == LIVE) { GameObject::Render(commandList); }
 
 	if (m_status == BLOWING) {
+		XMFLOAT4X4 worldMatrix;
+		XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_worldMatrix)));
+		commandList->SetGraphicsRoot32BitConstants(0, 16, &worldMatrix, 0);
+		commandList->SetGraphicsRoot32BitConstants(0, 1, &(m_blowingAge), 33);
+		
 		if (m_particleShader) {
 			commandList->SetPipelineState(m_particleShader->GetStreamPipelineState().Get());
 			if (m_particle) m_particle->RenderStreamOutput(commandList);
@@ -262,6 +268,9 @@ void Enemy::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 
 void Enemy::Update(FLOAT timeElapsed)
 {
+	m_timeElapsed = timeElapsed;
+
+	Helicoptor::Update(timeElapsed);
 	if (m_status == LIVE) {
 		XMFLOAT3 movePosition = Vector3::Sub(m_targetPosition, GetPosition());
 		movePosition = Vector3::Normalize(movePosition);
@@ -279,8 +288,13 @@ void Enemy::Update(FLOAT timeElapsed)
 		if ((m_terrainHeight + 0.05f) / 0.1f > pos.y) {
 			SetPosition(XMFLOAT3{ pos.x, (m_terrainHeight + 0.05f) / 0.1f, pos.z });
 		}
-
-		Helicoptor::Update(timeElapsed);
+	}
+	if (m_status == BLOWING) {
+		m_blowingAge += timeElapsed;
+		if (m_blowingAge >= m_blowingLifeTime) {
+			m_status = DEATH;
+			m_blowingAge = 0.f;
+		}
 	}
 }
 
@@ -306,6 +320,7 @@ void EnemyManager::InitEnemy(const ComPtr<ID3D12Device>& device, const ComPtr<ID
 		m_enemys.back()->SetBoundingBox(m_enemys.back()->GetMesh()->GetBoundingBox());
 		m_enemys.back()->SetScale(0.2f, 0.2f, 0.2f);
 		m_enemys.back()->SetParticleShader(m_particleShader);
+		m_enemys.back()->SetShader(m_shader);
 	}
 }
 
