@@ -700,7 +700,9 @@ BillBoardMesh::BillBoardMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID
 
 ParticleMesh::ParticleMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
+	m_nIndices = 0;
 	m_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+	m_isBinding = false;
 
 	vector<ParticleVertex> vertices;
 
@@ -750,4 +752,48 @@ void ParticleMesh::CreateStreamOutputBuffer(const ComPtr<ID3D12Device>& device, 
 	m_streamOutputBufferView.SizeInBytes = sizeof(ParticleVertex) * MAX_PARTICLE_COUNT;
 	m_streamOutputBufferView.BufferFilledSizeLocation = m_filledSizeBuffer->GetGPUVirtualAddress();
 
+}
+
+void ParticleMesh::RenderStreamOutput(const ComPtr<ID3D12GraphicsCommandList>& commandList)
+{
+	if (!m_isBinding) {
+		m_isBinding = true;
+		m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
+		m_vertexBufferView.StrideInBytes = sizeof(ParticleVertex);
+		m_vertexBufferView.SizeInBytes = sizeof(ParticleVertex) * m_nVertices;
+	}
+
+	*m_filledSizeUploadBufferSize = 0;
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_filledSizeBuffer.Get(), D3D12_RESOURCE_STATE_STREAM_OUT, D3D12_RESOURCE_STATE_COPY_DEST));
+	commandList->CopyResource(m_filledSizeBuffer.Get(), m_filledSizeUploadBuffer.Get());
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_filledSizeBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_STREAM_OUT));
+
+	D3D12_STREAM_OUTPUT_BUFFER_VIEW streamOutputBufferViews[]{ m_streamOutputBufferView };
+	commandList->SOSetTargets(0, _countof(streamOutputBufferViews), streamOutputBufferViews);
+	Mesh::Render(commandList);
+
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_filledSizeBuffer.Get(), D3D12_RESOURCE_STATE_STREAM_OUT, D3D12_RESOURCE_STATE_COPY_SOURCE));
+	commandList->CopyResource(m_filledSizeReadbackBuffer.Get(), m_filledSizeBuffer.Get());
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_filledSizeBuffer.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_STREAM_OUT));
+
+	UINT64* filledSize = NULL;
+	m_filledSizeReadbackBuffer->Map(0, NULL, reinterpret_cast<void**>(&filledSize));
+	m_nVertices = UINT(*filledSize) / sizeof(ParticleVertex);
+	m_filledSizeReadbackBuffer->Unmap(0, NULL);
+
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_drawBuffer.Get(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST));
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_streamOutputBuffer.Get(), D3D12_RESOURCE_STATE_STREAM_OUT, D3D12_RESOURCE_STATE_COPY_SOURCE));
+	commandList->CopyResource(m_drawBuffer.Get(), m_streamOutputBuffer.Get());
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_drawBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_streamOutputBuffer.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_STREAM_OUT));
+}
+
+void ParticleMesh::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList)
+{
+	m_vertexBufferView.BufferLocation = m_drawBuffer->GetGPUVirtualAddress();
+	m_vertexBufferView.StrideInBytes = sizeof(ParticleVertex);
+	m_vertexBufferView.SizeInBytes = sizeof(ParticleVertex) * m_nVertices;
+
+	commandList->SOSetTargets(0, 1, NULL);
+	Mesh::Render(commandList);
 }

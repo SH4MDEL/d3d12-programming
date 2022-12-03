@@ -11,6 +11,7 @@ cbuffer cbGameObject : register(b0)
 	matrix worldMatrix : packoffset(c0);
 	MATERIAL material : packoffset(c4);
 	uint textureMask : packoffset(c8);
+	float g_timeElapsed : packoffset(c9);
 };
 
 cbuffer cbCamera : register(b1)
@@ -19,11 +20,6 @@ cbuffer cbCamera : register(b1)
 	matrix projMatrix : packoffset(c4);
 	float3 cameraPosition : packoffset(c8);
 };
-
-cbuffer cbGameFramework : register(b2)
-{
-	float g_timeElapsed;
-}
 
 Texture2D g_baseTexture : register(t0);
 Texture2D g_detailTexture : register(t1);
@@ -353,7 +349,7 @@ struct VS_PARTICLE_INPUT
 
 struct GS_PARTICLE_OUTPUT
 {
-	float4 position : POSITION;
+	float4 position : SV_POSITION;
 	float2 uv : TEXCOORD;
 };
 
@@ -378,25 +374,22 @@ void GS_PARTICLE_STREAMOUTPUT(point VS_PARTICLE_INPUT input[1], inout PointStrea
 [maxvertexcount(4)]
 void GS_PARTICLE_DRAW(point VS_PARTICLE_INPUT input[1], inout TriangleStream<GS_PARTICLE_OUTPUT> outputStream)
 {
-	// 정점의 월드좌표계에서의 좌표
-	float3 positionW = mul(float4(input[0].position, 1.0f), worldMatrix).xyz;
-
-	// y축으로만 회전하는 빌보드
 	float3 up = float3(0.0f, 1.0f, 0.0f);
+	float3 positionW = mul(float4(input[0].position, 1.0f), worldMatrix).xyz;
 	float3 look = cameraPosition - positionW;
 	look.y = 0.0f;
 	look = normalize(look);
 	float3 right = cross(up, look);
 
-	float hw = 0.5f/* * input[0].size.x*/;
-	float hh = 0.5f/* * input[0].size.y*/;
+	float halfW = 0.1f;
+	float halfH = 0.1f;
 
-	float4 position[4] =
+	float4 vertices[4] =
 	{
-		float4(positionW + (hw * right) - (hh * up), 1.0f), // LB
-		float4(positionW + (hw * right) + (hh * up), 1.0f), // LT
-		float4(positionW - (hw * right) - (hh * up), 1.0f), // RB
-		float4(positionW - (hw * right) + (hh * up), 1.0f)  // RT
+		float4(positionW + (halfW * right) - (halfH * up), 1.0f), // LB
+		float4(positionW + (halfW * right) + (halfH * up), 1.0f), // LT
+		float4(positionW - (halfW * right) - (halfH * up), 1.0f), // RB
+		float4(positionW - (halfW * right) + (halfH * up), 1.0f)  // RT
 	};
 
 	float2 uv[4] =
@@ -411,14 +404,13 @@ void GS_PARTICLE_DRAW(point VS_PARTICLE_INPUT input[1], inout TriangleStream<GS_
 	[unroll]
 	for (int i = 0; i < 4; ++i)
 	{
-		output.position = mul(position[i], viewMatrix);
+		output.position = mul(vertices[i], viewMatrix);
 		output.position = mul(output.position, projMatrix);
 		output.uv = uv[i];
 		outputStream.Append(output);
 	}
 }
 
-[earlydepthstencil]
 float4 PS_PARTICLE_MAIN(GS_PARTICLE_OUTPUT input) : SV_TARGET
 {
 	return float4(1.0f, 1.0f, 1.0f, 0.5f);

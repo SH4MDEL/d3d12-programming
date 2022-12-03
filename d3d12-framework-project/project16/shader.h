@@ -146,4 +146,13 @@ class ParticleShader : public Shader
 public:
 	ParticleShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 	~ParticleShader() = default;
+
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+
+	ComPtr<ID3D12PipelineState> GetStreamPipelineState() const { return m_streamPipelineState; }
+
+private:
+	ComPtr<ID3D12PipelineState> m_streamPipelineState;
+
+	vector<shared_ptr<ParticleMesh>>		m_particles;
 };

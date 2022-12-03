@@ -77,24 +77,28 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	XMStoreFloat4x4(&projMatrix, XMMatrixPerspectiveFovLH(0.25f * XM_PI, aspectRatio, 0.1f, 1000.0f));
 	m_camera->SetProjMatrix(projMatrix);
 
+	auto particleShader{ make_shared<ParticleShader>(device, rootsignature) };
 	// 利 积己
-	//auto enemyPoint1 = make_shared<EnemyManager>();
-	//enemyPoint1->SetPosition(XMFLOAT3{ 50.0f, 100.0f, 170.0f });
-	//enemyPoint1->InitEnemy(device, commandlist);
-	//enemyPoint1->SetTarget(m_player);
-	//hierarchyShader->GetGameObjects().push_back(enemyPoint1);
+	auto enemyPoint1 = make_shared<EnemyManager>();
+	enemyPoint1->SetPosition(XMFLOAT3{ 50.0f, 100.0f, 170.0f });
+	enemyPoint1->SetParticleShader(particleShader);
+	enemyPoint1->InitEnemy(device, commandlist);
+	enemyPoint1->SetTarget(m_player);
+	hierarchyShader->GetGameObjects().push_back(enemyPoint1);
 
-	//auto enemyPoint2 = make_shared<EnemyManager>();
-	//enemyPoint2->SetPosition(XMFLOAT3{ 220.0f, 110.0f, 150.0f });
-	//enemyPoint2->InitEnemy(device, commandlist);
-	//enemyPoint2->SetTarget(m_player);
-	//hierarchyShader->GetGameObjects().push_back(enemyPoint2);
+	auto enemyPoint2 = make_shared<EnemyManager>();
+	enemyPoint2->SetPosition(XMFLOAT3{ 220.0f, 110.0f, 150.0f });
+	enemyPoint2->SetParticleShader(particleShader);
+	enemyPoint2->InitEnemy(device, commandlist);
+	enemyPoint2->SetTarget(m_player);
+	hierarchyShader->GetGameObjects().push_back(enemyPoint2);
 
-	//auto enemyPoint3 = make_shared<EnemyManager>();
-	//enemyPoint3->SetPosition(XMFLOAT3{ 180.0f, 110.0f, 230.0f });
-	//enemyPoint3->InitEnemy(device, commandlist);
-	//enemyPoint3->SetTarget(m_player);
-	//hierarchyShader->GetGameObjects().push_back(enemyPoint3);
+	auto enemyPoint3 = make_shared<EnemyManager>();
+	enemyPoint3->SetPosition(XMFLOAT3{ 180.0f, 110.0f, 230.0f });
+	enemyPoint3->SetParticleShader(particleShader);
+	enemyPoint3->InitEnemy(device, commandlist);
+	enemyPoint3->SetTarget(m_player);
+	hierarchyShader->GetGameObjects().push_back(enemyPoint3);
 
 	// 瘤屈 积己
 	unique_ptr<TerrainShader> terrainShader{ make_unique<TerrainShader>(device, rootsignature) };
@@ -112,9 +116,9 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	terrain->SetTexture(terrainTexture);
 	terrainShader->SetTerrain(terrain);
 	m_player->SetTerrain(terrain);
-	//enemyPoint1->SetTerrain(terrain);
-	//enemyPoint2->SetTerrain(terrain);
-	//enemyPoint3->SetTerrain(terrain);
+	enemyPoint1->SetTerrain(terrain);
+	enemyPoint2->SetTerrain(terrain);
+	enemyPoint3->SetTerrain(terrain);
 
 	// 胶墨捞冠胶 积己
 	unique_ptr<SkyboxShader> skyboxShader = make_unique<SkyboxShader>(device, rootsignature);

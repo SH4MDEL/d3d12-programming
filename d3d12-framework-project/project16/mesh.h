@@ -214,7 +214,9 @@ public:
 	~ParticleMesh() = default;
 
 	void CreateStreamOutputBuffer(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList);
-	//virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& m_commandList) const override;
+
+	void RenderStreamOutput(const ComPtr<ID3D12GraphicsCommandList>& commandList);
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList);
 
 private:
 	ComPtr<ID3D12Resource>				m_streamOutputBuffer;
@@ -229,4 +231,5 @@ private:
 	UINT*								m_filledSizeUploadBufferSize;
 	UINT*								m_filledSizeReadbackBufferSize;
 
+	BOOL								m_isBinding;
 };

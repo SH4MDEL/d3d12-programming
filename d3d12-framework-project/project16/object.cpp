@@ -1,4 +1,5 @@
 #include "object.h"
+#include "shader.h"
 
 GameObject::GameObject() : m_right{ 1.0f, 0.0f, 0.0f }, m_up{ 0.0f, 1.0f, 0.0f }, m_front{ 0.0f, 0.0f, 1.0f }, m_roll{ 0.0f }, m_pitch{ 0.0f }, m_yaw{ 0.0f }
 {
@@ -234,11 +235,29 @@ void Helicoptor::SetRotorFrame()
 	m_missileFrame = FindFrame("Radar");
 }
 
-Enemy::Enemy() : m_status(LIVE) {}
+Enemy::Enemy() : m_status(LIVE)
+{
+}
+
+void Enemy::InitParticle(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList)
+{
+	if (m_particle) m_particle.reset();
+	m_particle = make_unique<ParticleMesh>(device, commandList);
+}
 
 void Enemy::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
 	if (m_status == LIVE) { GameObject::Render(commandList); }
+
+	if (m_status == BLOWING) {
+		if (m_particleShader) {
+			commandList->SetPipelineState(m_particleShader->GetStreamPipelineState().Get());
+			if (m_particle) m_particle->RenderStreamOutput(commandList);
+
+			commandList->SetPipelineState(m_particleShader->GetPipelineState().Get());
+			if (m_particle) m_particle->Render(commandList);
+		}
+	}
 }
 
 void Enemy::Update(FLOAT timeElapsed)
@@ -280,11 +299,13 @@ void EnemyManager::InitEnemy(const ComPtr<ID3D12Device>& device, const ComPtr<ID
 	for (int i = 0; i < 5; ++i) {
 		m_enemys.push_back(make_shared<Enemy>());
 		m_enemys.back()->LoadGeometry(device, commandlist, TEXT("Model/Mi24.bin"));
+		m_enemys.back()->InitParticle(device, commandlist);
 		m_enemys.back()->SetRotorFrame();
 		m_enemys.back()->SetPosition(GetPosition());
 		m_enemys.back()->GetMesh()->SetBoundingBox(GetPosition(), XMFLOAT3(1.f, 1.f, 1.f));
 		m_enemys.back()->SetBoundingBox(m_enemys.back()->GetMesh()->GetBoundingBox());
 		m_enemys.back()->SetScale(0.2f, 0.2f, 0.2f);
+		m_enemys.back()->SetParticleShader(m_particleShader);
 	}
 }
 
@@ -422,45 +443,4 @@ Skybox::Skybox(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCo
 
 void Skybox::Update(FLOAT timeElapsed)
 {
-}
-
-Sprite::Sprite(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, INT rows, INT cols) :
-	m_rows(rows), m_cols(cols), m_row(0.f), m_col(0.f), m_drawed(true), m_spriteTimer(0.f)
-{
-
-}
-
-void Sprite::Update(FLOAT timeElapsed)
-{
-
-	CalculateRowColumn(timeElapsed);
-	GameObject::Update(timeElapsed);
-}
-
-void Sprite::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
-{
-	FLOAT nowRow = 1.f / (FLOAT)m_rows * (FLOAT)m_row;
-	FLOAT nowCol = 1.f / (FLOAT)m_cols * (FLOAT)m_col;
-	commandList->SetGraphicsRoot32BitConstants(0, 1, &nowCol, 34);
-	commandList->SetGraphicsRoot32BitConstants(0, 1, &nowRow, 35);
-
-	GameObject::Render(commandList);
-}
-
-void Sprite::CalculateRowColumn(FLOAT timeElapsed)
-{
-	m_spriteTimer += timeElapsed;
-	if (m_drawed) {
-		if (m_spriteTimer >= m_spriteTime) {
-			m_spriteTimer += m_spriteTime;
-			if (++m_col == m_cols) { m_row++; m_col = 0; }
-			if (m_row == m_rows) m_row = 0;
-		}
-	}
-}
-
-void Sprite::SetDraw()
-{
-	m_drawed = true;
-	m_spriteTimer = 0.f;
 }

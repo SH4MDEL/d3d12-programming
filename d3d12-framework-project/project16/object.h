@@ -82,6 +82,7 @@ protected:
 	shared_ptr<GameObject>	m_missileFrame;
 };
 
+class ParticleShader;
 class Enemy : public Helicoptor
 {
 public:
@@ -94,8 +95,11 @@ public:
 	virtual void SetRotorFrame() override;
 	shared_ptr<Mesh> GetMesh() { return m_mesh; }
 
+	void InitParticle(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList);
+
 	enum Status {
 		LIVE,
+		BLOWING,
 		DEATH
 	};
 
@@ -103,13 +107,19 @@ public:
 	void SetStatus(INT status) { m_status = status; }
 	void SetTargetPosition(XMFLOAT3 position) { m_targetPosition = position; }
 	void SetTerrainHeight(FLOAT height) { m_terrainHeight = height; }
+	void SetParticleShader(const shared_ptr<ParticleShader>& particleShader) { m_particleShader = particleShader; }
+
 private:
 	INT			m_status;
 	XMFLOAT3	m_targetPosition;
 	FLOAT		m_terrainHeight;
+
+	unique_ptr<ParticleMesh>		m_particle;
+	shared_ptr<ParticleShader>		m_particleShader;
 };
 
 class HeightMapTerrain;
+
 
 class EnemyManager : public GameObject
 {
@@ -120,6 +130,7 @@ public:
 	void InitEnemy(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandlist);
 	void SetTarget(const shared_ptr<GameObject>& target) { m_target = target; }
 	void SetTerrain(const shared_ptr< HeightMapTerrain>& terrain) { m_terrain = terrain; }
+	void SetParticleShader(const shared_ptr<ParticleShader>& particleShader) { m_particleShader = particleShader; }
 	vector<shared_ptr<Enemy>> GetEnemys() { return m_enemys; }
 
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override;
@@ -133,6 +144,7 @@ private:
 
 	shared_ptr<GameObject>			m_target;
 	shared_ptr<HeightMapTerrain>	m_terrain;
+	shared_ptr<ParticleShader>		m_particleShader;
 };
 
 class HeightMapTerrain : public GameObject
@@ -173,25 +185,4 @@ public:
 	~Skybox() = default;
 
 	virtual void Update(FLOAT timeElapsed);
-};
-
-class Sprite : public GameObject
-{
-public:
-	Sprite(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, INT rows, INT cols);
-	~Sprite() = default;
-
-	virtual void Update(FLOAT timeElapsed) override;
-	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override;
-
-	void CalculateRowColumn(FLOAT timeElapsed);
-	void SetDraw();
-private:
-	const FLOAT		m_spriteTime = 0.2f;
-	FLOAT			m_spriteTimer;
-	INT				m_rows;
-	INT				m_cols;
-	INT				m_row;
-	INT				m_col;
-	BOOL			m_drawed;
 };

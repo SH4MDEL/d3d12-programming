@@ -261,7 +261,7 @@ void GameFramework::CreateRootSignature()
 	CD3DX12_ROOT_PARAMETER rootParameter[13];
 
 	// cbGameObject : 월드 변환 행렬(16) + struct Material(16) + material type(1)
-	rootParameter[0].InitAsConstants(33, 0, 0, D3D12_SHADER_VISIBILITY_ALL);
+	rootParameter[0].InitAsConstants(34, 0, 0, D3D12_SHADER_VISIBILITY_ALL);
 
 	// cbCamera
 	rootParameter[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
@@ -362,6 +362,8 @@ void GameFramework::Update(FLOAT timeElapsed)
 {
 	wstring title{ TEXT("project 16 (") + to_wstring((int)(m_timer.GetFPS())) + TEXT("FPS)") };
 	SetWindowText(m_hWnd, title.c_str());
+
+	m_commandList->SetGraphicsRoot32BitConstants(0, 1, &timeElapsed, 33);
 
 	if (m_scene) m_scene->Update(timeElapsed);
 }
