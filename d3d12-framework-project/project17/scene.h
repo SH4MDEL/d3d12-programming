@@ -19,7 +19,7 @@ public:
 	void OnProcessingMouseMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) const;
 	void OnProcessingKeyboardMessage(FLOAT timeElapsed) const;
 	void Update(FLOAT timeElapsed);
-	void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+	void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList, CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle) const;
 
 	shared_ptr<Shader>& GetShader(const string& key) { return m_shader[key]; }
 	unordered_map<string, shared_ptr<Shader>>& GetShaders() { return m_shader; }

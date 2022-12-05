@@ -409,7 +409,7 @@ void GameFramework::Render()
 
 	// Scene을 Render한다.
 	if (m_scene) {
-		m_scene->Render(m_commandList);
+		m_scene->Render(m_commandList, dsvHandle);
 	}
 
 	// 자원 용도와 관련된 상태 전이를 Direct3D에 통지한다.

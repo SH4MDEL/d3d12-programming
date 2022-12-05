@@ -447,6 +447,38 @@ VS_UI_OUTPUT VS_UI_MAIN(VS_UI_INPUT input)
 
 float4 PS_UI_MAIN(VS_UI_OUTPUT input) : SV_TARGET
 {
-	//float4 color = g_stencilTexture.Sample(g_samplerWrap, input.uv);
-	return float4(0.4f, 0.4f, 4.0f, 1.0f);
+	float width, height;
+	g_stencilTexture.GetDimensions(width, height);
+
+	float2 uv;
+	uv.x = lerp(0.0f, width, input.uv.x);
+	uv.y = lerp(0.0f, height, input.uv.y);
+
+	float2 tx = float2(1.0, 0.0);
+	float2 ty = float2(0.0, 1.0);
+
+	float values[9];
+	//values[0] = g_stencilTexture[uv.x - 1][uv.y - 1].g;
+	//values[1] = g_stencilTexture[uv.x - 1][uv.y].g;
+	//values[2] = g_stencilTexture[uv.x - 1][uv.y + 1].g;
+	//values[3] = g_stencilTexture[uv.x][uv.y - 1].g;
+	//values[4] = g_stencilTexture[uv.x][uv.y].g;
+	//values[5] = g_stencilTexture[uv.x][uv.y + 1].g;
+	//values[6] = g_stencilTexture[uv.x + 1][uv.y - 1].g;
+	//values[7] = g_stencilTexture[uv.x + 1][uv.y].g;
+	//values[8] = g_stencilTexture[uv.x + 1][uv.y + 1].g;
+	values[0] = g_stencilTexture[uv - tx - ty].g;
+	values[1] = g_stencilTexture[uv - ty].g;
+	values[2] = g_stencilTexture[uv + tx - ty].g;
+	values[3] = g_stencilTexture[uv - tx].g;
+	values[4] = g_stencilTexture[uv].g;
+	values[5] = g_stencilTexture[uv + tx].g;
+	values[6] = g_stencilTexture[uv - tx + ty].g;
+	values[7] = g_stencilTexture[uv + ty].g;
+	values[8] = g_stencilTexture[uv + tx + ty].g;
+	
+	for (int i = 0; i < 9; ++i) {
+		if (values[i]) return float4(1.f, 1.f, 1.f, 1.f);
+	}
+	return float4(0.f, 0.f, 1.f, 0.3f);
 }

@@ -808,10 +808,10 @@ UIMesh::UIMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCo
 	vector<TextureVertex> vertices;
 
 	vertices.emplace_back(XMFLOAT3(-1.f, -1.f, +0.f), XMFLOAT2(0.f, 1.f));
-	vertices.emplace_back(XMFLOAT3(+1.f, -1.f, +0.f), XMFLOAT2(1.f, 1.f));
-	vertices.emplace_back(XMFLOAT3(-1.f, +1.f, +0.f), XMFLOAT2(0.f, 0.f));
 	vertices.emplace_back(XMFLOAT3(-1.f, +1.f, +0.f), XMFLOAT2(0.f, 0.f));
 	vertices.emplace_back(XMFLOAT3(+1.f, -1.f, +0.f), XMFLOAT2(1.f, 1.f));
+	vertices.emplace_back(XMFLOAT3(+1.f, -1.f, +0.f), XMFLOAT2(1.f, 1.f));
+	vertices.emplace_back(XMFLOAT3(-1.f, +1.f, +0.f), XMFLOAT2(0.f, 0.f));
 	vertices.emplace_back(XMFLOAT3(+1.f, +1.f, +0.f), XMFLOAT2(1.f, 0.f));
 
 	m_nVertices = vertices.size();

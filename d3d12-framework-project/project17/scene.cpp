@@ -274,7 +274,7 @@ void Scene::Update(FLOAT timeElapsed)
 	//CheckTerrainBorderLimit();
 }
 
-void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList, CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle) const
 {
 	if (m_camera) m_camera->UpdateShaderVariable(commandList);
 	m_shader.at("TERRAIN")->Render(commandList);
@@ -285,7 +285,7 @@ void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 	m_blending.at("GRASS1")->Render(commandList);
 	m_blending.at("GRASS2")->Render(commandList);
 	m_shader.at("HIERARCHY")->Render(commandList);
-
+	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 	m_shader.at("STENCIL")->Render(commandList);
 	m_shader.at("UI")->Render(commandList);
 }
