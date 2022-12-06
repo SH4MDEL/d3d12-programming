@@ -1,8 +1,10 @@
 #include "stdafx.h"
 #include "framework.h"
 
-mt19937		g_randomEngine{ random_device{}() };
+mt19937				g_randomEngine{ random_device{}() };
 GameFramework       g_GameFramework(1280, 720);     // 게임프레임워크
+bool				g_toggle = false;
+bool			    g_postProcess = false;
 
 ComPtr<ID3D12Resource> CreateBufferResource(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,
 	const void* data, UINT byte, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceState, ComPtr<ID3D12Resource>& uploadBuffer)

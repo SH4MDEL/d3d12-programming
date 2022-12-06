@@ -76,12 +76,13 @@ void Texture::CreateTexture(const ComPtr<ID3D12Device>& device, DXGI_FORMAT form
 
 void Texture::Copy(const ComPtr<ID3D12GraphicsCommandList>& commandList, const ComPtr<ID3D12Resource>& src, D3D12_RESOURCE_STATES srcState)
 {
-	const auto& dst{ m_textures[0].first };
-	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(dst.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
-	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(src.Get(), srcState, D3D12_RESOURCE_STATE_COPY_SOURCE));
-	commandList->CopyResource(dst.Get(), src.Get());
-	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(dst.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
-	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(src.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, srcState));
+	for (const auto& texture : m_textures) {
+		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(texture.first.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
+		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(src.Get(), srcState, D3D12_RESOURCE_STATE_COPY_SOURCE));
+		commandList->CopyResource(texture.first.Get(), src.Get());
+		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(texture.first.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(src.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, srcState));
+	}
 }
 
 void Texture::CreateSrvDescriptorHeap(const ComPtr<ID3D12Device>& device)
@@ -106,17 +107,18 @@ void Texture::CreateShaderResourceView(const ComPtr<ID3D12Device>& device, INT v
 	for (const auto& texture : m_textures) {
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc.Format = texture.first->GetDesc().Format;
 
 		switch (viewDemention)
 		{
 		case D3D12_SRV_DIMENSION_TEXTURE2D:
+			srvDesc.Format = texture.first->GetDesc().Format;
 			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			srvDesc.Texture2D.MostDetailedMip = 0;
 			srvDesc.Texture2D.MipLevels = texture.first->GetDesc().MipLevels;
 			srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 			break;
 		case D3D12_SRV_DIMENSION_TEXTURECUBE:
+			srvDesc.Format = texture.first->GetDesc().Format;
 			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
 			srvDesc.TextureCube.MipLevels = 1;
 			srvDesc.TextureCube.MostDetailedMip = 0;

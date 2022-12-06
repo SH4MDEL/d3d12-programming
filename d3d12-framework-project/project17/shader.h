@@ -173,3 +173,12 @@ public:
 	UIRenderShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 	~UIRenderShader() = default;
 };
+
+class BlendHierarchyShader : public Shader
+{
+public:
+	BlendHierarchyShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~BlendHierarchyShader() = default;
+
+	virtual void Update(FLOAT timeElapsed) override {};
+};

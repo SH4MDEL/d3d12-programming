@@ -617,6 +617,10 @@ StencilRenderShader::StencilRenderShader(const ComPtr<ID3D12Device>& device, con
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 48, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
+	CD3DX12_BLEND_DESC blendState{ D3D12_DEFAULT };
+	blendState.RenderTarget[0].BlendEnable = false;
+	blendState.RenderTarget[0].RenderTargetWriteMask = 0;
+
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
 	psoDesc.InputLayout = { m_inputLayout.data(), (UINT)m_inputLayout.size() };
 	psoDesc.pRootSignature = rootSignature.Get();
@@ -625,14 +629,12 @@ StencilRenderShader::StencilRenderShader(const ComPtr<ID3D12Device>& device, con
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	psoDesc.DepthStencilState.DepthEnable = true;
+	psoDesc.DepthStencilState.DepthEnable = false;
 	psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	psoDesc.DepthStencilState.StencilEnable = true;
 	psoDesc.DepthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
-	//psoDesc.DepthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
 
-	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	psoDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = 0;
+	psoDesc.BlendState = blendState;
 
 	psoDesc.SampleMask = UINT_MAX;
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -671,16 +673,14 @@ UIRenderShader::UIRenderShader(const ComPtr<ID3D12Device>& device, const ComPtr<
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
-	// ±íÀÌ ¾²±â OFF
 	CD3DX12_DEPTH_STENCIL_DESC depthStencilState{ D3D12_DEFAULT };
 	depthStencilState.DepthEnable = FALSE;
 	depthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	depthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_NEVER;
 
-	// ºí·»µù ¼³Á¤
 	CD3DX12_BLEND_DESC blendState{ D3D12_DEFAULT };
 	blendState.AlphaToCoverageEnable = false;
-	blendState.RenderTarget[0].BlendEnable = TRUE;
+	blendState.RenderTarget[0].BlendEnable = true;
 	blendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	blendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 	blendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
@@ -693,6 +693,53 @@ UIRenderShader::UIRenderShader(const ComPtr<ID3D12Device>& device, const ComPtr<
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	psoDesc.DepthStencilState = depthStencilState;
 	psoDesc.BlendState = blendState;
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.NumRenderTargets = 1;
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	psoDesc.SampleDesc.Count = 1;
+	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+	DX::ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
+}
+
+BlendHierarchyShader::BlendHierarchyShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature)
+{
+	ComPtr<ID3DBlob> mvsByteCode;
+	ComPtr<ID3DBlob> mpsByteCode;
+
+#if defined(_DEBUG)
+	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	UINT compileFlags = 0;
+#endif
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_TEXTUREHIERARCHY_MAIN", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_TEXTUREHIERARCHY_MAIN", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
+
+	m_inputLayout =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 48, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
+	psoDesc.InputLayout = { m_inputLayout.data(), (UINT)m_inputLayout.size() };
+	psoDesc.pRootSignature = rootSignature.Get();
+	psoDesc.VS = CD3DX12_SHADER_BYTECODE(mvsByteCode.Get());
+	psoDesc.PS = CD3DX12_SHADER_BYTECODE(mpsByteCode.Get());
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.BlendState.AlphaToCoverageEnable = false;
+	psoDesc.BlendState.RenderTarget[0].BlendEnable = true;
+	psoDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	psoDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	psoDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+
 	psoDesc.SampleMask = UINT_MAX;
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;

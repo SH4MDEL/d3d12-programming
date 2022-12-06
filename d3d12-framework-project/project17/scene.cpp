@@ -46,6 +46,10 @@ void Scene::OnProcessingKeyboardMessage(FLOAT timeElapsed) const
 	{
 		m_player->AddVelocity(Vector3::Mul(m_player->GetRight(), timeElapsed * 10.0f));
 	}
+	if (GetAsyncKeyState(VK_F4) & 0x8000)
+	{
+		g_toggle = !g_toggle;
+	}
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
 	{
 		m_player->AddVelocity(Vector3::Mul(m_player->GetUp(), timeElapsed * 10.0f));
@@ -58,8 +62,9 @@ void Scene::OnProcessingKeyboardMessage(FLOAT timeElapsed) const
 
 void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandlist, const ComPtr<ID3D12RootSignature>& rootsignature, FLOAT aspectRatio)
 {
-	auto stencilRenderShader{ make_shared<StencilRenderShader>(device, rootsignature) };
 	auto hierarchyShader{ make_shared<TextureHierarchyShader>(device, rootsignature) };
+	auto stencilRenderShader{ make_shared<StencilRenderShader>(device, rootsignature) };
+	auto blendHierarchyShader{ make_shared<BlendHierarchyShader>(device, rootsignature) };
 
 	// 플레이어 생성
 	m_player = make_shared<Player>();
@@ -87,29 +92,35 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	auto enemyPoint1 = make_shared<EnemyManager>();
 	enemyPoint1->SetPosition(XMFLOAT3{ 50.0f, 100.0f, 170.0f });
 	enemyPoint1->SetParticleShader(particleShader);
+	enemyPoint1->SetStencilShader(stencilRenderShader);
 	enemyPoint1->SetShader(hierarchyShader);
 	enemyPoint1->InitEnemy(device, commandlist);
 	enemyPoint1->SetTarget(m_player);
 	hierarchyShader->GetGameObjects().push_back(enemyPoint1);
 	stencilRenderShader->GetGameObjects().push_back(enemyPoint1);
+	blendHierarchyShader->GetGameObjects().push_back(enemyPoint1);
 
 	auto enemyPoint2 = make_shared<EnemyManager>();
 	enemyPoint2->SetPosition(XMFLOAT3{ 220.0f, 110.0f, 150.0f });
 	enemyPoint2->SetParticleShader(particleShader);
+	enemyPoint2->SetStencilShader(stencilRenderShader);
 	enemyPoint2->SetShader(hierarchyShader);
 	enemyPoint2->InitEnemy(device, commandlist);
 	enemyPoint2->SetTarget(m_player);
 	hierarchyShader->GetGameObjects().push_back(enemyPoint2);
 	stencilRenderShader->GetGameObjects().push_back(enemyPoint2);
+	blendHierarchyShader->GetGameObjects().push_back(enemyPoint2);
 
 	auto enemyPoint3 = make_shared<EnemyManager>();
 	enemyPoint3->SetPosition(XMFLOAT3{ 180.0f, 110.0f, 230.0f });
 	enemyPoint3->SetParticleShader(particleShader);
+	enemyPoint3->SetStencilShader(stencilRenderShader);
 	enemyPoint3->SetShader(hierarchyShader);
 	enemyPoint3->InitEnemy(device, commandlist);
 	enemyPoint3->SetTarget(m_player);
 	hierarchyShader->GetGameObjects().push_back(enemyPoint3);
 	stencilRenderShader->GetGameObjects().push_back(enemyPoint3);
+	blendHierarchyShader->GetGameObjects().push_back(enemyPoint3);
 
 	// 지형 생성
 	auto terrainShader{ make_shared<TerrainShader>(device, rootsignature) };
@@ -238,7 +249,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	grass2Shader->SetTexture(grass2Texture);
 
 	//스텐실 버퍼 생성
-	auto uiShader{ make_shared<UIRenderShader>(device, rootsignature) };
+	auto outlineShader{ make_shared<UIRenderShader>(device, rootsignature) };
 	auto uiMesh{ make_shared<UIMesh>(device, commandlist) };
 	auto stencilTexture{ make_shared<Texture>() };
 	stencilTexture->CreateTexture(device, DXGI_FORMAT_R24G8_TYPELESS, m_width, m_height, 5);
@@ -247,7 +258,7 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	auto ui{ make_shared<UIObject>() };
 	ui->SetMesh(uiMesh);
 	ui->SetTexture(stencilTexture);
-	uiShader->GetGameObjects().push_back(ui);
+	outlineShader->GetGameObjects().push_back(ui);
 
 	// 셰이더 설정
 	m_shader.insert(make_pair("TERRAIN", move(terrainShader)));
@@ -259,7 +270,8 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	m_blending.insert(make_pair("BLENDING", move(blendingShader)));
 	m_shader.insert(make_pair("HIERARCHY", move(hierarchyShader)));
 	m_shader.insert(make_pair("STENCIL", move(stencilRenderShader)));
-	m_shader.insert(make_pair("UI", move(uiShader)));
+	m_shader.insert(make_pair("OUTLINE", move(outlineShader)));
+	m_blending.insert(make_pair("BLENDHIERARCHY", move(blendHierarchyShader)));
 }
 
 void Scene::Update(FLOAT timeElapsed)
@@ -285,9 +297,12 @@ void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList, CD3DX12
 	m_blending.at("GRASS1")->Render(commandList);
 	m_blending.at("GRASS2")->Render(commandList);
 	m_shader.at("HIERARCHY")->Render(commandList);
-	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
-	m_shader.at("STENCIL")->Render(commandList);
-	m_shader.at("UI")->Render(commandList);
+	//commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
+	if (g_toggle) m_shader.at("STENCIL")->Render(commandList);
+	m_shader.at("OUTLINE")->Render(commandList);
+	g_postProcess = true;
+	if (g_toggle) m_blending.at("BLENDHIERARCHY")->Render(commandList);
+	g_postProcess = false;
 }
 
 void Scene::CheckPlayerByObjectCollisions()

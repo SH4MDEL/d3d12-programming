@@ -404,8 +404,8 @@ void GameFramework::Render()
 
 	// 원하는 색상으로 렌더 타겟을 지우고, 원하는 값으로 깊이 스텐실을 지운다.
 	const FLOAT clearColor[]{ 0.0f, 0.125f, 0.3f, 1.0f };
-	m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, NULL);
-	m_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
+	m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	m_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	// Scene을 Render한다.
 	if (m_scene) {

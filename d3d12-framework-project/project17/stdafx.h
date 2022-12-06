@@ -42,6 +42,8 @@ using namespace std;
 
 class GameFramework;
 extern GameFramework g_GameFramework;     // 게임프레임워크
+extern bool			    g_toggle;
+extern bool			    g_postProcess;
 
 namespace DX
 {

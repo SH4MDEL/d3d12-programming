@@ -247,7 +247,14 @@ void Enemy::InitParticle(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 
 void Enemy::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
-	if (m_shader) commandList->SetPipelineState(m_shader->GetPipelineState().Get());
+	if (!g_postProcess) {
+		if (g_toggle) {
+			if (m_stencilShader) commandList->SetPipelineState(m_stencilShader->GetPipelineState().Get());
+		}
+		else {
+			if (m_shader) commandList->SetPipelineState(m_shader->GetPipelineState().Get());
+		}
+	}
 
 	if (m_status == LIVE) { GameObject::Render(commandList); }
 
@@ -321,6 +328,7 @@ void EnemyManager::InitEnemy(const ComPtr<ID3D12Device>& device, const ComPtr<ID
 		m_enemys.back()->SetBoundingBox(m_enemys.back()->GetMesh()->GetBoundingBox());
 		m_enemys.back()->SetScale(0.2f, 0.2f, 0.2f);
 		m_enemys.back()->SetParticleShader(m_particleShader);
+		m_enemys.back()->SetStencilShader(m_stencilShader);
 		m_enemys.back()->SetShader(m_shader);
 	}
 }

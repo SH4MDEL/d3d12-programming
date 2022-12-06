@@ -457,28 +457,19 @@ float4 PS_UI_MAIN(VS_UI_OUTPUT input) : SV_TARGET
 	float2 tx = float2(1.0, 0.0);
 	float2 ty = float2(0.0, 1.0);
 
-	float values[9];
-	//values[0] = g_stencilTexture[uv.x - 1][uv.y - 1].g;
-	//values[1] = g_stencilTexture[uv.x - 1][uv.y].g;
-	//values[2] = g_stencilTexture[uv.x - 1][uv.y + 1].g;
-	//values[3] = g_stencilTexture[uv.x][uv.y - 1].g;
-	//values[4] = g_stencilTexture[uv.x][uv.y].g;
-	//values[5] = g_stencilTexture[uv.x][uv.y + 1].g;
-	//values[6] = g_stencilTexture[uv.x + 1][uv.y - 1].g;
-	//values[7] = g_stencilTexture[uv.x + 1][uv.y].g;
-	//values[8] = g_stencilTexture[uv.x + 1][uv.y + 1].g;
-	values[0] = g_stencilTexture[uv - tx - ty].g;
-	values[1] = g_stencilTexture[uv - ty].g;
-	values[2] = g_stencilTexture[uv + tx - ty].g;
-	values[3] = g_stencilTexture[uv - tx].g;
-	values[4] = g_stencilTexture[uv].g;
-	values[5] = g_stencilTexture[uv + tx].g;
-	values[6] = g_stencilTexture[uv - tx + ty].g;
-	values[7] = g_stencilTexture[uv + ty].g;
-	values[8] = g_stencilTexture[uv + tx + ty].g;
+	float texel[9];
+	texel[0] = g_stencilTexture[uv - tx - ty].g;
+	texel[1] = g_stencilTexture[uv - ty].g;
+	texel[2] = g_stencilTexture[uv + tx - ty].g;
+	texel[3] = g_stencilTexture[uv - tx].g;
+	texel[4] = g_stencilTexture[uv].g;
+	texel[5] = g_stencilTexture[uv + tx].g;
+	texel[6] = g_stencilTexture[uv - tx + ty].g;
+	texel[7] = g_stencilTexture[uv + ty].g;
+	texel[8] = g_stencilTexture[uv + tx + ty].g;
 	
 	for (int i = 0; i < 9; ++i) {
-		if (values[i]) return float4(1.f, 1.f, 1.f, 1.f);
+		if (texel[i] > 0.f) return float4(1.f, 1.f, 1.f, 0.3f);
 	}
-	return float4(0.f, 0.f, 1.f, 0.3f);
+	return float4(0.f, 0.f, 0.f, 0.0f);
 }

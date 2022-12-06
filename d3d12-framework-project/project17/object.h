@@ -83,6 +83,7 @@ protected:
 };
 
 class Shader;
+class StencilRenderShader;
 class ParticleShader;
 class Enemy : public Helicoptor
 {
@@ -109,6 +110,7 @@ public:
 	void SetTargetPosition(XMFLOAT3 position) { m_targetPosition = position; }
 	void SetTerrainHeight(FLOAT height) { m_terrainHeight = height; }
 	void SetParticleShader(const shared_ptr<ParticleShader>& particleShader) { m_particleShader = particleShader; }
+	void SetStencilShader(const shared_ptr<StencilRenderShader>& stencilShader) { m_stencilShader = stencilShader; }
 	void SetShader(const shared_ptr<Shader>& shader) { m_shader = shader; }
 
 private:
@@ -118,6 +120,7 @@ private:
 
 	unique_ptr<ParticleMesh>		m_particle;
 	shared_ptr<ParticleShader>		m_particleShader;
+	shared_ptr<StencilRenderShader>	m_stencilShader;
 	shared_ptr<Shader>				m_shader;
 	FLOAT							m_blowingAge;
 	const FLOAT						m_blowingLifeTime = 0.5f;
@@ -137,6 +140,7 @@ public:
 	void SetTarget(const shared_ptr<GameObject>& target) { m_target = target; }
 	void SetTerrain(const shared_ptr< HeightMapTerrain>& terrain) { m_terrain = terrain; }
 	void SetParticleShader(const shared_ptr<ParticleShader>& particleShader) { m_particleShader = particleShader; }
+	void SetStencilShader(const shared_ptr<StencilRenderShader>& stencilShader) { m_stencilShader = stencilShader; }
 	void SetShader(const shared_ptr<Shader>& shader) { m_shader = shader; }
 	vector<shared_ptr<Enemy>> GetEnemys() { return m_enemys; }
 
@@ -152,6 +156,7 @@ private:
 	shared_ptr<GameObject>			m_target;
 	shared_ptr<HeightMapTerrain>	m_terrain;
 	shared_ptr<ParticleShader>		m_particleShader;
+	shared_ptr<StencilRenderShader>	m_stencilShader;
 	shared_ptr<Shader>				m_shader;
 };
 
