@@ -44,6 +44,7 @@ class GameFramework;
 extern GameFramework g_GameFramework;     // 게임프레임워크
 extern bool			    g_toggle;
 extern bool			    g_postProcess;
+extern bool             g_firstPerson;
 
 namespace DX
 {

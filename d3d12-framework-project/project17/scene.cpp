@@ -46,9 +46,19 @@ void Scene::OnProcessingKeyboardMessage(FLOAT timeElapsed) const
 	{
 		m_player->AddVelocity(Vector3::Mul(m_player->GetRight(), timeElapsed * 10.0f));
 	}
-	if (GetAsyncKeyState(VK_F4) & 0x8000)
+	if (GetAsyncKeyState('E') & 0x8000)
 	{
-		g_toggle = !g_toggle;
+		g_toggle = true;
+	}
+	else {
+		g_toggle = false;
+	}
+	if (GetAsyncKeyState('R') & 0x8000)
+	{
+		g_firstPerson = true;
+	}
+	else {
+		g_firstPerson = false;
 	}
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
 	{
@@ -83,9 +93,18 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	m_camera->SetPlayer(m_player);
 	m_player->SetCamera(m_camera);
 
+	m_firstCamera = make_shared<FirstPersonCamera>();
+	m_firstCamera->CreateShaderVariable(device, commandlist);
+	m_firstCamera->SetEye(XMFLOAT3{ 0.0f, 0.0f, 0.0f });
+	m_firstCamera->SetAt(XMFLOAT3{ 0.0f, 0.0f, 1.0f });
+	m_firstCamera->SetUp(XMFLOAT3{ 0.0f, 1.0f, 0.0f });
+	m_firstCamera->SetPlayer(m_player);
+	m_player->SetFirstCamera(m_firstCamera);
+
 	XMFLOAT4X4 projMatrix;
 	XMStoreFloat4x4(&projMatrix, XMMatrixPerspectiveFovLH(0.25f * XM_PI, aspectRatio, 0.1f, 1000.0f));
 	m_camera->SetProjMatrix(projMatrix);
+	m_firstCamera->SetProjMatrix(projMatrix);
 
 	auto particleShader{ make_shared<ParticleShader>(device, rootsignature) };
 	// 적 생성
@@ -174,10 +193,6 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	blendingShader->GetGameObjects().push_back(river);
 
 	// 빌보드 생성
-	vector<shared_ptr<GameObject>> vflower1;
-	vector<shared_ptr<GameObject>> vflower2;
-	vector<shared_ptr<GameObject>> vgrass1;
-	vector<shared_ptr<GameObject>> vgrass2;
 	auto flower1Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 1.f, 1.f });
 	auto flower2Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 1.f, 1.f });
 	auto grass1Mesh = make_shared<BillBoardMesh>(device, commandlist, XMFLOAT3{ 0.f, 0.f, 0.f }, XMFLOAT2{ 1.f, 1.f });
@@ -198,47 +213,43 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	grass2Texture->LoadTextureFile(device, commandlist, TEXT("Resource/Texture/Grass02.dds"), 2);
 	grass2Texture->CreateSrvDescriptorHeap(device);
 	grass2Texture->CreateShaderResourceView(device, D3D12_SRV_DIMENSION_TEXTURE2D);
+	vector<XMFLOAT3> flower1Pos;
+	vector<XMFLOAT3> flower2Pos;
+	vector<XMFLOAT3> grass1Pos;
+	vector<XMFLOAT3> grass2Pos;
 	XMFLOAT3 terrainPosition = terrain->GetPosition();
 	XMFLOAT3 terrainScale = terrain->GetScale();
 	FLOAT terrainHeight = terrain->GetHeight(terrainPosition.x, terrainPosition.z);
-	for (int z = 2; z <= 64; ++z) {
-		FLOAT nz = ((terrainPosition.z + (terrain->GetLength() / 64 * z)));
-		for (int x = 2; x <= 64; ++x) {
-			FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 64 * x)));
+	for (int z = 2; z <= 128; ++z) {
+		FLOAT nz = ((terrainPosition.z + (terrain->GetLength() / 128 * z)));
+		for (int x = 2; x <= 128; ++x) {
+			FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 128 * x)));
 			FLOAT ny = terrain->GetHeight(nx, nz) / terrainScale.y + 0.4f;
 			if (ny > 70.f) {
 				int value = GetRandomInt(1, 4);
 				if (value == 1) {
-					auto flower1 = make_shared<GameObject>();
-					flower1->SetPosition(XMFLOAT3{ nx, ny, nz });
-					vflower1.push_back(flower1);
+					flower1Pos.emplace_back(XMFLOAT3{ nx, ny, nz });
 				}
 				if (value == 2) {
-					auto flower2 = make_shared<GameObject>();
-					flower2->SetPosition(XMFLOAT3{ nx, ny, nz });
-					vflower2.push_back(flower2);
+					flower2Pos.emplace_back(XMFLOAT3{ nx, ny, nz });
 				}
 				if (value == 3) {
-					auto grass1 = make_shared<GameObject>();
-					grass1->SetPosition(XMFLOAT3{ nx, ny, nz });
-					vgrass1.push_back(grass1);
+					grass1Pos.emplace_back(XMFLOAT3{ nx, ny, nz });
 				}
 				if (value == 4) {
-					auto grass2 = make_shared<GameObject>();
-					grass2->SetPosition(XMFLOAT3{ nx, ny, nz });
-					vgrass2.push_back(grass2);
+					grass2Pos.emplace_back(XMFLOAT3{ nx, ny, nz });
 				}
 			}
 		}
 	}
-	auto flower1Shader = make_shared<BillBoardShader>(device, rootsignature, (UINT)vflower1.size());
-	auto flower2Shader = make_shared<BillBoardShader>(device, rootsignature, (UINT)vflower2.size());
-	auto grass1Shader = make_shared<BillBoardShader>(device, rootsignature, (UINT)vgrass1.size());
-	auto grass2Shader = make_shared<BillBoardShader>(device, rootsignature, (UINT)vgrass2.size());
-	for (const auto& obj : vflower1) flower1Shader->GetGameObjects().push_back(obj);
-	for (const auto& obj : vflower2) flower2Shader->GetGameObjects().push_back(obj);
-	for (const auto& obj : vgrass1) grass1Shader->GetGameObjects().push_back(obj);
-	for (const auto& obj : vgrass2) grass2Shader->GetGameObjects().push_back(obj);
+	auto flower1Shader = make_shared<BillBoardShader>(device, rootsignature, (UINT)flower1Pos.size());
+	auto flower2Shader = make_shared<BillBoardShader>(device, rootsignature, (UINT)flower2Pos.size());
+	auto grass1Shader = make_shared<BillBoardShader>(device, rootsignature, (UINT)grass1Pos.size());
+	auto grass2Shader = make_shared<BillBoardShader>(device, rootsignature, (UINT)grass2Pos.size());
+	flower1Shader->SetInstancePositions(move(flower1Pos));
+	flower2Shader->SetInstancePositions(move(flower2Pos));
+	grass1Shader->SetInstancePositions(move(grass1Pos));
+	grass2Shader->SetInstancePositions(move(grass2Pos));
 	flower1Shader->SetMesh(flower1Mesh);
 	flower2Shader->SetMesh(flower2Mesh);
 	grass1Shader->SetMesh(grass1Mesh);
@@ -260,6 +271,12 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	ui->SetTexture(stencilTexture);
 	outlineShader->GetGameObjects().push_back(ui);
 
+	auto windowShader{ make_shared<WindowShader>(device, rootsignature) };
+	auto windowMesh{ make_shared<UIMesh>(device, commandlist) };
+	auto window{ make_shared<UIObject>() };
+	window->SetMesh(windowMesh);
+	windowShader->GetGameObjects().push_back(ui);
+
 	// 셰이더 설정
 	m_shader.insert(make_pair("TERRAIN", move(terrainShader)));
 	m_shader.insert(make_pair("SKYBOX", move(skyboxShader)));
@@ -271,12 +288,14 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	m_shader.insert(make_pair("HIERARCHY", move(hierarchyShader)));
 	m_shader.insert(make_pair("STENCIL", move(stencilRenderShader)));
 	m_shader.insert(make_pair("OUTLINE", move(outlineShader)));
+	m_shader.insert(make_pair("WINDOW", move(windowShader)));
 	m_blending.insert(make_pair("BLENDHIERARCHY", move(blendHierarchyShader)));
 }
 
 void Scene::Update(FLOAT timeElapsed)
 {
 	m_camera->Update(timeElapsed);
+	m_firstCamera->Update(timeElapsed);
 	if (m_shader["SKYBOX"]) for (auto& skybox : m_shader["SKYBOX"]->GetGameObjects()) skybox->SetPosition(m_camera->GetEye());
 	for (const auto& shader : m_shader) shader.second->Update(timeElapsed);
 	for (const auto& shader : m_blending) shader.second->Update(timeElapsed);
@@ -288,7 +307,12 @@ void Scene::Update(FLOAT timeElapsed)
 
 void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList, CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle) const
 {
-	if (m_camera) m_camera->UpdateShaderVariable(commandList);
+	if (g_firstPerson) {
+		if (m_firstCamera) m_firstCamera->UpdateShaderVariable(commandList);
+	}
+	else {
+		if (m_camera) m_camera->UpdateShaderVariable(commandList);
+	}
 	m_shader.at("TERRAIN")->Render(commandList);
 	m_shader.at("SKYBOX")->Render(commandList);
 	m_blending.at("BLENDING")->Render(commandList);
@@ -296,13 +320,17 @@ void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList, CD3DX12
 	m_blending.at("FLOWER2")->Render(commandList);
 	m_blending.at("GRASS1")->Render(commandList);
 	m_blending.at("GRASS2")->Render(commandList);
-	m_shader.at("HIERARCHY")->Render(commandList);
+
 	//commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 	if (g_toggle) m_shader.at("STENCIL")->Render(commandList);
 	m_shader.at("OUTLINE")->Render(commandList);
 	g_postProcess = true;
 	if (g_toggle) m_blending.at("BLENDHIERARCHY")->Render(commandList);
 	g_postProcess = false;
+
+	if (g_firstPerson) m_shader.at("WINDOW")->Render(commandList);
+
+	m_shader.at("HIERARCHY")->Render(commandList);
 }
 
 void Scene::CheckPlayerByObjectCollisions()

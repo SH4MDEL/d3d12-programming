@@ -2,9 +2,6 @@
 #include "stdafx.h"
 #include "object.h"
 
-#define ROLL_MAX +20
-#define ROLL_MIN -10
-
 class Camera;
 
 class Player : public Helicoptor
@@ -26,6 +23,7 @@ public:
 	void SetVelocity(const XMFLOAT3& velocity) { m_velocity = velocity; }
 	void AddVelocity(const XMFLOAT3& increase);
 	void SetCamera(const shared_ptr<Camera>& camera) { m_camera = camera; }
+	void SetFirstCamera(const shared_ptr<Camera>& firstCamera) { m_firstCamera = firstCamera; }
 	void SetTerrain(const shared_ptr<HeightMapTerrain>& terrain) { m_terrain = terrain; }
 
 	enum MissileStatus {
@@ -44,6 +42,7 @@ private:
 	FLOAT							m_friction;		// 마찰력
 
 	shared_ptr<Camera>				m_camera;		// 카메라
+	shared_ptr<Camera>				m_firstCamera;
 	shared_ptr<HeightMapTerrain>	m_terrain;
 
 	const FLOAT						m_missileLifeTime = 3.f;

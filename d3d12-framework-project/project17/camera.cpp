@@ -61,38 +61,38 @@ void Camera::Move(const XMFLOAT3& shift)
 
 void Camera::Rotate(FLOAT roll, FLOAT pitch, FLOAT yaw)
 {
-	if (roll != 0.0f)
-	{
-		XMMATRIX rotate{ XMMatrixIdentity() };
-		if (m_roll + roll > MAX_ROLL)
-		{
-			rotate = XMMatrixRotationAxis(XMLoadFloat3(&m_u), XMConvertToRadians(MAX_ROLL - m_roll));
-			m_roll = MAX_ROLL;
-		}
-		else if (m_roll + roll < MIN_ROLL)
-		{
-			rotate = XMMatrixRotationAxis(XMLoadFloat3(&m_u), XMConvertToRadians(MIN_ROLL - m_roll));
-			m_roll = MIN_ROLL;
-		}
-		else
-		{
-			rotate = XMMatrixRotationAxis(XMLoadFloat3(&m_u), XMConvertToRadians(roll));
-			m_roll += roll;
-		}
-		XMStoreFloat3(&m_look, XMVector3TransformNormal(XMLoadFloat3(&m_look), rotate));
-	}
-	if (pitch != 0.0f)
-	{
-		m_pitch += pitch;
+	//if (roll != 0.0f)
+	//{
+	//	XMMATRIX rotate{ XMMatrixIdentity() };
+	//	if (m_roll + roll > MAX_ROLL)
+	//	{
+	//		rotate = XMMatrixRotationAxis(XMLoadFloat3(&m_u), XMConvertToRadians(MAX_ROLL - m_roll));
+	//		m_roll = MAX_ROLL;
+	//	}
+	//	else if (m_roll + roll < MIN_ROLL)
+	//	{
+	//		rotate = XMMatrixRotationAxis(XMLoadFloat3(&m_u), XMConvertToRadians(MIN_ROLL - m_roll));
+	//		m_roll = MIN_ROLL;
+	//	}
+	//	else
+	//	{
+	//		rotate = XMMatrixRotationAxis(XMLoadFloat3(&m_u), XMConvertToRadians(roll));
+	//		m_roll += roll;
+	//	}
+	//	XMStoreFloat3(&m_look, XMVector3TransformNormal(XMLoadFloat3(&m_look), rotate));
+	//}
+	//if (pitch != 0.0f)
+	//{
+	//	m_pitch += pitch;
 
-		XMMATRIX rotate{ XMMatrixRotationAxis(XMLoadFloat3(&m_v), XMConvertToRadians(pitch)) };
-		XMStoreFloat3(&m_look, XMVector3TransformNormal(XMLoadFloat3(&m_look), rotate));
-	}
-	if (yaw != 0.0f)
-	{
+	//	XMMATRIX rotate{ XMMatrixRotationAxis(XMLoadFloat3(&m_v), XMConvertToRadians(pitch)) };
+	//	XMStoreFloat3(&m_look, XMVector3TransformNormal(XMLoadFloat3(&m_look), rotate));
+	//}
+	//if (yaw != 0.0f)
+	//{
 
-	}
-	UpdateLocalAxis();
+	//}
+	//UpdateLocalAxis();
 }
 
 void Camera::SetPlayer(const shared_ptr<Player>& player)
@@ -139,7 +139,48 @@ void ThirdPersonCamera::Rotate(FLOAT roll, FLOAT pitch, FLOAT yaw)
 		XMStoreFloat3(&m_offset, XMVector3TransformNormal(XMLoadFloat3(&m_offset), rotate));
 	}
 
-	// 항상 플레이어를 바라보도록 설정
 	XMFLOAT3 look{ Vector3::Sub(m_player->GetPosition(), m_eye) };
+	if (Vector3::Length(look)) m_look = look;
+}
+
+FirstPersonCamera::FirstPersonCamera() : Camera{}, m_offset{ 0.0f, 1.0f, 0.65f }, m_delay{ 0.01f }
+{
+
+}
+
+void FirstPersonCamera::Update(FLOAT timeElapsed)
+{
+	XMFLOAT3 destination{ Vector3::Add(m_player->GetPosition(), m_offset) };
+	XMFLOAT3 direction{ Vector3::Sub(destination, GetEye()) };
+	XMFLOAT3 shift{ Vector3::Mul(direction, timeElapsed * 1 / m_delay) };
+	SetEye(Vector3::Add(GetEye(), shift));
+}
+
+void FirstPersonCamera::Rotate(FLOAT roll, FLOAT pitch, FLOAT yaw)
+{
+	XMMATRIX rotate{ XMMatrixIdentity() };
+
+	if (roll != 0.0f)
+	{
+		m_roll += roll;
+		rotate = XMMatrixRotationAxis(XMLoadFloat3(&m_player->GetRight()), XMConvertToRadians(roll));
+		XMStoreFloat3(&m_offset, XMVector3TransformNormal(XMLoadFloat3(&m_offset), rotate));
+	}
+	if (pitch != 0.0f)
+	{
+		m_pitch += pitch;
+		rotate = XMMatrixRotationAxis(XMLoadFloat3(&m_player->GetUp()), XMConvertToRadians(pitch));
+		XMStoreFloat3(&m_offset, XMVector3TransformNormal(XMLoadFloat3(&m_offset), rotate));
+	}
+	if (yaw != 0.0f)
+	{
+		m_yaw += yaw;
+		rotate = XMMatrixRotationAxis(XMLoadFloat3(&m_player->GetFront()), XMConvertToRadians(yaw));
+		XMStoreFloat3(&m_offset, XMVector3TransformNormal(XMLoadFloat3(&m_offset), rotate));
+	}
+
+	XMFLOAT3 look{ Vector3::Sub(m_player->GetPosition(), m_eye) };
+	look.x = -look.x;
+	look.z = -look.z;
 	if (Vector3::Length(look)) m_look = look;
 }

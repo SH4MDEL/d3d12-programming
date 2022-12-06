@@ -469,7 +469,36 @@ float4 PS_UI_MAIN(VS_UI_OUTPUT input) : SV_TARGET
 	texel[8] = g_stencilTexture[uv + tx + ty].g;
 	
 	for (int i = 0; i < 9; ++i) {
-		if (texel[i] > 0.f) return float4(1.f, 1.f, 1.f, 0.3f);
+		if (texel[i] > 0.f) return float4(0.6f, 0.6f, 1.f, 0.8f);
 	}
 	return float4(0.f, 0.f, 0.f, 0.0f);
+}
+
+/*
+ *  WINDOW_SHADER
+ */
+
+struct VS_WINDOW_INPUT
+{
+	float3 position : POSITION;
+	float2 uv : TEXCOORD;
+};
+
+struct VS_WINDOW_OUTPUT
+{
+	float4 position : SV_POSITION;
+	float2 uv : TEXCOORD;
+};
+
+VS_WINDOW_OUTPUT VS_WINDOW_MAIN(VS_WINDOW_INPUT input)
+{
+	VS_UI_OUTPUT output;
+	output.position = float4(input.position, 1.0f);
+	output.uv = input.uv;
+	return output;
+}
+
+float4 PS_WINDOW_MAIN(VS_WINDOW_OUTPUT input) : SV_TARGET
+{
+	return float4(0.0f, 0.0f, 0.0f, 0.7f);
 }

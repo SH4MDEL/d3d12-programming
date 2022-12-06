@@ -446,12 +446,6 @@ BillBoardShader::BillBoardShader(const ComPtr<ID3D12Device>& device, const ComPt
 	CreateShaderVariable(device);
 }
 
-void BillBoardShader::Update(FLOAT timeElapsed)
-{
-	for (const auto& elm : m_gameObjects)
-		if (elm) elm->Update(timeElapsed);
-}
-
 void BillBoardShader::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
 	BillBoardShader::UpdateShaderVariable(commandList);
@@ -460,8 +454,8 @@ void BillBoardShader::Render(const ComPtr<ID3D12GraphicsCommandList>& commandLis
 	if (m_material) { m_material->UpdateShaderVariable(commandList); }
 
 	int i = 0;
-	for (const auto& elm : m_gameObjects) {
-		m_instancingBufferPointer[i++].position = elm->GetPosition();
+	for (const auto& elm : m_positions) {
+		m_instancingBufferPointer[i++].position = elm;
 	}
 
 	m_mesh->Render(commandList, m_instancingBufferView);
@@ -494,6 +488,11 @@ void BillBoardShader::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandLis
 void BillBoardShader::ReleaseShaderVariable()
 {
 	if (m_instancingBuffer) m_instancingBuffer->Unmap(0, nullptr);
+}
+
+void BillBoardShader::SetInstancePositions(vector<XMFLOAT3>&& positions) noexcept
+{
+	m_positions = positions;
 }
 
 ParticleShader::ParticleShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature) : Shader{}
@@ -732,6 +731,7 @@ BlendHierarchyShader::BlendHierarchyShader(const ComPtr<ID3D12Device>& device, c
 	psoDesc.PS = CD3DX12_SHADER_BYTECODE(mpsByteCode.Get());
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState.DepthEnable = false;
 
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	psoDesc.BlendState.AlphaToCoverageEnable = false;
@@ -740,6 +740,56 @@ BlendHierarchyShader::BlendHierarchyShader(const ComPtr<ID3D12Device>& device, c
 	psoDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 	psoDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.NumRenderTargets = 1;
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	psoDesc.SampleDesc.Count = 1;
+	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+	DX::ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
+}
+
+WindowShader::WindowShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature)
+{
+	ComPtr<ID3DBlob> mvsByteCode;
+	ComPtr<ID3DBlob> mpsByteCode;
+
+#if defined(_DEBUG)
+	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	UINT compileFlags = 0;
+#endif
+
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_WINDOW_MAIN", "vs_5_1", compileFlags, 0, &mvsByteCode, nullptr));
+	DX::ThrowIfFailed(D3DCompileFromFile(TEXT("Resource/Shader/Shaders.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_WINDOW_MAIN", "ps_5_1", compileFlags, 0, &mpsByteCode, nullptr));
+
+	m_inputLayout =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+	CD3DX12_DEPTH_STENCIL_DESC depthStencilState{ D3D12_DEFAULT };
+	depthStencilState.DepthEnable = FALSE;
+	depthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	depthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+	CD3DX12_BLEND_DESC blendState{ D3D12_DEFAULT };
+	blendState.AlphaToCoverageEnable = false;
+	blendState.RenderTarget[0].BlendEnable = true;
+	blendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
+	psoDesc.InputLayout = { m_inputLayout.data(), (UINT)m_inputLayout.size() };
+	psoDesc.pRootSignature = rootSignature.Get();
+	psoDesc.VS = CD3DX12_SHADER_BYTECODE(mvsByteCode.Get());
+	psoDesc.PS = CD3DX12_SHADER_BYTECODE(mpsByteCode.Get());
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState = depthStencilState;
+	psoDesc.BlendState = blendState;
 	psoDesc.SampleMask = UINT_MAX;
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;

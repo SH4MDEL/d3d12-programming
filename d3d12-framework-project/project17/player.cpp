@@ -50,11 +50,21 @@ void Player::Update(FLOAT timeElapsed)
 
 void Player::Rotate(FLOAT roll, FLOAT pitch, FLOAT yaw)
 {
+
 	// 회전각 제한
-	if (m_roll + roll > MAX_ROLL)
-		roll = MAX_ROLL - m_roll;
-	else if (m_roll + roll < MIN_ROLL)
-		roll = MIN_ROLL - m_roll;
+	if (g_firstPerson) {
+		if (m_roll + roll > FIRST_MAX_ROLL)
+			roll = FIRST_MAX_ROLL - m_roll;
+		else if (m_roll + roll < FIRST_MIN_ROLL)
+			roll = FIRST_MIN_ROLL - m_roll;
+	}
+	else {
+		if (m_roll + roll > THIRD_MAX_ROLL)
+			roll = THIRD_MAX_ROLL - m_roll;
+		else if (m_roll + roll < THIRD_MIN_ROLL)
+			roll = THIRD_MIN_ROLL - m_roll;
+	}
+
 
 	// 회전각 합산
 	m_roll += roll; m_pitch += pitch; m_yaw += yaw;
@@ -62,6 +72,7 @@ void Player::Rotate(FLOAT roll, FLOAT pitch, FLOAT yaw)
 	// 카메라는 x,y축으로 회전할 수 있다.
 	// GameObject::Rotate에서 플레이어의 로컬 x,y,z축을 변경하므로 먼저 호출해야한다.
 	m_camera->Rotate(roll, pitch, 0.0f);
+	m_firstCamera->Rotate(roll, pitch, 0.0f);
 
 	// 플레이어는 y축으로만 회전할 수 있다.
 	GameObject::Rotate(0.0f, pitch, 0.0f);

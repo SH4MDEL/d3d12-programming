@@ -29,8 +29,9 @@ void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
 
 	if (m_texture) { m_texture->UpdateShaderVariable(commandList); }
 	if (m_material) { m_material->UpdateShaderVariable(commandList); }
-
-	if (m_mesh) m_mesh->Render(commandList);
+	if (m_frameName != "GunnerDoor" && m_frameName != "Cockpit") {
+		if (m_mesh) m_mesh->Render(commandList);
+	}
 
 	if (m_sibling) m_sibling->Render(commandList);
 	if (m_child) m_child->Render(commandList);
@@ -258,7 +259,7 @@ void Enemy::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 
 	if (m_status == LIVE) { GameObject::Render(commandList); }
 
-	if (m_status == BLOWING) {
+	if (!g_postProcess && m_status == BLOWING) {
 		XMFLOAT4X4 worldMatrix;
 		XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_worldMatrix)));
 		commandList->SetGraphicsRoot32BitConstants(0, 16, &worldMatrix, 0);

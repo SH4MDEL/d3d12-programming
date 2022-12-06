@@ -118,7 +118,6 @@ public:
 	BillBoardShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature, UINT count);
 	~BillBoardShader() = default;
 
-	virtual void Update(FLOAT timeElapsed);
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 
 	virtual void CreateShaderVariable(const ComPtr<ID3D12Device>& device);
@@ -128,6 +127,8 @@ public:
 	void SetMesh(const shared_ptr<Mesh>& mesh) { m_mesh = mesh; }
 	void SetTexture(const shared_ptr<Texture>& texture) { m_texture = texture; }
 	void SetMaterial(const shared_ptr<Material>& material) { m_material = material; }
+
+	void SetInstancePositions(vector<XMFLOAT3>&& positions) noexcept;
 
 protected:
 	shared_ptr<Mesh>					m_mesh;
@@ -139,6 +140,8 @@ protected:
 	D3D12_VERTEX_BUFFER_VIEW			m_instancingBufferView;
 
 	UINT								m_instancingCount;
+
+	vector<XMFLOAT3>					m_positions;
 };
 
 class ParticleShader : public Shader
@@ -181,4 +184,11 @@ public:
 	~BlendHierarchyShader() = default;
 
 	virtual void Update(FLOAT timeElapsed) override {};
+};
+
+class WindowShader : public Shader
+{
+public:
+	WindowShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~WindowShader() = default;
 };

@@ -38,4 +38,5 @@ private:
 	unordered_map<string, shared_ptr<Shader>>	m_blending;
 	shared_ptr<Player>							m_player;
 	shared_ptr<Camera>							m_camera;
+	shared_ptr<Camera>							m_firstCamera;
 };

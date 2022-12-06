@@ -2,8 +2,10 @@
 #include "stdafx.h"
 #include "player.h"
 
-#define MAX_ROLL +20
-#define MIN_ROLL -10
+#define THIRD_MAX_ROLL +20
+#define THIRD_MIN_ROLL -10
+#define FIRST_MAX_ROLL +40
+#define FIRST_MIN_ROLL +40
 
 struct CameraInfo
 {
@@ -74,6 +76,24 @@ class ThirdPersonCamera : public Camera
 public:
 	ThirdPersonCamera();
 	~ThirdPersonCamera() = default;
+
+	virtual void Update(FLOAT timeElapsed);
+	virtual void Rotate(FLOAT roll, FLOAT pitch, FLOAT yaw);
+
+	XMFLOAT3 GetOffset() const { return m_offset; }
+	void SetOffset(const XMFLOAT3& offset) { m_offset = offset; }
+	void SetDelay(FLOAT delay) { m_delay = delay; }
+
+private:
+	XMFLOAT3	m_offset;
+	FLOAT		m_delay;
+};
+
+class FirstPersonCamera : public Camera
+{
+public:
+	FirstPersonCamera();
+	~FirstPersonCamera() = default;
 
 	virtual void Update(FLOAT timeElapsed);
 	virtual void Rotate(FLOAT roll, FLOAT pitch, FLOAT yaw);
