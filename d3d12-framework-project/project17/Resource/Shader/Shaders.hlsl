@@ -383,10 +383,8 @@ void GS_PARTICLE_DRAW(point VS_PARTICLE_INPUT input[1], inout TriangleStream<GS_
 	look.y = 0.0f;
 	look = normalize(look);
 	float3 right = cross(up, look);
-
 	float halfW = 0.2f;
 	float halfH = 0.2f;
-
 	float4 vertices[4] =
 	{
 		float4(positionW + (halfW * right) - (halfH * up), 1.0f), // LB
@@ -394,7 +392,6 @@ void GS_PARTICLE_DRAW(point VS_PARTICLE_INPUT input[1], inout TriangleStream<GS_
 		float4(positionW - (halfW * right) - (halfH * up), 1.0f), // RB
 		float4(positionW - (halfW * right) + (halfH * up), 1.0f)  // RT
 	};
-
 	float2 uv[4] =
 	{
 		float2(0.0f, 1.0f),
@@ -500,5 +497,5 @@ VS_WINDOW_OUTPUT VS_WINDOW_MAIN(VS_WINDOW_INPUT input)
 
 float4 PS_WINDOW_MAIN(VS_WINDOW_OUTPUT input) : SV_TARGET
 {
-	return float4(0.0f, 0.0f, 0.0f, 0.7f);
+	return float4(0.0f, 0.0f, 0.0f, 0.5f);
 }

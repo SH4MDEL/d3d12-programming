@@ -521,19 +521,18 @@ ParticleShader::ParticleShader(const ComPtr<ID3D12Device>& device, const ComPtr<
 		{ "LIFETIME", 0, DXGI_FORMAT_R32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
-
-	D3D12_SO_DECLARATION_ENTRY* streamOutputDecls{ new D3D12_SO_DECLARATION_ENTRY[4] };
-	streamOutputDecls[0] = { 0, "POSITION", 0, 0, 3, 0 };
-	streamOutputDecls[1] = { 0, "VELOCITY", 0, 0, 3, 0 };
-	streamOutputDecls[2] = { 0, "AGE", 0, 0, 1, 0 };
-	streamOutputDecls[3] = { 0, "LIFETIME", 0, 0, 1, 0 };
+	D3D12_SO_DECLARATION_ENTRY* soDecls{ new D3D12_SO_DECLARATION_ENTRY[4] };
+	soDecls[0] = { 0, "POSITION", 0, 0, 3, 0 };
+	soDecls[1] = { 0, "VELOCITY", 0, 0, 3, 0 };
+	soDecls[2] = { 0, "AGE", 0, 0, 1, 0 };
+	soDecls[3] = { 0, "LIFETIME", 0, 0, 1, 0 };
 
 	UINT* bufferStrides{ new UINT[1] };
 	bufferStrides[0] = sizeof(ParticleVertex);
 
 	D3D12_STREAM_OUTPUT_DESC streamOutput{};
 	streamOutput.NumEntries = 4;
-	streamOutput.pSODeclaration = streamOutputDecls;
+	streamOutput.pSODeclaration = soDecls;
 	streamOutput.NumStrides = 1;
 	streamOutput.pBufferStrides = bufferStrides;
 	streamOutput.RasterizedStream = D3D12_SO_NO_RASTERIZED_STREAM;
