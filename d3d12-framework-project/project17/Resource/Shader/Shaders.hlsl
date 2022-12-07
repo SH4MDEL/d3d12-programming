@@ -418,7 +418,7 @@ void GS_PARTICLE_DRAW(point VS_PARTICLE_INPUT input[1], inout TriangleStream<GS_
 
 float4 PS_PARTICLE_MAIN(GS_PARTICLE_OUTPUT input) : SV_TARGET
 {
-	return float4(1.0f, 0.4f, 0.4f, 0.5f);
+	return float4(1.0f, 0.4f, 0.4f, 0.6f);
 }
 
 /*

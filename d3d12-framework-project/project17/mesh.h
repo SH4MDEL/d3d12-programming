@@ -218,6 +218,8 @@ public:
 	void RenderStreamOutput(const ComPtr<ID3D12GraphicsCommandList>& commandList);
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList);
 
+	virtual void ReleaseUploadBuffer() override;
+
 private:
 	ComPtr<ID3D12Resource>				m_streamOutputBuffer;
 	D3D12_STREAM_OUTPUT_BUFFER_VIEW		m_streamOutputBufferView;

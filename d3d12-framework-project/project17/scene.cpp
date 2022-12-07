@@ -220,10 +220,10 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	XMFLOAT3 terrainPosition = terrain->GetPosition();
 	XMFLOAT3 terrainScale = terrain->GetScale();
 	FLOAT terrainHeight = terrain->GetHeight(terrainPosition.x, terrainPosition.z);
-	for (int z = 2; z <= 128; ++z) {
-		FLOAT nz = ((terrainPosition.z + (terrain->GetLength() / 128 * z)));
-		for (int x = 2; x <= 128; ++x) {
-			FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 128 * x)));
+	for (int z = 2; z <= 64; ++z) {
+		FLOAT nz = ((terrainPosition.z + (terrain->GetLength() / 64 * z)));
+		for (int x = 2; x <= 64; ++x) {
+			FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 64 * x)));
 			FLOAT ny = terrain->GetHeight(nx, nz) / terrainScale.y + 0.4f;
 			if (ny > 70.f) {
 				int value = GetRandomInt(1, 4);
@@ -280,16 +280,16 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	// ¼ÎÀÌ´õ ¼³Á¤
 	m_shader.insert(make_pair("TERRAIN", move(terrainShader)));
 	m_shader.insert(make_pair("SKYBOX", move(skyboxShader)));
-	m_blending.insert(make_pair("FLOWER1", move(flower1Shader)));
-	m_blending.insert(make_pair("FLOWER2", move(flower2Shader)));
-	m_blending.insert(make_pair("GRASS1", move(grass1Shader)));
-	m_blending.insert(make_pair("GRASS2", move(grass2Shader)));
-	m_blending.insert(make_pair("BLENDING", move(blendingShader)));
+	m_shader.insert(make_pair("FLOWER1", move(flower1Shader)));
+	m_shader.insert(make_pair("FLOWER2", move(flower2Shader)));
+	m_shader.insert(make_pair("GRASS1", move(grass1Shader)));
+	m_shader.insert(make_pair("GRASS2", move(grass2Shader)));
+	m_shader.insert(make_pair("BLENDING", move(blendingShader)));
 	m_shader.insert(make_pair("HIERARCHY", move(hierarchyShader)));
 	m_shader.insert(make_pair("STENCIL", move(stencilRenderShader)));
 	m_shader.insert(make_pair("OUTLINE", move(outlineShader)));
 	m_shader.insert(make_pair("WINDOW", move(windowShader)));
-	m_blending.insert(make_pair("BLENDHIERARCHY", move(blendHierarchyShader)));
+	m_shader.insert(make_pair("BLENDHIERARCHY", move(blendHierarchyShader)));
 }
 
 void Scene::Update(FLOAT timeElapsed)
@@ -298,7 +298,6 @@ void Scene::Update(FLOAT timeElapsed)
 	m_firstCamera->Update(timeElapsed);
 	if (m_shader["SKYBOX"]) for (auto& skybox : m_shader["SKYBOX"]->GetGameObjects()) skybox->SetPosition(m_camera->GetEye());
 	for (const auto& shader : m_shader) shader.second->Update(timeElapsed);
-	for (const auto& shader : m_blending) shader.second->Update(timeElapsed);
 
 	CheckPlayerByObjectCollisions();
 	CheckMissileByObjectCollisions();
@@ -315,17 +314,17 @@ void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList, CD3DX12
 	}
 	m_shader.at("TERRAIN")->Render(commandList);
 	m_shader.at("SKYBOX")->Render(commandList);
-	m_blending.at("BLENDING")->Render(commandList);
-	m_blending.at("FLOWER1")->Render(commandList);
-	m_blending.at("FLOWER2")->Render(commandList);
-	m_blending.at("GRASS1")->Render(commandList);
-	m_blending.at("GRASS2")->Render(commandList);
+	m_shader.at("BLENDING")->Render(commandList);
+	m_shader.at("FLOWER1")->Render(commandList);
+	m_shader.at("FLOWER2")->Render(commandList);
+	m_shader.at("GRASS1")->Render(commandList);
+	m_shader.at("GRASS2")->Render(commandList);
 
 	//commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 	if (g_toggle) m_shader.at("STENCIL")->Render(commandList);
 	m_shader.at("OUTLINE")->Render(commandList);
 	g_postProcess = true;
-	if (g_toggle) m_blending.at("BLENDHIERARCHY")->Render(commandList);
+	if (g_toggle) m_shader.at("BLENDHIERARCHY")->Render(commandList);
 	g_postProcess = false;
 
 	if (g_firstPerson) m_shader.at("WINDOW")->Render(commandList);

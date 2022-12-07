@@ -246,6 +246,12 @@ void Enemy::InitParticle(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	m_particle = make_unique<ParticleMesh>(device, commandList);
 }
 
+void Enemy::ReleaseUploadBuffer() const
+{
+	m_particle->ReleaseUploadBuffer();
+	GameObject::ReleaseUploadBuffer();
+}
+
 void Enemy::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
 	if (!g_postProcess) {
@@ -359,6 +365,14 @@ void EnemyManager::Update(FLOAT timeElapsed)
 		enemy->SetTerrainHeight(m_terrain->GetHeight(position.x, position.z));
 		enemy->Update(timeElapsed);
 	}
+}
+
+void EnemyManager::ReleaseUploadBuffer() const
+{
+	for (const auto enemy : m_enemys) {
+		enemy->ReleaseUploadBuffer();
+	}
+	GameObject::ReleaseUploadBuffer();
 }
 
 HeightMapTerrain::HeightMapTerrain(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList,

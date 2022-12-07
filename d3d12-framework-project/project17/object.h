@@ -99,6 +99,8 @@ public:
 
 	void InitParticle(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList);
 
+	virtual void ReleaseUploadBuffer() const override;
+
 	enum Status {
 		LIVE,
 		BLOWING,
@@ -146,6 +148,8 @@ public:
 
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override;
 	virtual void Update(FLOAT timeElapsed) override;
+
+	virtual void ReleaseUploadBuffer() const override;
 
 private:
 	const FLOAT						m_regenTime = 5.f;

@@ -799,6 +799,14 @@ void ParticleMesh::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 	Mesh::Render(commandList);
 }
 
+void ParticleMesh::ReleaseUploadBuffer()
+{
+	if (m_vertexUploadBuffer) m_vertexUploadBuffer.Reset();
+	if (m_indexUploadBuffer) m_indexUploadBuffer.Reset();
+
+	//if (m_filledSizeUploadBuffer) m_filledSizeUploadBuffer.Reset();
+}
+
 UIMesh::UIMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
 	m_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
