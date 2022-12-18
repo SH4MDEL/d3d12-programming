@@ -220,10 +220,10 @@ void Scene::BuildObjects(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12
 	XMFLOAT3 terrainPosition = terrain->GetPosition();
 	XMFLOAT3 terrainScale = terrain->GetScale();
 	FLOAT terrainHeight = terrain->GetHeight(terrainPosition.x, terrainPosition.z);
-	for (int z = 2; z <= 256; ++z) {
-		FLOAT nz = ((terrainPosition.z + (terrain->GetLength() / 256 * z)));
-		for (int x = 2; x <= 256; ++x) {
-			FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 256 * x)));
+	for (int z = 2; z <= 64; ++z) {
+		FLOAT nz = ((terrainPosition.z + (terrain->GetLength() / 64 * z)));
+		for (int x = 2; x <= 64; ++x) {
+			FLOAT nx = ((terrainPosition.x + (terrain->GetWidth() / 64 * x)));
 			FLOAT ny = terrain->GetHeight(nx, nz) / terrainScale.y + 0.4f;
 			if (ny > 70.f) {
 				int value = GetRandomInt(1, 4);
@@ -301,7 +301,7 @@ void Scene::Update(FLOAT timeElapsed)
 
 	CheckPlayerByObjectCollisions();
 	CheckMissileByObjectCollisions();
-	//CheckTerrainBorderLimit();
+	CheckTerrainBorderLimit();
 }
 
 void Scene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList, CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle) const

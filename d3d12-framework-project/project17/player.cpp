@@ -38,10 +38,12 @@ void Player::Update(FLOAT timeElapsed)
 
 		if (m_missileTimer >= m_missileLifeTime) {
 			m_missileState = READY;
+			m_missileTimer = 0.f;
 		}
 
 		if (terrainHeight / terrainScale.y > pos.y) {
 			m_missileState = READY;
+			m_missileTimer = 0.f;
 		}
 	}
 	//cout << GetPosition().x << ", " << GetPosition().y << ", " << GetPosition().z << endl;
